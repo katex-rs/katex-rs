@@ -3,17 +3,17 @@
 //! This module provides JavaScript-compatible APIs that mirror the original
 //! KaTeX.js library, allowing seamless integration with web applications.
 
-use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
 use js_sys::{Array, Object, Reflect};
+use wasm_bindgen::JsCast;
+use wasm_bindgen::prelude::*;
 
+use crate::macro_expander::MacroMap;
+use crate::macros::MacroDefinition;
 use crate::{
     context::KatexContext,
     core,
     types::{OutputFormat, Settings, StrictMode, StrictSetting, TrustSetting},
 };
-use crate::macro_expander::MacroMap;
-use crate::macros::MacroDefinition;
 
 /// Global KaTeX context for WASM
 use std::sync::OnceLock;
@@ -127,7 +127,9 @@ fn parse_js_options(js: &JsValue) -> Result<Settings, JsValue> {
     let macros_val = get("macros")?;
     if !macros_val.is_undefined() && !macros_val.is_null() {
         if Array::is_array(&macros_val) {
-            return Err(JsValue::from_str("option 'macros' must be a plain object, not an array"));
+            return Err(JsValue::from_str(
+                "option 'macros' must be a plain object, not an array",
+            ));
         }
         if !macros_val.is_object() {
             return Err(JsValue::from_str("option 'macros' must be an object"));
@@ -188,6 +190,21 @@ fn parse_js_options(js: &JsValue) -> Result<Settings, JsValue> {
         }
     }
 
+    // output format
+    let output_val = get("output")?;
+    if !output_val.is_undefined() && !output_val.is_null() {
+        if let Some(s) = output_val.as_string() {
+            settings.output = match s.to_lowercase().as_str() {
+                "html" => OutputFormat::Html,
+                "mathml" => OutputFormat::Mathml,
+                "htmlandmathml" => OutputFormat::HtmlAndMathml,
+                _ => OutputFormat::Html, // Default to HTML for screenshot compatibility
+            };
+        } else {
+            return Err(JsValue::from_str("option 'output' must be a string"));
+        }
+    }
+
     // simple booleans
     if let Some(b) = opt_bool("leqno")? {
         settings.leqno = b;
@@ -226,14 +243,10 @@ fn parse_js_options(js: &JsValue) -> Result<Settings, JsValue> {
             ));
         }
         if n < 0.0 {
-            return Err(JsValue::from_str(
-                "option 'maxExpand' must be non-negative",
-            ));
+            return Err(JsValue::from_str("option 'maxExpand' must be non-negative"));
         }
         if (n.fract()).abs() > 0.0 {
-            return Err(JsValue::from_str(
-                "option 'maxExpand' must be an integer",
-            ));
+            return Err(JsValue::from_str("option 'maxExpand' must be an integer"));
         }
         settings.max_expand = n as usize;
     }
@@ -246,7 +259,8 @@ fn parse_js_options(js: &JsValue) -> Result<Settings, JsValue> {
     Ok(settings)
 }
 
-/// Render LaTeX expression to a DOM element with options specified as a JS object
+/// Render LaTeX expression to a DOM element with options specified as a JS
+/// object
 #[wasm_bindgen]
 pub fn render_with_options(
     tex: &str,
@@ -254,36 +268,19 @@ pub fn render_with_options(
     js_options: JsValue,
 ) -> Result<(), JsValue> {
     let ctx = get_context();
-    let mut settings = parse_js_options(&js_options)?;
-    settings.output = OutputFormat::HtmlAndMathml;
+    let settings = parse_js_options(&js_options)?;
 
     let node: web_sys::Node = element.unchecked_into();
-    core::render(ctx, tex, &node, &settings)
-        .map_err(|e| JsValue::from_str(&format!("{e}")))
+    core::render(ctx, tex, &node, &settings).map_err(|e| JsValue::from_str(&format!("{e}")))
 }
 
 /// Render LaTeX expression to HTML string with options specified as a JS object
 #[wasm_bindgen]
 pub fn render_to_string_with_options(tex: &str, js_options: JsValue) -> Result<String, JsValue> {
     let ctx = get_context();
-    let mut settings = parse_js_options(&js_options)?;
+    let settings = parse_js_options(&js_options)?;
 
-    let obj = Object::from(js_options.clone());
-    let out_v = Reflect::get(&obj, &JsValue::from_str("output"))
-        .map_err(|_| JsValue::from_str("failed to read option 'output'"))?;
-    let fmt = if let Some(s) = out_v.as_string() {
-        match s.to_lowercase().as_str() {
-            "html" => OutputFormat::Html,
-            "mathml" => OutputFormat::Mathml,
-            _ => OutputFormat::HtmlAndMathml,
-        }
-    } else {
-        OutputFormat::HtmlAndMathml
-    };
-    settings.output = fmt;
-
-    core::render_to_string(ctx, tex, &settings)
-        .map_err(|e| JsValue::from_str(&format!("{e}")))
+    core::render_to_string(ctx, tex, &settings).map_err(|e| JsValue::from_str(&format!("{e}")))
 }
 
 /// Render LaTeX expression to MathML string

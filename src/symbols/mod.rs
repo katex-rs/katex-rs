@@ -542,6 +542,16 @@ pub fn create_symbols() -> Symbols {
         );
     }
 
+    // !TODO: Fix extractor to include all symbols
+    symbols.define_symbol(
+        Mode::Text,
+        Font::Main,
+        Group::NonAtom(NonAtom::AccentToken),
+        Some('\u{00a8}'),
+        r#"\""#,
+        false,
+    );
+
     // textSymbols loop: symbols for text mode
     let text_symbols = "0123456789!@*()-=+\";:?/.,";
     for ch in text_symbols.chars() {

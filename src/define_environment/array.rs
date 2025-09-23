@@ -471,11 +471,18 @@ fn html_builder(
     let mut c = 0;
     let mut col_descr_num = 0;
     while c < nc || col_descr_num < col_descriptions.len() {
-        let col_descr = col_descriptions.get(col_descr_num);
         let mut first_separator = true;
-        while let Some(col_descr) = col_descr
-            && matches!(col_descr, AlignSpec::Separator { .. })
-        {
+        loop {
+            let Some(separator) = col_descriptions
+                .get(col_descr_num)
+                .and_then(|spec| match spec {
+                    AlignSpec::Separator { separator } => Some(separator.as_str()),
+                    _ => None,
+                })
+            else {
+                break;
+            };
+
             if !first_separator {
                 col_sep = make_span(vec!["arraycolsep".to_owned()], vec![], None, None);
                 col_sep.style.insert(
@@ -485,42 +492,40 @@ fn html_builder(
                 cols.push(col_sep.into());
             }
 
-            if let AlignSpec::Separator { separator } = col_descr {
-                if separator == "|" || separator == ":" {
-                    let line_type = if separator == "|" { "solid" } else { "dashed" };
-                    let mut separator_span = make_span(
-                        vec!["vertical-separator".to_owned()],
-                        vec![],
-                        Some(options),
-                        None,
-                    );
+            if separator == "|" || separator == ":" {
+                let line_type = if separator == "|" { "solid" } else { "dashed" };
+                let mut separator_span = make_span(
+                    vec!["vertical-separator".to_owned()],
+                    vec![],
+                    Some(options),
+                    None,
+                );
+                separator_span
+                    .style
+                    .insert(CssProperty::Height, units::make_em(total_height));
+                separator_span.style.insert(
+                    CssProperty::BorderRightWidth,
+                    units::make_em(rule_thickness),
+                );
+                separator_span
+                    .style
+                    .insert(CssProperty::BorderRightStyle, line_type.to_owned());
+                separator_span.style.insert(
+                    CssProperty::Margin,
+                    format!("0 {}", units::make_em(-rule_thickness / 2.0)),
+                );
+                let shift = total_height - offset;
+                if shift != 0.0 {
                     separator_span
                         .style
-                        .insert(CssProperty::Height, units::make_em(total_height));
-                    separator_span.style.insert(
-                        CssProperty::BorderRightWidth,
-                        units::make_em(rule_thickness),
-                    );
-                    separator_span
-                        .style
-                        .insert(CssProperty::BorderRightStyle, line_type.to_owned());
-                    separator_span.style.insert(
-                        CssProperty::Margin,
-                        format!("0 {}", units::make_em(-rule_thickness / 2.0)),
-                    );
-                    let shift = total_height - offset;
-                    if shift != 0.0 {
-                        separator_span
-                            .style
-                            .insert(CssProperty::VerticalAlign, units::make_em(-shift));
-                    }
-
-                    cols.push(separator_span.into());
-                } else {
-                    return Err(ParseError::new(format!(
-                        "Invalid separator type: {separator}"
-                    )));
+                        .insert(CssProperty::VerticalAlign, units::make_em(-shift));
                 }
+
+                cols.push(separator_span.into());
+            } else {
+                return Err(ParseError::new(format!(
+                    "Invalid separator type: {separator}"
+                )));
             }
 
             col_descr_num += 1;
@@ -528,7 +533,9 @@ fn html_builder(
         }
 
         if c >= nc {
-            break;
+            c += 1;
+            col_descr_num += 1;
+            continue;
         }
 
         let col_descr = col_descriptions.get(col_descr_num);
@@ -556,12 +563,14 @@ fn html_builder(
         for row in body.iter().take(nr) {
             if let Some(elem) = row.elements.get(c) {
                 let shift = row.pos - offset;
-                col_elements.push(
-                    VListElemAndShift::builder()
-                        .elem(elem.clone())
-                        .shift(shift)
-                        .build(),
-                );
+                let mut elem = elem.clone();
+                if let Some(height_mut) = elem.height_mut() {
+                    *height_mut = row.height;
+                }
+                if let Some(depth_mut) = elem.depth_mut() {
+                    *depth_mut = row.depth;
+                }
+                col_elements.push(VListElemAndShift::builder().elem(elem).shift(shift).build());
             }
         }
 
@@ -1164,7 +1173,7 @@ pub fn define_array(ctx: &mut KatexContext) {
             ..Default::default()
         },
         handler: |context, _args, _opt_args| {
-            let delimiters = match context.env_name.replace('*', "").as_str() {
+            let delimiters = match context.env_name.as_str().trim_end_matches('*') {
                 "matrix" => None,
                 "pmatrix" => Some(("(".to_owned(), ")".to_owned())),
                 "bmatrix" => Some(("[".to_owned(), "]".to_owned())),

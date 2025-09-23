@@ -768,9 +768,9 @@ pub fn sized_delim(
     };
 
     // Sized delimiters are never centered.
-    if STACK_LARGE_DELIMITERS.contains(&delim) || STACK_NEVER_DELIMITERS.contains(&delim) {
+    if STACK_LARGE_DELIMITERS.contains(delim) || STACK_NEVER_DELIMITERS.contains(delim) {
         make_large_delim(ctx, delim, size, false, options, mode, classes)
-    } else if STACK_ALWAYS_DELIMITERS.contains(&delim) {
+    } else if STACK_ALWAYS_DELIMITERS.contains(delim) {
         make_stacked_delim(
             ctx,
             delim,
@@ -854,9 +854,9 @@ pub fn custom_sized_delim(
     };
 
     // Decide what sequence to use
-    let sequence = if STACK_NEVER_DELIMITERS.contains(&delim) {
+    let sequence = if STACK_NEVER_DELIMITERS.contains(delim) {
         STACK_NEVER_DELIMITER_SEQUENCE
-    } else if STACK_LARGE_DELIMITERS.contains(&delim) {
+    } else if STACK_LARGE_DELIMITERS.contains(delim) {
         STACK_LARGE_DELIMITER_SEQUENCE
     } else {
         STACK_ALWAYS_DELIMITER_SEQUENCE

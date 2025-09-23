@@ -50,6 +50,7 @@ fn html_builder(
 
     // Build the inner group
     let inner_group = build_html::build_group(ctx, &underline_node.body, options, None)?;
+    let inner_height = inner_group.height();
 
     // Create the line to go below the body
     let line = make_line_span("underline-line", options, None);
@@ -57,7 +58,8 @@ fn html_builder(
     // Generate the vlist, with the appropriate kerns
     let default_rule_thickness = options.font_metrics().default_rule_thickness;
     let vlist = make_v_list(
-        VListParam::FirstBaseline {
+        VListParam::Top {
+            position_data: inner_height,
             children: vec![
                 VListChild::Kern(VListKern {
                     size: default_rule_thickness,

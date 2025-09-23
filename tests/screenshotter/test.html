@@ -39,8 +39,30 @@
 
   <script type="module">
     // ESM init: load WASM and shim, then render based on URL query.
-    import initWasm, * as wasm from "./pkg/katex_rs.js";
+    import initWasm, * as wasm from "./pkg/katex.js";
     import { createShim } from "./katex-shim.js";
+
+    const search = window.location.search || "";
+    const searchParams = new URLSearchParams(search);
+    const implMode = (searchParams.get("impl") || "wasm").toLowerCase();
+
+    function setStatus(state, message, stack) {
+      const detail = { state, message: message || null };
+      if (stack) {
+        detail.stack = stack;
+      } else if (Object.prototype.hasOwnProperty.call(detail, "stack")) {
+        delete detail.stack;
+      }
+      window.__status = detail;
+      try {
+        window.dispatchEvent(new CustomEvent("katex-status", { detail }));
+      } catch (_) {
+        // ignore event dispatch failures (e.g., CustomEvent unavailable)
+      }
+      return detail;
+    }
+
+    window.__status = setStatus("init", null);
 
     function parseMacrosFromSearch(search) {
       const params = new URLSearchParams(search);
@@ -112,10 +134,19 @@
         opts.strict = (strict === "true" || strict === "false") ? (strict === "true") : strict;
       }
       const trust = params.get("trust");
-      if (trust) opts.trust = (trust === "true");
+      if (trust != null) {
+        if (trust === "0" || trust === "false") {
+          opts.trust = false;
+        } else if (trust === "1" || trust === "true") {
+          opts.trust = true;
+        } else {
+          opts.trust = trust;
+        }
+      }
 
       const output = params.get("output");
       if (output) opts.output = output;
+      else opts.output = "html"; // Default to HTML-only for screenshot compatibility
 
       // macros
       const macros = parseMacrosFromSearch(search);
@@ -218,28 +249,53 @@
       if ("strict" in o) opts.strict = o.strict;
       if ("trust" in o) opts.trust = o.trust;
       if ("output" in o) opts.output = o.output;
+      else opts.output = "html"; // Default to HTML-only for screenshot compatibility
       if (o.macros) opts.macros = o.macros;
 
+      if (!("strict" in opts)) opts.strict = false;
+      if (!("trust" in opts)) opts.trust = true;
+
+      setStatus("pending", null, null);
       window.__ready = false;
       try {
         window.katex.render(o.tex || "", mathNode, opts);
-      } catch (_) {
-        // noThrow/throwOnError behavior handled inside shim
+      } catch (err) {
+        const message = err && err.message ? err.message : String(err);
+        const stack = err && err.stack ? String(err.stack) : null;
+        setStatus("error", message, stack);
+        window.__ready = true;
+        return { state: "error", message, stack };
       }
 
       await waitForImagesIn(document);
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
       window.__ready = true;
-      return true;
+      return setStatus("rendered", null, null);
+    };
+
+    window.updateCompareStatus = function(state, message, stack) {
+      return setStatus(state, message || null, stack || null);
     };
 
     async function main() {
-      await initWasm();
-      window.katex = createShim(wasm);
+      if (implMode === "js") {
+        try {
+          const katexModule = await import("/KaTeX/dist/katex.mjs");
+          window.katex = katexModule;
+        } catch (err) {
+          const message = err && err.message ? err.message : String(err);
+          const stack = err && err.stack ? String(err.stack) : null;
+          setStatus("error", message, stack);
+          window.__ready = true;
+          console.error("[impl] Failed to load KaTeX JS module:", message);
+          return;
+        }
+      } else {
+        await initWasm();
+        window.katex = createShim(wasm);
+      }
 
-      const search = window.location.search || "";
-      const params = new URLSearchParams(search);
-      const tex = params.get("tex") || "";
+      const tex = searchParams.get("tex") || "";
 
       setStylesFromSearch(search);
       const opts = parseOptionsFromSearch(search);
@@ -253,11 +309,16 @@
       // Explicitly trigger KaTeX font family loads to avoid fallback during first paint
       await ensureFonts();
  
+      setStatus("pending", null, null);
       window.__ready = false;
       try {
         window.katex.render(tex, mathNode, opts);
-      } catch (_) {
-        // noThrow/throwOnError behavior handled inside shim
+      } catch (err) {
+        const message = err && err.message ? err.message : String(err);
+        const stack = err && err.stack ? String(err.stack) : null;
+        setStatus("error", message, stack);
+        window.__ready = true;
+        return;
       }
 
       // Wait for any images produced by rendering (e.g., includegraphics)
@@ -266,6 +327,7 @@
       // Settle layout with two rAFs
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
       window.__ready = true;
+      setStatus("rendered", null, null);
     }
 
     main();

@@ -411,14 +411,14 @@ fn html_builder(
 
     if group.has_bar_line {
         // Rule 15d: With fraction bar
-        if (num_shift - numer.depth()) - (axis_height + 0.5 * rule_width) < clearance {
+        if (num_shift - numer.depth()) - 0.5f64.mul_add(rule_width, axis_height) < clearance {
             num_shift +=
-                clearance - ((num_shift - numer.depth()) - (axis_height + 0.5 * rule_width));
+                clearance - ((num_shift - numer.depth()) - 0.5f64.mul_add(rule_width, axis_height));
         }
 
-        if (axis_height - 0.5 * rule_width) - (denom.height() - denom_shift) < clearance {
-            denom_shift +=
-                clearance - ((axis_height - 0.5 * rule_width) - (denom.height() - denom_shift));
+        if 0.5f64.mul_add(-rule_width, axis_height) - (denom.height() - denom_shift) < clearance {
+            denom_shift += clearance
+                - (0.5f64.mul_add(-rule_width, axis_height) - (denom.height() - denom_shift));
         }
     } else {
         // Rule 15c: Without fraction bar
@@ -443,7 +443,7 @@ fn html_builder(
     // Add fraction line if needed
     if let Some(rule) = rule {
         // Add a little extra clearance above and below the rule
-        let mid_shift = -(axis_height - 0.5 * rule_width);
+        let mid_shift = -0.5f64.mul_add(-rule_width, axis_height);
         children.push(
             VListElemAndShift::builder()
                 .elem(rule.into())

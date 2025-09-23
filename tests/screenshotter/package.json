@@ -15,5 +15,8 @@
     "pngjs": "^7.0.0",
     "puppeteer": "^24.22.0",
     "yaml": "^2.8.1"
+  },
+  "dependencies": {
+    "puppeteer-core": "^24.22.1"
   }
 }

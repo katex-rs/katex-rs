@@ -222,7 +222,7 @@ fn get_outermost_node(node: &HtmlDomNode, side: Side) -> &HtmlDomNode {
 #[must_use]
 pub fn get_type_of_dom_tree(node: &HtmlDomNode, side: Option<Side>) -> Option<DomType> {
     let node = side.map_or(node, |side| get_outermost_node(node, side));
-    let dom_type = DomType::from_str(&node.classes()[0]);
+    let dom_type = DomType::from_str(node.classes().first()?);
     dom_type.ok()
 }
 
@@ -448,8 +448,12 @@ pub fn build_expression(
         ctx,
         &mut groups,
         &mut |_ctx: &KatexContext, node: &mut HtmlDomNode, prev: &mut HtmlDomNode| {
-            let prev_type = &prev.classes()[0];
-            let type_str = &node.classes()[0];
+            let Some(prev_type) = prev.classes().first() else {
+                return Ok(None);
+            };
+            let Some(type_str) = node.classes().first() else {
+                return Ok(None);
+            };
 
             if prev_type == "mbin" && BIN_RIGHT_CANCELLER.contains(type_str) {
                 // Change prev.classes[0] to "mord"

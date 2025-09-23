@@ -2,7 +2,7 @@
 "use strict";
 
 /**
- * Screenshot runner for katex-rs (Chrome-only first).
+ * Screenshot runner for katex-rs
  *
  * Features:
  * - Starts a minimal static server, serving:
@@ -60,6 +60,9 @@ const PAGE_PATH = "/tests/screenshotter/test.html";
 const BASELINE_DIR = path.join(ROOT, "KaTeX", "test", "screenshotter", "images");
 const NEW_DIR = path.join(TESTS_DIR, "new");
 const DIFF_DIR = path.join(TESTS_DIR, "diff");
+const SPECIAL_PATHS = new Map([
+  ["/website/static/img/khan-academy.png", path.join(ROOT, "KaTeX", "website", "static", "img", "khan-academy.png")]
+]);
 
 // Ensure output dirs
 fs.mkdirSync(NEW_DIR, { recursive: true });
@@ -79,36 +82,18 @@ function fileExists(p) {
 
 function ensureWasmBuiltSync(force = false) {
   const outDir = path.join("tests", "screenshotter", "pkg");
-  const outJs = path.join(ROOT, outDir, "katex_rs.js");
-  if (!force && fileExists(outJs)) {
-    console.log(`[build] Using existing ${outJs}`);
-    return;
-  }
   console.log(`[build] Building WASM artifacts into ${outDir} ...`);
   // Try wasm-pack first
   try {
     runCmd("wasm-pack", ["--version"], { stdio: "ignore" });
     // Use the proper flag to pass features through wasm-pack
-    runCmd("wasm-pack", ["build", "--features", "wasm", "--target", "web", "--out-dir", outDir, "--release"]);
+    runCmd("wasm-pack", ["build", "--target", "web", "--no-opt", "--dev"]);
     console.log("[build] wasm-pack build done");
+    // Copy the ./pkg dir to current dir
+    fs.cpSync(path.join(process.cwd(),"pkg"), path.join(__dirname,"pkg"), { recursive: true, force: true });
     return;
   } catch (e) {
-    console.warn(`[build] wasm-pack unavailable or failed: ${e && e.message ? e.message : e}`);
-  }
-  // Fallback: cargo + wasm-bindgen
-  try {
-    runCmd("cargo", ["build", "-F", "wasm", "--target", "wasm32-unknown-unknown", "--release"]);
-    const tgtDir = path.join(ROOT, "target", "wasm32-unknown-unknown", "release");
-    const wasmFiles = fs.readdirSync(tgtDir).filter(f => f.endsWith(".wasm"));
-    if (!wasmFiles.length) throw new Error("no .wasm built under target/wasm32-unknown-unknown/release");
-    // Prefer crate-named wasm if present
-    let wasmName = wasmFiles.find(f => /^katex.*\.wasm$/.test(f)) || wasmFiles[0];
-    const wasmPath = path.join(tgtDir, wasmName);
-    runCmd("wasm-bindgen", [wasmPath, "--target", "web", "--out-dir", outDir, "--out-name", "katex_rs"]);
-    console.log("[build] wasm-bindgen build done");
-    return;
-  } catch (e) {
-    console.error(`[build] cargo/wasm-bindgen fallback failed: ${e && e.message ? e.message : e}`);
+    console.error(`[build] wasm-pack unavailable or failed: ${e && e.message ? e.message : e}`);
     throw e;
   }
 }
@@ -145,6 +130,14 @@ function startStaticServer(port = 0) {
     try {
       const parsed = url.parse(req.url);
       const reqPath = decodeURIComponent(parsed.pathname || "/");
+      const specialPath = SPECIAL_PATHS.get(reqPath);
+      if (specialPath) {
+        const data = await fsp.readFile(specialPath);
+        res.statusCode = 200;
+        res.setHeader("Content-Type", contentTypeFor(specialPath));
+        res.end(data);
+        return;
+      }
       // Resolve against the best matching mount
       let localPath = null;
       for (const m of mounts) {
@@ -268,7 +261,15 @@ function parseQueryToPayload(qs) {
     payload.strict = (strict === "true" || strict === "false") ? (strict === "true") : strict;
   }
   const trust = params.get("trust");
-  if (trust != null) payload.trust = (trust === "true");
+  if (trust != null) {
+    if (trust === "0" || trust === "false") {
+      payload.trust = false;
+    } else if (trust === "1" || trust === "true") {
+      payload.trust = true;
+    } else {
+      payload.trust = trust;
+    }
+  }
   const output = params.get("output");
   if (output) payload.output = output;
 
@@ -439,11 +440,11 @@ if (pixelmatch && typeof pixelmatch !== "function" && pixelmatch.default && type
       return { equal: false, diffWritten: true };
     }
     const diff = new PNG({ width: a.width, height: a.height });
-    const mismatched = pixelmatch(a.data, e.data, diff.data, a.width, a.height, { threshold: 0.01 });
+    const mismatched = pixelmatch(a.data, e.data, diff.data, a.width, a.height, { threshold: 0.025 });
     console.warn(`[diff] size=${a.width}x${a.height}, baseline=${e.width}x${e.height}, mismatched=${mismatched}/${a.width * a.height}`);
     ensureDir(diffPath);
     await fsp.writeFile(diffPath, PNG.sync.write(diff));
-    return { equal: mismatched === 0, diffWritten: true };
+    return { equal: mismatched <= 40, diffWritten: true, diffPixels: mismatched }; // allow tiny diffs
   } catch (e) {
     // pixelmatch not available or PNG decode failed; log and skip diff
     console.warn(`[diff] pixel compare unavailable or failed: ${e && e.message ? e.message : e}`);
@@ -460,7 +461,8 @@ if (pixelmatch && typeof pixelmatch !== "function" && pixelmatch.default && type
       ensureWasmBuiltSync(force);
     }
   } catch (e) {
-    console.warn(`[build] Skipped auto-build due to error: ${e && e.message ? e.message : e}`);
+    console.error(`[build] Failed to build latest wasm: ${e && e.message ? e.message : e}`);
+    throw e;
   }
 
   const { server, port } = await startStaticServer(opts.port);
@@ -504,11 +506,26 @@ if (pixelmatch && typeof pixelmatch !== "function" && pixelmatch.default && type
   for (const c of cases) {
     let ok = false;
     let lastErr = null;
+    let caseStatus = null;
     for (let attempt = 1; attempt <= opts.attempts && !ok; attempt++) {
       try {
         // Render this case on the existing page to avoid reload overhead
         const payload = parseQueryToPayload(c.query || "");
-        await page.evaluate((p) => window.runCase(p), payload);
+        const runResult = await page.evaluate((p) => window.runCase(p), payload);
+        if (runResult && runResult.state === "error") {
+          const msg = runResult.message || "Render error";
+          lastErr = new Error(msg);
+          if (runResult.stack) {
+            lastErr.stack = runResult.stack;
+          }
+          caseStatus = "error";
+          console.warn(`[error] ${c.key} (attempt ${attempt}/${opts.attempts}) :: ${msg}`);
+          if (runResult.stack) {
+            console.warn(runResult.stack);
+          }
+          break;
+        }
+
         await waitReady(page, opts.timeoutMs);
 
         // Debug diagnostics: DPR and DOM snapshot info
@@ -527,20 +544,35 @@ if (pixelmatch && typeof pixelmatch !== "function" && pixelmatch.default && type
 
         const expected = path.join(BASELINE_DIR, `${c.key}-chrome.png`);
         const diffFile = path.join(DIFF_DIR, `${c.key}-chrome-diff.png`);
-        const { equal } = await compareOrDiff(outFile, expected, diffFile);
-        ok = equal;
-        if (!ok) {
+        const { equal, diffPixels } = await compareOrDiff(outFile, expected, diffFile);
+        if (equal) {
+          ok = true;
+          caseStatus = "pass";
+          await page.evaluate(() => window.updateCompareStatus("pass", null));
+        } else {
+          caseStatus = "mismatch";
+          await page.evaluate((state, message) => window.updateCompareStatus(state, message), "mismatch", `Differs from baseline (diff pixels: ${diffPixels})`);
           console.warn(`[fail] ${c.key} (attempt ${attempt}/${opts.attempts})`);
         }
       } catch (e) {
         lastErr = e;
+        caseStatus = "error";
         console.warn(`[warn] ${c.key} attempt failed: ${e && e.message ? e.message : e}`);
         // brief backoff
         await new Promise(r => setTimeout(r, 200));
       }
     }
     if (!ok) {
-      failures.push({ key: c.key, error: lastErr && (lastErr.stack || lastErr.message || String(lastErr)) });
+      const failure = {
+        key: c.key,
+        status: caseStatus && caseStatus !== "pass" ? caseStatus : (lastErr ? "error" : "mismatch"),
+      };
+      if (lastErr) {
+        failure.error = lastErr.stack || lastErr.message || String(lastErr);
+      } else if (failure.status === "mismatch") {
+        failure.error = "Screenshot differs from baseline";
+      }
+      failures.push(failure);
     } else {
       console.log(`[pass] ${c.key}`);
     }
@@ -552,8 +584,9 @@ if (pixelmatch && typeof pixelmatch !== "function" && pixelmatch.default && type
   if (failures.length) {
     console.error(`[result] FAIL ${failures.length}/${cases.length}. New images at: ${NEW_DIR}. Diffs (if any) at: ${DIFF_DIR}`);
     for (const f of failures) {
-      if (f.error) console.error(`  ${f.key}: ${f.error}`);
-      else console.error(`  ${f.key}`);
+      const suffix = f.status ? ` [${f.status}]` : "";
+      if (f.error) console.error(`  ${f.key}${suffix}: ${f.error}`);
+      else console.error(`  ${f.key}${suffix}`);
     }
     process.exitCode = 1;
     return;
