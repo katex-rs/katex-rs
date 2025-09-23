@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>katex-rs screenshot test</title>
+  <!-- Fixed CSS (to be provided in a later step). Keep the link for compatibility. -->
+  <link rel="stylesheet" href="./katex.min.css" />
+  <style>
+    /* Match KaTeX screenshotter page metrics */
+    body { font-family: "DejaVu Serif", serif; }
+    #pre, #math, #post { font-size: 4em; line-height: 1.2; }
+  </style>
+  <style>
+    /* Fonts from KaTeX test assets (no binary copy needed) */
+    @font-face {
+      font-family: "Batang";
+      src: url("../../KaTeX/test/screenshotter/fonts/batang/batang.ttf") format("truetype");
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "Mincho";
+      src: url("../../KaTeX/test/screenshotter/fonts/mincho/font_1_honokamin.ttf") format("truetype");
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    /* CJK/Hangul fallback families to match KaTeX screenshotter behavior */
+    .katex .cjk_fallback { font-family: "Mincho", serif; }
+    .katex .hangul_fallback { font-family: "Batang", serif; }
+  </style>
+</head>
+<body>
+  <span id="pre"></span>
+  <span id="math"></span>
+  <span id="post"></span>
+
+  <script type="module">
+    // ESM init: load WASM and shim, then render based on URL query.
+    import initWasm, * as wasm from "./pkg/katex_rs.js";
+    import { createShim } from "./katex-shim.js";
+
+    function parseMacrosFromSearch(search) {
+      const params = new URLSearchParams(search);
+      const macros = {};
+      // Support repeated ?macro=\cmd=expansion entries (as KaTeX does in screenshotter)
+      for (const [k, v] of params.entries()) {
+        if (k === "macro") {
+          try {
+            const s = decodeURIComponent(v);
+            // Expect format: \cmd=expansion
+            const m = s.match(/^\\([A-Za-z@]+)\s*=(.*)$/);
+            if (m) {
+              const name = "\\" + m[1];
+              const expansion = m[2];
+              macros[name] = expansion;
+            }
+          } catch (e) {
+            // ignore bad macro input
+          }
+        }
+      }
+      return macros;
+    }
+
+    function parseOptionsFromSearch(search) {
+      const params = new URLSearchParams(search);
+      const opts = {};
+
+      // displayMode/display
+      const displayMode = params.get("displayMode");
+      const display = params.get("display");
+      if (displayMode != null) opts.displayMode = (displayMode === "1" || displayMode === "true");
+      else if (display != null) opts.display = (display === "1" || display === "true");
+
+      // throwOnError/noThrow
+      const throwOnError = params.get("throwOnError");
+      const noThrow = params.get("noThrow");
+      if (throwOnError != null) opts.throwOnError = !(throwOnError === "0" || throwOnError === "false");
+      else if (noThrow != null) opts.noThrow = (noThrow === "1" || noThrow === "true");
+
+      // simple scalars
+      const errorColor = params.get("errorColor");
+      if (errorColor) opts.errorColor = errorColor;
+      const color = params.get("color");
+      if (color) opts.color = color;
+
+      // booleans
+      const leqno = params.get("leqno");
+      if (leqno != null) opts.leqno = (leqno === "1" || leqno === "true");
+      const fleqn = params.get("fleqn");
+      if (fleqn != null) opts.fleqn = (fleqn === "1" || fleqn === "true");
+      const colorIsTextColor = params.get("colorIsTextColor");
+      if (colorIsTextColor != null) opts.colorIsTextColor = (colorIsTextColor === "1" || colorIsTextColor === "true");
+      const globalGroup = params.get("globalGroup");
+      if (globalGroup != null) opts.globalGroup = (globalGroup === "1" || globalGroup === "true");
+
+      // numbers
+      const minRuleThickness = params.get("minRuleThickness");
+      if (minRuleThickness != null) opts.minRuleThickness = Number(minRuleThickness);
+      const maxExpand = params.get("maxExpand");
+      if (maxExpand != null) opts.maxExpand = Number(maxExpand);
+      const sizeMultiplier = params.get("sizeMultiplier");
+      if (sizeMultiplier != null) opts.sizeMultiplier = Number(sizeMultiplier);
+
+      // enums/strings
+      const strict = params.get("strict");
+      if (strict) {
+        // treat "true"/"false" as booleans; otherwise pass string ("warn"/"error"/"ignore")
+        opts.strict = (strict === "true" || strict === "false") ? (strict === "true") : strict;
+      }
+      const trust = params.get("trust");
+      if (trust) opts.trust = (trust === "true");
+
+      const output = params.get("output");
+      if (output) opts.output = output;
+
+      // macros
+      const macros = parseMacrosFromSearch(search);
+      if (Object.keys(macros).length) opts.macros = macros;
+
+      // Defaults to align with KaTeX screenshotter page behavior
+      if (!("strict" in opts)) opts.strict = false;
+      if (!("trust" in opts)) opts.trust = true;
+
+      return opts;
+    }
+
+    function setStylesFromSearch(search) {
+      const params = new URLSearchParams(search);
+      const styles = params.get("styles");
+      if (styles) {
+        document.getElementById("math").setAttribute("style", styles);
+      }
+      const pre = params.get("pre");
+      if (pre) {
+        document.getElementById("pre").innerHTML = pre;
+      }
+      const post = params.get("post");
+      if (post) {
+        document.getElementById("post").innerHTML = post;
+      }
+    }
+
+    async function waitForImagesIn(el) {
+      const imgs = Array.from(el.querySelectorAll("img"));
+      await Promise.all(imgs.map(img => {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        return new Promise(resolve => {
+          img.addEventListener("load", resolve, { once: true });
+          img.addEventListener("error", resolve, { once: true });
+        });
+      }));
+    }
+ 
+    async function ensureFonts() {
+      if (!(document.fonts && document.fonts.load)) return;
+      const promises = [];
+      const loadFont = (name, style) => document.fonts.load((style || "") + " 10px " + name);
+      // Mirror KaTeX screenshotter: bitmask indicates normal/bold/italic/bold italic
+      const fonts = { AMS:1, Caligraphic:3, Fraktur:3, Main:15, Math:12, Script:1,
+                      SansSerif:7, Size1:1, Size2:1, Size3:1, Size4:1, Typewriter:1 };
+      for (const f in fonts) {
+        const ff = fonts[f];
+        const name = "KaTeX_" + f;
+        if (ff & 1) promises.push(loadFont(name));
+        if (ff & 2) promises.push(loadFont(name, "bold"));
+        if (ff & 4) promises.push(loadFont(name, "italic"));
+        if (ff & 8) promises.push(loadFont(name, "bold italic"));
+      }
+      promises.push(loadFont("Mincho"));
+      promises.push(loadFont("Batang"));
+      try { await Promise.all(promises); } catch (_) {}
+    }
+ 
+    // Expose a programmatic API so the same page can render multiple cases without reload.
+    window.runCase = async function(payload) {
+      const mathNode = document.getElementById("math");
+      const preNode = document.getElementById("pre");
+      const postNode = document.getElementById("post");
+
+      // Reset previous content
+      mathNode.innerHTML = "";
+      preNode.innerHTML = (payload && payload.pre) || "";
+      postNode.innerHTML = (payload && payload.post) || "";
+      if (payload && payload.styles) {
+        mathNode.setAttribute("style", payload.styles);
+      } else {
+        mathNode.removeAttribute("style");
+      }
+
+      // Make font loads deterministic across cases
+      if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch (_) {}
+      }
+      await ensureFonts();
+
+      // Map options object to KaTeX options
+      const o = payload || {};
+      const opts = {};
+      if ("displayMode" in o) opts.displayMode = !!o.displayMode;
+      else if ("display" in o) opts.display = !!o.display;
+      if ("throwOnError" in o) opts.throwOnError = !!o.throwOnError;
+      else if ("noThrow" in o) opts.noThrow = !!o.noThrow;
+
+      if (o.errorColor) opts.errorColor = String(o.errorColor);
+      if (o.color) opts.color = String(o.color);
+
+      ["leqno","fleqn","colorIsTextColor","globalGroup"].forEach(k => {
+        if (k in o) opts[k] = !!o[k];
+      });
+      if ("minRuleThickness" in o) opts.minRuleThickness = Number(o.minRuleThickness);
+      if ("maxExpand" in o) opts.maxExpand = Number(o.maxExpand);
+      if ("sizeMultiplier" in o) opts.sizeMultiplier = Number(o.sizeMultiplier);
+
+      if ("strict" in o) opts.strict = o.strict;
+      if ("trust" in o) opts.trust = o.trust;
+      if ("output" in o) opts.output = o.output;
+      if (o.macros) opts.macros = o.macros;
+
+      window.__ready = false;
+      try {
+        window.katex.render(o.tex || "", mathNode, opts);
+      } catch (_) {
+        // noThrow/throwOnError behavior handled inside shim
+      }
+
+      await waitForImagesIn(document);
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      window.__ready = true;
+      return true;
+    };
+
+    async function main() {
+      await initWasm();
+      window.katex = createShim(wasm);
+
+      const search = window.location.search || "";
+      const params = new URLSearchParams(search);
+      const tex = params.get("tex") || "";
+
+      setStylesFromSearch(search);
+      const opts = parseOptionsFromSearch(search);
+
+      const mathNode = document.getElementById("math");
+
+      // Ensure fonts are ready before rendering to improve determinism
+      if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch (_) {}
+      }
+      // Explicitly trigger KaTeX font family loads to avoid fallback during first paint
+      await ensureFonts();
+ 
+      window.__ready = false;
+      try {
+        window.katex.render(tex, mathNode, opts);
+      } catch (_) {
+        // noThrow/throwOnError behavior handled inside shim
+      }
+
+      // Wait for any images produced by rendering (e.g., includegraphics)
+      await waitForImagesIn(document);
+
+      // Settle layout with two rAFs
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      window.__ready = true;
+    }
+
+    main();
+  </script>
+</body>
+</html>
