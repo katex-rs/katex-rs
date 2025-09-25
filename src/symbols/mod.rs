@@ -37,6 +37,7 @@
 mod types;
 use crate::ParseError;
 use crate::namespace::KeyMap;
+use crate::types::ParseErrorKind;
 use phf::phf_map;
 pub use types::{Atom, CharInfo, Font, Group, Mode, NonAtom};
 
@@ -456,7 +457,9 @@ impl TryFrom<&str> for Group {
             "op" | "op-token" => Ok(Self::NonAtom(NonAtom::OpToken)),
             "spacing" => Ok(Self::NonAtom(NonAtom::Spacing)),
             "textord" => Ok(Self::NonAtom(NonAtom::TextOrd)),
-            _ => Err(ParseError::new(format!("Invalid group: {s}"))),
+            _ => Err(ParseError::new(ParseErrorKind::InvalidGroup {
+                group: s.to_owned(),
+            })),
         }
     }
 }

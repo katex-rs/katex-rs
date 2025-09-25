@@ -10,8 +10,11 @@ use crate::ParseError;
 use crate::dom_tree::create_class;
 use crate::tree::{DocumentFragment, VirtualNode};
 use crate::units::make_em;
-use crate::utils::escape;
-use crate::{namespace::KeyMap, types::CssStyle};
+use crate::utils::escape_into;
+use crate::{
+    namespace::KeyMap,
+    types::{CssStyle, ParseErrorKind},
+};
 use bon::bon;
 use core::fmt::{self, Debug, Write as _};
 use strum::AsRefStr;
@@ -19,6 +22,14 @@ use strum::AsRefStr;
 use wasm_bindgen::JsCast as _;
 #[cfg(feature = "wasm")]
 use web_sys;
+
+fn fmt_error() -> ParseError {
+    ParseError::new(ParseErrorKind::Message("failed to write markup"))
+}
+
+fn map_fmt(result: fmt::Result) -> Result<(), ParseError> {
+    result.map_err(|_| fmt_error())
+}
 
 /// MathML node types used in KaTeX
 #[derive(Debug, Clone, Copy, PartialEq, Eq, AsRefStr)]
@@ -228,29 +239,36 @@ impl MathNode {
 }
 
 impl VirtualNode for MathNode {
-    fn to_markup(&self) -> Result<String, ParseError> {
-        let mut markup = format!("<{}", self.node_type.as_ref());
+    fn write_markup(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), ParseError> {
+        map_fmt(write!(fmt, "<{}", self.node_type.as_ref()))?;
 
-        // Add classes if any
         if !self.classes.is_empty() {
-            let class_str = self.classes.join(" ");
-            let _ = write!(markup, " class=\"{}\"", escape(&class_str));
+            map_fmt(fmt.write_str(" class=\""))?;
+            let mut first = true;
+            for class in &self.classes {
+                if !first {
+                    map_fmt(fmt.write_char(' '))?;
+                }
+                first = false;
+                map_fmt(escape_into(fmt, class))?;
+            }
+            map_fmt(fmt.write_char('"'))?;
         }
 
-        // Add attributes
         for (key, value) in &self.attributes {
-            let _ = write!(markup, " {}=\"{}\"", key, escape(value));
+            map_fmt(write!(fmt, " {key}=\""))?;
+            map_fmt(escape_into(fmt, value))?;
+            map_fmt(fmt.write_char('"'))?;
         }
 
-        markup.push('>');
+        map_fmt(fmt.write_char('>'))?;
 
-        // Add children
         for child in &self.children {
-            markup.push_str(&child.to_markup()?);
+            child.write_markup(fmt)?;
         }
 
-        let _ = write!(markup, "</{}>", self.node_type.as_ref());
-        Ok(markup)
+        map_fmt(write!(fmt, "</{}>", self.node_type.as_ref()))?;
+        Ok(())
     }
 
     #[cfg(feature = "wasm")]
@@ -316,8 +334,9 @@ impl TextNode {
 }
 
 impl VirtualNode for TextNode {
-    fn to_markup(&self) -> Result<String, ParseError> {
-        Ok(escape(&self.text))
+    fn write_markup(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), ParseError> {
+        map_fmt(escape_into(fmt, &self.text))?;
+        Ok(())
     }
 
     #[cfg(feature = "wasm")]
@@ -353,11 +372,18 @@ impl SpaceNode {
 }
 
 impl VirtualNode for SpaceNode {
-    fn to_markup(&self) -> Result<String, ParseError> {
-        Ok(self.character.as_ref().map_or_else(
-            || format!("<mspace width=\"{}\"/>", make_em(self.width)),
-            |character| format!("<mtext>{}</mtext>", escape(character)),
-        ))
+    fn write_markup(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), ParseError> {
+        if let Some(character) = &self.character {
+            map_fmt(fmt.write_str("<mtext>"))?;
+            map_fmt(escape_into(fmt, character))?;
+            map_fmt(fmt.write_str("</mtext>"))?;
+        } else {
+            let width = make_em(self.width);
+            map_fmt(fmt.write_str("<mspace width=\""))?;
+            map_fmt(fmt.write_str(&width))?;
+            map_fmt(fmt.write_str("\"/>"))?;
+        }
+        Ok(())
     }
 
     #[cfg(feature = "wasm")]
@@ -398,12 +424,12 @@ impl MathDomNode {
 }
 
 impl VirtualNode for MathDomNode {
-    fn to_markup(&self) -> Result<String, ParseError> {
+    fn write_markup(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), ParseError> {
         match self {
-            Self::Math(node) => node.to_markup(),
-            Self::Text(node) => node.to_markup(),
-            Self::Space(node) => node.to_markup(),
-            Self::Fragment(fragment) => fragment.to_markup(),
+            Self::Math(node) => node.write_markup(fmt),
+            Self::Text(node) => node.write_markup(fmt),
+            Self::Space(node) => node.write_markup(fmt),
+            Self::Fragment(fragment) => fragment.write_markup(fmt),
         }
     }
 

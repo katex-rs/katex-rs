@@ -2,6 +2,7 @@
 //! Provides common utility functions for string manipulation, type checking,
 //! and helper operations.
 
+use core::fmt;
 use core::ops::{Deref, DerefMut};
 
 /// Converts a camelCase string to hyphen-case.
@@ -78,16 +79,43 @@ pub fn hyphenate(s: &str) -> String {
 /// - `'` → `&#x27;`
 #[must_use]
 pub fn escape(text: &str) -> String {
-    text.chars()
-        .map(|c| match c {
-            '&' => "&amp;".to_owned(),
-            '>' => "&gt;".to_owned(),
-            '<' => "&lt;".to_owned(),
-            '"' => "&quot;".to_owned(),
-            '\'' => "&#x27;".to_owned(),
-            _ => c.to_string(),
-        })
-        .collect()
+    let mut escaped = String::new();
+    let _ = escape_into(&mut escaped, text);
+    escaped
+}
+
+/// Writes the escaped HTML representation of `text` into the provided writer.
+///
+/// This helper avoids intermediate string allocations by emitting directly
+/// into any `fmt::Write` implementor. It mirrors [`escape`] but is optimized
+/// for streaming renderers where the output is already buffered elsewhere.
+#[inline]
+pub fn escape_into<W: fmt::Write>(writer: &mut W, text: &str) -> fmt::Result {
+    let mut last = 0;
+    for (idx, ch) in text.char_indices() {
+        let replacement = match ch {
+            '&' => Some("&amp;"),
+            '>' => Some("&gt;"),
+            '<' => Some("&lt;"),
+            '"' => Some("&quot;"),
+            '\'' => Some("&#x27;"),
+            _ => None,
+        };
+
+        if let Some(rep) = replacement {
+            if last < idx {
+                writer.write_str(&text[last..idx])?;
+            }
+            writer.write_str(rep)?;
+            last = idx + ch.len_utf8();
+        }
+    }
+
+    if last < text.len() {
+        writer.write_str(&text[last..])
+    } else {
+        Ok(())
+    }
 }
 
 /// Extracts the protocol from a URL string.

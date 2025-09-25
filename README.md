@@ -65,7 +65,7 @@ fn main() -> Result<(), katex::ParseError> {
 - `backtrace`: Enables backtrace support for better error diagnostics
 - `wasm`: Enables WebAssembly support
 
-### Prerequisites for development
+## Prerequisites for development
 
 For development, ensure you have fully checked out the repository with all submodules and Git LFS files:
 ```
@@ -84,15 +84,35 @@ curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.car
 curl https://drager.github.io/wasm-pack/installer/init.sh -sSf | sh
 ```
 
-(Or with cargo)
+(Or with cargo if you prefer but it's very slow)
 ```bash
 cargo install --locked cargo-nextest
 cargo install wasm-pack
 ```
 
-### About `./data` directory
+### Const Data Extraction
 
 The `./data` directory contains the JSON files extracted with scripts from the original KaTeX repository. Those files are tracked with Git LFS. They are kept here to simplify crate compilation. You can regenerate them with the scripts in `./utils` if needed.
+
+```bash
+node utils/extract_font_metric.cjs
+node utils/extract_sigmas_and_xis.cjs
+node utils/extract_symbols.js
+```
+
+## Testing and Linting
+
+For formatting, you can use:
+
+```bash
+cargo fmt --all
+```
+
+For linting, you will need nightly Rust toolchain. You can run the linter with:
+
+```bash
+cargo clippy --all-targets --all-features
+```
 
 ### Unit tests
 ```bash

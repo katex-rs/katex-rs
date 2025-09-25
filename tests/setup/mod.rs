@@ -14,6 +14,7 @@ use katex::{
     parser::parse_node::{ParseNode, ParseNodeArrayTag},
     render_to_dom_tree, render_to_string,
     tree::HtmlDomNode,
+    types::ParseErrorKind,
 };
 
 static DEFAULT_CONTEXT: OnceLock<KatexContext> = OnceLock::new();
@@ -301,10 +302,9 @@ impl TestExpr<'_> {
 
     pub fn not_to_parse(self, settings: &Settings) -> Result<(), ParseError> {
         match parse(self.ctx, &self.expr, settings) {
-            Ok(_) => Err(ParseError::new(format!(
-                "Expected parsing to fail for '{}'",
-                self.expr
-            ))),
+            Ok(_) => Err(ParseError::new(ParseErrorKind::ExpectedParseFailure {
+                expression: self.expr.clone(),
+            })),
             Err(_) => Ok(()),
         }
     }
@@ -331,10 +331,9 @@ impl TestExpr<'_> {
 
     pub fn not_to_build(self, settings: &Settings) -> Result<(), ParseError> {
         match render_to_dom_tree(self.ctx, &self.expr, settings) {
-            Ok(_) => Err(ParseError::new(format!(
-                "Expected building to fail for '{}'",
-                self.expr
-            ))),
+            Ok(_) => Err(ParseError::new(ParseErrorKind::ExpectedBuildFailure {
+                expression: self.expr.clone(),
+            })),
             Err(_) => Ok(()),
         }
     }
@@ -345,13 +344,17 @@ impl TestExpr<'_> {
         let dom2 = render_to_dom_tree(self.ctx, other, settings)?;
 
         // Simple comparison - in a real implementation, we'd do proper DOM comparison
-        if format!("{:?}", dom1) == format!("{:?}", dom2) {
+        let dom1_debug = format!("{:?}", dom1);
+        let dom2_debug = format!("{:?}", dom2);
+        if dom1_debug == dom2_debug {
             Ok(())
         } else {
-            Err(ParseError::new(format!(
-                "DOM mismatch between '{}' and '{}': \n{:?}\n\n{:?}",
-                self.expr, other, dom1, dom2
-            )))
+            Err(ParseError::new(ParseErrorKind::DomMismatch {
+                left_expr: self.expr.clone(),
+                right_expr: other.to_owned(),
+                left_dom: dom1_debug,
+                right_dom: dom2_debug,
+            }))
         }
     }
 
@@ -361,10 +364,10 @@ impl TestExpr<'_> {
 
     pub fn not_to_html(self, settings: &Settings) -> Result<(), ParseError> {
         match render_to_string(self.ctx, &self.expr, settings) {
-            Ok(html) => Err(ParseError::new(format!(
-                "Expected HTML rendering to fail for '{}', but it succeeded: {}",
-                self.expr, html
-            ))),
+            Ok(html) => Err(ParseError::new(ParseErrorKind::ExpectedHtmlFailure {
+                expression: self.expr.clone(),
+                html,
+            })),
             Err(_) => Ok(()),
         }
     }

@@ -7,7 +7,7 @@ use crate::context::KatexContext;
 use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeStyling};
 use crate::style::TEXT;
-use crate::types::{BreakToken, Mode, ParseError};
+use crate::types::{BreakToken, Mode, ParseError, ParseErrorKind};
 
 /// Register all math mode switching functions
 pub fn define_math(ctx: &mut KatexContext) {
@@ -40,11 +40,10 @@ fn define_math_open(ctx: &mut KatexContext) {
             // Expect the closing token
             let token = context.parser.fetch()?;
             if token.text != close_token.as_ref() {
-                return Err(ParseError::new(format!(
-                    "Expected '{}', got '{}'",
-                    close_token.as_ref(),
-                    token.text
-                )));
+                return Err(ParseError::new(ParseErrorKind::ExpectedToken {
+                    expected: close_token.as_ref().to_owned(),
+                    found: token.text.to_owned_string(),
+                }));
             }
             context.parser.consume();
             context.parser.switch_mode(outer_mode);
@@ -72,7 +71,9 @@ fn define_math_close(ctx: &mut KatexContext) {
             ..Default::default()
         },
         handler: Some(|context: FunctionContext, _args, _opt_args| {
-            Err(ParseError::new(format!("Mismatched {}", context.func_name)))
+            Err(ParseError::new(ParseErrorKind::Mismatched {
+                what: context.func_name,
+            }))
         }),
         html_builder: None,
         mathml_builder: None,

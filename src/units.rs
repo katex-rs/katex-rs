@@ -10,7 +10,7 @@
 use crate::KatexContext;
 use crate::options::Options;
 use crate::spacing_data::Measurement;
-use crate::types::ParseError;
+use crate::types::{ParseError, ParseErrorKind};
 
 /// Return TeX points per unit for absolute TeX units.
 /// See KaTeX src/units.js `ptPerUnit` for reference values.
@@ -92,7 +92,11 @@ impl KatexContext {
             scale = match size.unit.as_ref() {
                 "ex" => metrics.x_height,
                 "em" => metrics.quad,
-                other => return Err(ParseError::new(format!("Invalid unit: '{other}'"))),
+                other => {
+                    return Err(ParseError::new(ParseErrorKind::InvalidUnit {
+                        unit: other.to_owned(),
+                    }));
+                }
             };
 
             // If we changed options for tight style, compensate for size multiplier.

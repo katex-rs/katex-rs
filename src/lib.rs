@@ -389,7 +389,7 @@ pub use crate::font_metrics_data::FontMetricsData;
 ///         if let Some(pos) = err.position {
 ///             println!("Error at position: {pos}");
 ///         }
-///         println!("Raw message: {}", err.raw_message());
+///         println!("Error kind: {:?}", err.kind);
 ///     }
 /// }
 /// ```
@@ -399,8 +399,8 @@ pub use crate::font_metrics_data::FontMetricsData;
 /// When created with location information (via [`ParseError::with_token`]),
 /// the error message includes:
 /// - The position in the source string (1-indexed)
+/// - The high-level error category via [`ParseError::kind`]
 /// - Surrounding context with the problematic text underlined
-/// - Visual indicators showing exactly where the error occurred
 ///
 /// # Integration
 ///

@@ -25,7 +25,7 @@ use crate::{
     },
     style::DISPLAY,
     symbols::Atom,
-    types::{BreakToken, Mode, ParseError},
+    types::{BreakToken, Mode, ParseError, ParseErrorKind},
     utils::push_and_get_mut,
 };
 use phf::phf_map;
@@ -141,7 +141,7 @@ pub fn parse_cd(parser: &mut Parser) -> Result<AnyParseNode, ParseError> {
         parser.gullet.end_group()?;
         parser.gullet.begin_group();
 
-        let next_text = parser.fetch()?.text.clone();
+        let next_text = parser.fetch()?.text.to_owned_string();
         if next_text == "&" || next_text == "\\\\" {
             parser.consume();
         } else if next_text == "\\end" {
@@ -150,9 +150,9 @@ pub fn parse_cd(parser: &mut Parser) -> Result<AnyParseNode, ParseError> {
             }
             break;
         } else {
-            return Err(ParseError::new(format!(
-                "Expected \\\\ or \\cr or \\end, got {next_text}"
-            )));
+            return Err(ParseError::new(ParseErrorKind::ExpectedCdDelimiter {
+                found: next_text,
+            }));
         }
     }
 
@@ -210,9 +210,9 @@ pub fn parse_cd(parser: &mut Parser) -> Result<AnyParseNode, ParseError> {
                                 break;
                             }
                             if is_start_of_arrow(&row_nodes[k]) {
-                                return Err(ParseError::new(format!(
-                                    "Missing {arrow_char} character to complete CD arrow"
-                                )));
+                                return Err(ParseError::new(ParseErrorKind::MissingCdArrowChar {
+                                    arrow: arrow_char.to_owned(),
+                                }));
                             }
                             if let AnyParseNode::OrdGroup(ord_group) = label {
                                 ord_group.body.push(row_nodes[k].clone());
@@ -220,15 +220,15 @@ pub fn parse_cd(parser: &mut Parser) -> Result<AnyParseNode, ParseError> {
                             k += 1;
                         }
                         if in_label {
-                            return Err(ParseError::new(format!(
-                                "Missing {arrow_char} character to complete CD arrow"
-                            )));
+                            return Err(ParseError::new(ParseErrorKind::MissingCdArrowChar {
+                                arrow: arrow_char.to_owned(),
+                            }));
                         }
                     }
                 } else {
-                    return Err(ParseError::new(format!(
-                        "Expected one of \"<>\"AV=|.\" after @, got {arrow_char}"
-                    )));
+                    return Err(ParseError::new(ParseErrorKind::InvalidCdArrowSpecifier {
+                        found: arrow_char.to_owned(),
+                    }));
                 }
 
                 // Create arrow

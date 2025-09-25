@@ -2,7 +2,7 @@
 //! This file contains font metric data and measurements for KaTeX
 //! Generated from the original JavaScript fontMetricsData.js using phf macros
 
-use crate::{ParseError, font_metrics::MetricMap, namespace::KeyMap};
+use crate::{ParseError, font_metrics::MetricMap, namespace::KeyMap, types::ParseErrorKind};
 
 /// Font metrics for a single character
 /// The array contains: [depth, height, italic, skew, width]
@@ -57,9 +57,9 @@ impl FontMetricsData {
         if let Some(custom_metrics) = self.custom.get(font_family) {
             return Ok(custom_metrics.get(&char_code));
         }
-        Err(ParseError::new(format!(
-            "Font metrics not found for font: {font_family}."
-        )))
+        Err(ParseError::new(ParseErrorKind::FontMetricsNotFound {
+            font_family: font_family.to_owned(),
+        }))
     }
 
     /// Create a new FontMetricsData instance with optional custom metrics

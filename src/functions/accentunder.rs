@@ -89,7 +89,7 @@ fn html_builder(
         )
         .into())
     } else {
-        Err(ParseError::new("Expected AccentUnder node".to_owned()))
+        Err(ParseError::new("Expected AccentUnder node"))
     }
 }
 
@@ -108,6 +108,6 @@ fn mathml_builder(
             .build();
         Ok(node.into())
     } else {
-        Err(ParseError::new("Expected AccentUnder node".to_owned()))
+        Err(ParseError::new("Expected AccentUnder node"))
     }
 }

@@ -4,6 +4,7 @@
 //! line breaks in mathematical expressions. It handles both tabular
 //! environments and top-level line breaks, with optional size specifications.
 
+use crate::macros::MacroContextInterface as _;
 use crate::namespace::KeyMap;
 
 use crate::ParseError;
@@ -30,7 +31,7 @@ pub fn define_cr(ctx: &mut KatexContext) {
         handler: Some(
             |context: FunctionContext, _args: Vec<ParseNode>, _opt_args: Vec<Option<ParseNode>>| {
                 // Check if the next token is "[" to parse optional size
-                let size = if context.parser.fetch()?.text == "[" {
+                let size = if context.parser.gullet.future_mut()?.text == "[" {
                     context
                         .parser
                         .parse_size_group(true)?

@@ -234,6 +234,7 @@ impl Options {
             let mut new_options = self.clone();
             new_options.style = style;
             new_options.size = want_size;
+            new_options.size_multiplier = SIZE_MULTIPLIERS[want_size - 1];
             new_options
         }
     }
@@ -251,6 +252,7 @@ impl Options {
         let mut new_options = self.clone();
         new_options.style = self.style.text();
         new_options.size = size;
+        new_options.size_multiplier = SIZE_MULTIPLIERS[size - 1];
         new_options
     }
 

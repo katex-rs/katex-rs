@@ -17,6 +17,7 @@ use crate::options::{FontShape, FontWeight, Options};
 use crate::parser::parse_node::AnyParseNode;
 use crate::symbols::{Symbols, is_ligature};
 use crate::types::Mode;
+use crate::types::ParseErrorKind;
 
 /// Creates a MathML text node with optional symbol replacement
 ///
@@ -525,9 +526,9 @@ pub fn build_group(
     let group_type = group.discriminant();
     ctx.mathml_group_builders.get(&group_type).map_or_else(
         || {
-            Err(ParseError::new(format!(
-                "Got group of unknown type: {group_type:?}"
-            )))
+            Err(ParseError::new(ParseErrorKind::UnknownGroupType {
+                group_type,
+            }))
         },
         |builder| builder(group, options, ctx),
     )

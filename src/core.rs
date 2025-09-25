@@ -1,5 +1,7 @@
 //! Core KaTeX functionality - main entry points and error handling
 
+#[cfg(feature = "wasm")]
+use crate::types::ParseErrorKind;
 use crate::{
     KatexContext,
     build_common::make_span,
@@ -82,9 +84,11 @@ pub fn render(
     let tree = parse_tree(ctx, expression, settings)?;
     let dom_tree = build_tree(ctx, &tree, expression, settings)?;
     let node = dom_tree.to_node();
-    base_node
-        .append_child(&node)
-        .map_err(|e| ParseError::new(format!("Failed to append child node: {e:?}")))?;
+    base_node.append_child(&node).map_err(|e| {
+        ParseError::new(ParseErrorKind::FailedToAppendChild {
+            details: format!("{e:?}"),
+        })
+    })?;
     Ok(())
 }
 

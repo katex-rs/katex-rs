@@ -10,7 +10,9 @@
 //! kinds.
 
 use crate::namespace::KeyMap;
-use crate::types::{LexerInterface, ParseError, Settings, SourceLocation, Token};
+use crate::types::{
+    LexerInterface, ParseError, ParseErrorKind, Settings, SourceLocation, Token, TokenText,
+};
 use alloc::sync::Arc;
 
 /// Returns the byte index of the last character in the string `s`
@@ -279,7 +281,7 @@ impl<'a> Lexer<'a> {
         // If at end of input, return EOF token
         if self.last_index >= self.input.len() {
             return Ok(Token {
-                text: "EOF".to_owned(),
+                text: TokenText::Static("EOF"),
                 loc: Some(SourceLocation {
                     input: Arc::clone(&self.input),
                     start: self.last_index,
@@ -293,7 +295,7 @@ impl<'a> Lexer<'a> {
         let slice = &self.input[self.last_index..];
         let matched = exec(&mut self.last_index, slice);
 
-        let text = match matched.branch {
+        let token_text = match matched.branch {
             BranchKind::Unknown => {
                 let ch = &slice[..matched.mlen];
                 let loc = Some(SourceLocation {
@@ -303,18 +305,31 @@ impl<'a> Lexer<'a> {
                 });
                 let token = Token::new(ch.to_owned(), loc);
                 return Err(ParseError::with_token(
-                    format!("Unexpected character: {ch}"),
+                    ParseErrorKind::UnexpectedCharacter {
+                        character: ch.to_owned(),
+                    },
                     &token,
                 ));
             }
-            BranchKind::ControlWordWhitespace => &slice[..matched.mlen - matched.skip],
-            BranchKind::ControlSymbol | BranchKind::NormalWithAccents => &slice[..matched.mlen],
-            BranchKind::ControlSpace => r"\ ",
-            _ => " ",
+            BranchKind::ControlWordWhitespace => TokenText::slice(
+                Arc::clone(&self.input),
+                self.last_index - matched.mlen,
+                self.last_index - matched.skip,
+            ),
+            BranchKind::ControlSymbol
+            | BranchKind::NormalWithAccents
+            | BranchKind::Verb
+            | BranchKind::VerbStar => TokenText::slice(
+                Arc::clone(&self.input),
+                self.last_index - matched.mlen,
+                self.last_index,
+            ),
+            BranchKind::ControlSpace => TokenText::Static(r"\ "),
+            BranchKind::Space => TokenText::Static(" "),
         };
 
-        if text.len() == 1
-            && let Some(first_char) = text.chars().next()
+        if token_text.len() == 1
+            && let Some(first_char) = token_text.as_str().chars().next()
             && self.catcodes.get(&first_char) == Some(&14)
         {
             // Comment character, skip to end of line
@@ -329,7 +344,7 @@ impl<'a> Lexer<'a> {
         }
 
         Ok(Token::new(
-            text.to_owned(),
+            token_text,
             Some(SourceLocation {
                 input: Arc::clone(&self.input),
                 start: self.last_index - matched.mlen,

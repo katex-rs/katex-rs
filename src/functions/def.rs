@@ -16,7 +16,7 @@ use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec}
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeInternal};
 
 use crate::macros::{MacroContextInterface as _, MacroDefinition, MacroExpansion};
-use crate::types::{ParseError, Token};
+use crate::types::{ParseError, ParseErrorKind, Token};
 
 /// Register all macro definition functions
 pub fn define_def(ctx: &mut KatexContext) {
@@ -55,13 +55,13 @@ fn define_global(ctx: &mut KatexContext) {
         handler: Some(|context: FunctionContext, _args, _opt_args| {
             context.parser.consume_spaces()?;
             let mut token = context.parser.fetch()?.clone();
-            let replacement = GLOBAL_MAP.get(&token.text);
+            let replacement = GLOBAL_MAP.get(token.text.as_str());
             if let Some(&repl) = replacement {
                 context.parser.consume();
                 if (context.func_name == "\\global" || context.func_name == "\\\\globallong")
-                    && repl != token.text
+                    && repl != token.text.as_str()
                 {
-                    repl.clone_into(&mut token.text);
+                    token.set_text(repl);
                 }
                 context.parser.gullet.push_token(token);
                 let inner_node = context
@@ -71,7 +71,9 @@ fn define_global(ctx: &mut KatexContext) {
                 Ok(inner_node)
             } else {
                 Err(ParseError::with_token(
-                    format!("Invalid token after macro prefix: {}", token.text),
+                    ParseErrorKind::InvalidTokenAfterMacroPrefix {
+                        token: token.text.to_owned_string(),
+                    },
                     &token,
                 ))
             }
@@ -94,7 +96,7 @@ fn define_def_cmd(ctx: &mut KatexContext) {
         },
         handler: Some(|context: FunctionContext, _args, _opt_args| {
             let name_tok = context.parser.gullet.pop_token()?;
-            let name = name_tok.text.clone();
+            let name = name_tok.text.to_owned_string();
             if matches!(
                 name.as_str(),
                 "\\" | "{" | "}" | "$" | "&" | "#" | "^" | "_" | "EOF"
@@ -110,7 +112,7 @@ fn define_def_cmd(ctx: &mut KatexContext) {
             let mut insert: Option<Token> = None;
 
             loop {
-                let next_text = context.parser.gullet.future_mut()?.text.clone();
+                let next_text = context.parser.gullet.future_mut()?.text.to_owned_string();
                 if next_text == "{" {
                     break;
                 }
@@ -125,22 +127,29 @@ fn define_def_cmd(ctx: &mut KatexContext) {
                     if arg_tok.text.len() != 1
                         || !arg_tok
                             .text
+                            .as_str()
                             .chars()
                             .next()
                             .is_some_and(|c| c.is_ascii_digit() && c != '0')
                     {
                         return Err(ParseError::with_token(
-                            format!("Invalid argument number: {}", arg_tok.text),
+                            ParseErrorKind::InvalidMacroArgumentNumber {
+                                value: arg_tok.text.to_owned_string(),
+                            },
                             &arg_tok,
                         ));
                     }
                     let arg_num: usize = arg_tok
                         .text
+                        .as_str()
                         .parse()
                         .map_err(|_| ParseError::with_token("Invalid number", &arg_tok))?;
                     if arg_num != num_args + 1 {
                         return Err(ParseError::with_token(
-                            format!("Expected #{} but found #{}", num_args + 1, arg_num),
+                            ParseErrorKind::ExpectedMacroParameter {
+                                expected: num_args + 1,
+                                found: arg_num,
+                            },
                             &arg_tok,
                         ));
                     }
@@ -149,7 +158,7 @@ fn define_def_cmd(ctx: &mut KatexContext) {
                 } else if tok.text == "EOF" {
                     return Err(ParseError::with_token("Expected a macro definition", &tok));
                 } else {
-                    delimiters[num_args].push(tok.text.clone());
+                    delimiters[num_args].push(tok.text.to_owned_string());
                 }
             }
 
@@ -200,7 +209,7 @@ fn define_let_cmd(ctx: &mut KatexContext) {
         },
         handler: Some(|context: FunctionContext, _args, _opt_args| {
             let name_tok = context.parser.gullet.pop_token()?;
-            let name = name_tok.text.clone();
+            let name = name_tok.text.to_owned_string();
             if matches!(
                 name.as_str(),
                 "\\" | "{" | "}" | "$" | "&" | "#" | "^" | "_" | "EOF"
@@ -230,12 +239,12 @@ fn define_let_cmd(ctx: &mut KatexContext) {
             let global = context.func_name == "\\\\globallet";
 
             let macro_def =
-                if let Some(existing) = context.parser.gullet.macros().get(&rhs_tok.text) {
+                if let Some(existing) = context.parser.gullet.macros().get(rhs_tok.text.as_str()) {
                     existing.clone()
                 } else {
                     let mut tok = rhs_tok.clone();
                     tok.noexpand = Some(true);
-                    let unexpandable = !context.parser.gullet.is_expandable(&rhs_tok.text);
+                    let unexpandable = !context.parser.gullet.is_expandable(rhs_tok.text.as_str());
                     MacroDefinition::Expansion(MacroExpansion {
                         tokens: vec![tok],
                         num_args: 0,
@@ -273,7 +282,7 @@ fn define_futurelet_cmd(ctx: &mut KatexContext) {
         },
         handler: Some(|context: FunctionContext, _args, _opt_args| {
             let name_tok = context.parser.gullet.pop_token()?;
-            let name = name_tok.text.clone();
+            let name = name_tok.text.to_owned_string();
             if matches!(
                 name.as_str(),
                 "\\" | "{" | "}" | "$" | "&" | "#" | "^" | "_" | "EOF"
@@ -289,19 +298,20 @@ fn define_futurelet_cmd(ctx: &mut KatexContext) {
 
             let global = context.func_name == "\\\\globalfuture";
 
-            let macro_def = if let Some(existing) = context.parser.gullet.macros().get(&tok.text) {
-                existing.clone()
-            } else {
-                let mut t = tok.clone();
-                t.noexpand = Some(true);
-                let unexpandable = !context.parser.gullet.is_expandable(&tok.text);
-                MacroDefinition::Expansion(MacroExpansion {
-                    tokens: vec![t],
-                    num_args: 0,
-                    delimiters: None,
-                    unexpandable: Some(unexpandable),
-                })
-            };
+            let macro_def =
+                if let Some(existing) = context.parser.gullet.macros().get(tok.text.as_str()) {
+                    existing.clone()
+                } else {
+                    let mut t = tok.clone();
+                    t.noexpand = Some(true);
+                    let unexpandable = !context.parser.gullet.is_expandable(tok.text.as_str());
+                    MacroDefinition::Expansion(MacroExpansion {
+                        tokens: vec![t],
+                        num_args: 0,
+                        delimiters: None,
+                        unexpandable: Some(unexpandable),
+                    })
+                };
 
             context
                 .parser

@@ -8,7 +8,7 @@ use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec}
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
-use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeLap};
+use crate::parser::parse_node::{LapAlignment, NodeType, ParseNode, ParseNodeLap};
 use crate::types::{ArgType, CssProperty, ParseError};
 use crate::units::make_em;
 use crate::{KatexContext, build_html, build_mathml};
@@ -31,16 +31,16 @@ pub fn define_lap(ctx: &mut KatexContext) {
 
             let body = args[0].clone();
             let alignment = match context.func_name.as_str() {
-                "\\mathllap" => "l",
-                "\\mathrlap" => "r",
-                "\\mathclap" => "c",
+                "\\mathllap" => LapAlignment::Left,
+                "\\mathrlap" => LapAlignment::Right,
+                "\\mathclap" => LapAlignment::Center,
                 _ => unreachable!(),
             };
 
             Ok(ParseNode::Lap(ParseNodeLap {
                 mode: context.parser.mode,
                 loc: context.loc(),
-                alignment: alignment.to_owned(),
+                alignment,
                 body: Box::new(body),
             }))
         }),
@@ -68,7 +68,7 @@ fn html_builder(
     )?;
 
     // Create inner span
-    let inner = if lap_node.alignment == "c" {
+    let inner = if lap_node.alignment == LapAlignment::Center {
         // For clap, wrap in inner span for CSS centering
         let inner_span = make_span(vec!["inner".to_owned()], vec![body], Some(options), None);
         make_span(vec![], vec![inner_span.into()], Some(options), None)
@@ -81,7 +81,7 @@ fn html_builder(
 
     // Create main lap span
     let mut lap_span = make_span(
-        vec![lap_node.alignment.clone()],
+        vec![lap_node.alignment.as_ref().to_owned()],
         vec![inner.into(), fix.into()],
         Some(options),
         None,
@@ -139,8 +139,8 @@ fn mathml_builder(
         .build();
 
     // Set attributes based on alignment
-    if lap_node.alignment != "r" {
-        let offset = if lap_node.alignment == "l" {
+    if lap_node.alignment != LapAlignment::Right {
+        let offset = if lap_node.alignment == LapAlignment::Left {
             "-1"
         } else {
             "-0.5"

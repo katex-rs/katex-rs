@@ -10,7 +10,7 @@ use crate::KatexContext;
 use crate::define_environment::EnvContext;
 use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNode, ParseNodeEnvironment};
-use crate::types::{ArgType, Mode, ParseError};
+use crate::types::{ArgType, Mode, ParseError, ParseErrorKind};
 
 /// Environment delimiters. HTML/MathML rendering is defined in the
 /// corresponding defineEnvironment definitions.
@@ -27,20 +27,18 @@ pub fn define_environment(ctx: &mut KatexContext) {
             let func_name = &context.func_name;
             let parser = context.parser;
             let ParseNode::OrdGroup(name_group) = &args[0] else {
-                return Err(ParseError::new(format!(
-                    "Invalid environment name{:?}",
-                    args[0]
-                )));
+                return Err(ParseError::new(ParseErrorKind::InvalidEnvironmentName {
+                    value: format!("{:?}", args[0]),
+                }));
             };
             let mut env_name = String::new();
             for item in &name_group.body {
                 if let AnyParseNode::TextOrd(text_ord) = item {
                     env_name.push_str(&text_ord.text);
                 } else {
-                    return Err(ParseError::new(format!(
-                        "Invalid environment name{:?}",
-                        args[0]
-                    )));
+                    return Err(ParseError::new(ParseErrorKind::InvalidEnvironmentName {
+                        value: format!("{:?}", args[0]),
+                    }));
                 }
             }
 
@@ -60,7 +58,9 @@ pub fn define_environment(ctx: &mut KatexContext) {
 
             // begin...end is similar to left...right
             let Some(env) = parser.ctx.environments.get(&env_name) else {
-                return Err(ParseError::new(format!("No such environment: {env_name}")));
+                return Err(ParseError::new(ParseErrorKind::NoSuchEnvironment {
+                    name: env_name.clone(),
+                }));
             };
 
             // Build the environment object. Arguments and other information will
@@ -76,15 +76,17 @@ pub fn define_environment(ctx: &mut KatexContext) {
             parser.expect("\\end", false)?;
             let end_name_token = parser.next_token.clone();
             let Some(ParseNode::Environment(end)) = parser.parse_function(None, None)? else {
-                return Err(ParseError::new(format!(
-                    "Expected environment after \\end, got {end_name_token:?}",
-                )));
+                return Err(ParseError::new(
+                    ParseErrorKind::ExpectedEnvironmentAfterEnd {
+                        found: format!("{end_name_token:?}"),
+                    },
+                ));
             };
             if end.name != env_name {
-                return Err(ParseError::new(format!(
-                    "Mismatched: \\begin{{{env_name}}} matched by \\end{{{}}}",
-                    end.name
-                )));
+                return Err(ParseError::new(ParseErrorKind::MismatchedEnvironmentEnd {
+                    begin: env_name,
+                    end: end.name,
+                }));
             }
             Ok(result)
         }),

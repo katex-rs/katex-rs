@@ -1921,9 +1921,21 @@ pub struct ParseNodeLap {
     /// Optional source location for error reporting
     pub loc: Option<SourceLocation>,
     /// The alignment for overlapping ("l", "r", "c")
-    pub alignment: String,
+    pub alignment: LapAlignment,
     /// The overlapping content
     pub body: Box<AnyParseNode>,
+}
+
+/// Alignment options for overlapping content.
+#[derive(Debug, Clone, PartialEq, Eq, AsRefStr)]
+#[strum(serialize_all = "lowercase")]
+pub enum LapAlignment {
+    /// Align left
+    Left,
+    /// Align center
+    Center,
+    /// Align right
+    Right,
 }
 
 /// Represents left-right delimiter pairs in mathematical expressions.

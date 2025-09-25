@@ -3,16 +3,27 @@
 //! This module contains the foundational types for KaTeX's virtual DOM system,
 //! including the base VirtualNode trait and DocumentFragment structure.
 
+use core::cell::RefCell;
+use core::fmt;
+
 use crate::ParseError;
-use crate::types::CssStyle;
+use crate::types::{CssStyle, ParseErrorKind};
 #[cfg(feature = "wasm")]
 use web_sys;
 
 /// Base virtual DOM node interface used in both DOM tree and MathML tree
 /// implementations
 pub trait VirtualNode {
-    /// Convert into HTML markup string
-    fn to_markup(&self) -> Result<String, ParseError>;
+    /// Convert into HTML markup by writing into the provided formatter.
+    fn write_markup(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), ParseError>;
+
+    /// Convenience helper that renders the node into a [`String`].
+    fn to_markup(&self) -> Result<String, ParseError>
+    where
+        Self: Sized,
+    {
+        markup_to_string(self)
+    }
 
     /// Convert into a DOM node
     #[cfg(feature = "wasm")]
@@ -112,8 +123,11 @@ impl<ChildType: VirtualNode> DocumentFragment<ChildType> {
 }
 
 impl<ChildType: VirtualNode + Clone + 'static> VirtualNode for DocumentFragment<ChildType> {
-    fn to_markup(&self) -> Result<String, ParseError> {
-        self.children.iter().map(VirtualNode::to_markup).collect()
+    fn write_markup(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), ParseError> {
+        for child in &self.children {
+            child.write_markup(fmt)?;
+        }
+        Ok(())
     }
 
     #[cfg(feature = "wasm")]
@@ -134,3 +148,53 @@ impl<ChildType: VirtualNode + Clone + 'static> VirtualNode for DocumentFragment<
 
 pub use crate::dom_tree::HtmlDomNode;
 pub use crate::mathml_tree::MathDomNode;
+
+/// Renders the provided [`VirtualNode`] into a [`String`] buffer.
+pub fn markup_to_string<T: VirtualNode + ?Sized>(node: &T) -> Result<String, ParseError> {
+    struct FormatterWriter<'a> {
+        buf: &'a mut String,
+    }
+
+    impl fmt::Write for FormatterWriter<'_> {
+        fn write_str(&mut self, s: &str) -> fmt::Result {
+            self.buf.push_str(s);
+            Ok(())
+        }
+    }
+
+    struct DisplayAdapter<'a, T: VirtualNode + ?Sized> {
+        node: &'a T,
+        error: &'a RefCell<Option<ParseError>>,
+    }
+
+    impl<T: VirtualNode + ?Sized> fmt::Display for DisplayAdapter<'_, T> {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            match self.node.write_markup(f) {
+                Ok(()) => Ok(()),
+                Err(err) => {
+                    self.error.replace(Some(err));
+                    Err(fmt::Error)
+                }
+            }
+        }
+    }
+
+    let mut buffer = String::new();
+    let error = RefCell::new(None);
+    let mut writer = FormatterWriter { buf: &mut buffer };
+    let adapter = DisplayAdapter {
+        node,
+        error: &error,
+    };
+
+    if fmt::write(&mut writer, format_args!("{adapter}")).is_err() {
+        if let Some(err) = error.into_inner() {
+            return Err(err);
+        }
+        return Err(ParseError::new(ParseErrorKind::Message(
+            "failed to write markup",
+        )));
+    }
+
+    Ok(buffer)
+}

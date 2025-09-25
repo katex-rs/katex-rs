@@ -80,7 +80,9 @@ pub fn define_color(ctx: &mut KatexContext) {
             );
 
             // Parse out the implicit body that should be colored
-            let body = context.parser.parse_expression(true, None)?;
+            let body = context
+                .parser
+                .parse_expression(true, context.break_on_token_text)?;
 
             Ok(ParseNode::Color(ParseNodeColor {
                 mode: context.parser.mode,

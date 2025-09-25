@@ -14,7 +14,9 @@ use crate::parser::parse_node::{
     ParseNodeTextOrd,
 };
 use crate::spacing_data::MeasurementOwned;
-use crate::types::{ArgType, CssProperty, CssStyle, Mode, ParseError, TrustContext};
+use crate::types::{
+    ArgType, CssProperty, CssStyle, Mode, ParseError, ParseErrorKind, TrustContext,
+};
 use crate::units::{make_em, valid_unit};
 
 /// Check if a string matches the pattern for a plain number (no unit)
@@ -192,7 +194,9 @@ fn size_data(str_val: &str) -> Result<MeasurementOwned, ParseError> {
     if is_plain_number(str_val) {
         // Default unit is bp, per graphix package
         let number = str_val.trim().parse::<f64>().map_err(|_| {
-            ParseError::new(format!("Invalid number: '{str_val}' in \\includegraphics"))
+            ParseError::new(ParseErrorKind::InvalidIncludeGraphicsNumber {
+                value: str_val.to_owned(),
+            })
         })?;
         return Ok(MeasurementOwned {
             number,
@@ -205,7 +209,9 @@ fn size_data(str_val: &str) -> Result<MeasurementOwned, ParseError> {
         // Combine sign and magnitude, then convert to number
         let number_with_sign = format!("{sign}{number_str}");
         let number = number_with_sign.parse::<f64>().map_err(|_| {
-            ParseError::new(format!("Invalid number: '{str_val}' in \\includegraphics"))
+            ParseError::new(ParseErrorKind::InvalidIncludeGraphicsNumber {
+                value: str_val.to_owned(),
+            })
         })?;
 
         let measurement = MeasurementOwned {
@@ -215,17 +221,20 @@ fn size_data(str_val: &str) -> Result<MeasurementOwned, ParseError> {
 
         // Validate the unit
         if !valid_unit(&measurement) {
-            return Err(ParseError::new(format!(
-                "Invalid unit: '{}' in \\includegraphics",
-                measurement.unit
-            )));
+            return Err(ParseError::new(
+                ParseErrorKind::InvalidIncludeGraphicsUnit {
+                    unit: measurement.unit,
+                },
+            ));
         }
 
         Ok(measurement)
     } else {
-        Err(ParseError::new(format!(
-            "Invalid size: '{str_val}' in \\includegraphics"
-        )))
+        Err(ParseError::new(
+            ParseErrorKind::InvalidIncludeGraphicsSize {
+                size: str_val.to_owned(),
+            },
+        ))
     }
 }
 
@@ -310,9 +319,11 @@ pub fn define_includegraphics(ctx: &mut KatexContext) {
                                     total_height = size_data(value)?;
                                 }
                                 _ => {
-                                    return Err(ParseError::new(format!(
-                                        "Invalid key: '{key}' in \\includegraphics"
-                                    )));
+                                    return Err(ParseError::new(
+                                        ParseErrorKind::InvalidIncludeGraphicsKey {
+                                            key: key.to_owned(),
+                                        },
+                                    ));
                                 }
                             }
                         }
@@ -324,7 +335,7 @@ pub fn define_includegraphics(ctx: &mut KatexContext) {
                     url_node.url.clone()
                 } else {
                     return Err(ParseError::new(
-                        "Expected URL argument for \\includegraphics".to_owned(),
+                        "Expected URL argument for \\includegraphics",
                     ));
                 };
 
@@ -421,7 +432,7 @@ fn html_builder(
 
         Ok(HtmlDomNode::Img(img))
     } else {
-        Err(ParseError::new("Expected Includegraphics node".to_owned()))
+        Err(ParseError::new("Expected Includegraphics node"))
     }
 }
 
@@ -451,7 +462,7 @@ fn mathml_builder(
 
         Ok(MathDomNode::Math(math_node))
     } else {
-        Err(ParseError::new("Expected Includegraphics node".to_owned()))
+        Err(ParseError::new("Expected Includegraphics node"))
     }
 }
 

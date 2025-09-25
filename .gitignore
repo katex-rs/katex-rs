@@ -10,3 +10,4 @@ wasm-pack.log
 /tests/screenshotter/diff
 /tests/screenshotter/report
 tests/screenshotter/package-lock.json
+tests/perf/package-lock.json

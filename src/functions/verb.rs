@@ -3,15 +3,14 @@
 //! This module implements the LaTeX `\verb` command, which creates verbatim
 //! text that preserves exact formatting and spacing.
 
-use crate::build_common::{make_symbol, try_combine_chars};
+use crate::build_common::{make_span, make_symbol, try_combine_chars};
 use crate::context::KatexContext;
 use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
-use crate::dom_tree::{HtmlDomNode, Span};
+use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType, TextNode};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeVerb};
 use crate::style::TEXT;
-use crate::symbols::Mode;
 use crate::types::ParseError;
 
 /// Register the \verb function in the KaTeX context.
@@ -33,7 +32,7 @@ pub fn define_verb(ctx: &mut KatexContext) {
                 // in the regex in Lexer.js.  LaTeX raises the following error when \verb is
                 // terminated by end of line (or file).
                 Err(ParseError::new(
-                    "\\verb ended by end of line instead of matching delimiter".to_owned(),
+                    "\\verb ended by end of line instead of matching delimiter",
                 ))
             },
         ),
@@ -66,8 +65,8 @@ fn html_builder(
                 ctx,
                 &c,
                 "Typewriter-Regular",
-                Mode::Text,
-                None, // Pass None since we can't convert Settings to Options easily
+                verb_node.mode,
+                Some(&new_options),
                 Some(&["mord".to_owned(), "texttt".to_owned()]),
             )?;
             body.push(symbol.into());
@@ -75,14 +74,13 @@ fn html_builder(
 
         try_combine_chars(&mut body);
 
-        let span_struct = Span::builder()
-            .children(body)
-            .classes(vec!["mord".to_owned(), "text".to_owned()])
-            .max_font_size(new_options.size_multiplier)
-            .build(Some(&new_options));
+        let mut classes = vec!["mord".to_owned(), "text".to_owned()];
+        classes.extend(new_options.sizing_classes(options));
+
+        let span_struct = make_span(classes, body, Some(&new_options), None);
         Ok(HtmlDomNode::DomSpan(span_struct))
     } else {
-        Err(ParseError::new("Expected Verb node".to_owned()))
+        Err(ParseError::new("Expected Verb node"))
     }
 }
 
@@ -107,7 +105,7 @@ fn mathml_builder(
 
         Ok(MathDomNode::Math(mtext))
     } else {
-        Err(ParseError::new("Expected Verb node".to_owned()))
+        Err(ParseError::new("Expected Verb node"))
     }
 }
 

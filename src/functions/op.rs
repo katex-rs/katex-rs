@@ -79,8 +79,13 @@ pub fn html_builder(
         false
     };
 
+    let mut base_shift = 0.0;
+    let mut slant = 0.0;
+    let mut base_shift_computed = false;
+
     let mut base = if let Some(name) = name {
         if symbol {
+            let name_str: &str = name;
             // Create the symbol
             let font_name = if large {
                 "Size2-Regular"
@@ -90,11 +95,10 @@ pub fn html_builder(
 
             // No font glyphs yet, so use a glyph w/o the oval.
             // TODO: When font glyphs are available, delete this code.
-            let stash = if name == "\\oiint" || name == "\\oiiint" {
-                name[1..].to_string()
-                // group.name = stash === "oiint" ? "\\iint" : "\\iiint";
-            } else {
-                String::new()
+            let (symbol_name, stash) = match name_str {
+                "\\oiint" => ("\\iint", Some("oiint")),
+                "\\oiiint" => ("\\iiint", Some("oiiint")),
+                _ => (name_str, None),
             };
 
             let mut base_classes = vec!["mop".to_owned(), "op-symbol".to_owned()];
@@ -104,27 +108,35 @@ pub fn html_builder(
                 base_classes.push("small-op".to_owned());
             }
 
-            let base = make_symbol(
+            let symbol_base = make_symbol(
                 ctx,
-                name,
+                symbol_name,
                 font_name,
                 Mode::Math,
                 Some(options),
                 Some(&base_classes),
             )?;
 
-            if stash.is_empty() {
-                base.into()
-            } else {
+            if let Some(stash) = stash {
                 // We're in \oiint or \oiiint. Overlay the oval.
                 // TODO: When font glyphs are available, delete this code.
-                let italic = base.italic;
-                let oval = static_svg(&stash, options)?;
+                if suppress_base_shift.is_none() {
+                    base_shift = (symbol_base.height - symbol_base.depth) / 2.0
+                        - options.font_metrics().axis_height;
+                    slant = symbol_base.italic;
+                    base_shift_computed = true;
+                }
+
+                let italic = symbol_base.italic;
+                let oval = static_svg(
+                    &format!("{}Size{}", stash, if large { "2" } else { "1" }),
+                    options,
+                )?;
                 let mut base = make_v_list(
                     VListParam::IndividualShift {
                         children: vec![
                             VListElemAndShift::builder()
-                                .elem(base.into())
+                                .elem(symbol_base.into())
                                 .shift(0.0)
                                 .build(),
                             VListElemAndShift::builder()
@@ -135,11 +147,11 @@ pub fn html_builder(
                     },
                     options,
                 )?;
-                // group.name = "\\" + stash;
-                base.classes.push("mop".to_owned());
-                // $FlowFixMe
+                base.classes.insert(0, "mop".to_owned());
                 base.italic = Some(italic);
                 base.into()
+            } else {
+                symbol_base.into()
             }
         } else {
             // Text operator
@@ -169,20 +181,15 @@ pub fn html_builder(
         }
     };
 
-    // Vertical shift for single symbols
-    let mut base_shift = 0.0;
-    let mut slant = 0.0;
-
-    if (matches!(base, HtmlDomNode::Symbol(_))
-        || name == Some("\\oiint")
-        || name == Some("\\oiiint"))
+    if !base_shift_computed
+        && (matches!(base, HtmlDomNode::Symbol(_))
+            || name == Some("\\oiint")
+            || name == Some("\\oiiint"))
         && suppress_base_shift.is_none()
+        && let HtmlDomNode::Symbol(sym) = &base
     {
-        // Shift the symbol so its center lies on the axis (rule 13)
-        if let HtmlDomNode::Symbol(sym) = &base {
-            base_shift = (sym.height - sym.depth) / 2.0 - options.font_metrics().axis_height;
-            slant = sym.italic;
-        }
+        base_shift = (sym.height - sym.depth) / 2.0 - options.font_metrics().axis_height;
+        slant = sym.italic;
     }
 
     if has_limits {

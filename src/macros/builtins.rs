@@ -4,13 +4,15 @@
 //! equivalent to KaTeX's macros.js file.
 
 use alloc::sync::Arc;
+#[cfg(not(feature = "wasm"))]
+use std::io::{self, Write as _};
 
 use crate::{
     ParseError,
     font_metrics_data::MAIN_REGULAR_METRICS,
     macros::{MacroContextInterface, MacroDefinition, MacroExpansion, MacroExpansionResult},
     symbols::{Atom, Group},
-    types::Mode,
+    types::{Mode, ParseErrorKind, TokenText},
     units::make_em,
 };
 use phf::{phf_map, phf_set};
@@ -205,16 +207,16 @@ fn new_command(
     }
 
     let name = &arg[0].text;
-    let exists = context.is_defined(name);
+    let exists = context.is_defined(name.as_str());
     if exists && !exists_ok {
-        return Err(ParseError::new(format!(
-            "\\newcommand{{{name}}} attempting to redefine {name}; use \\renewcommand"
-        )));
+        return Err(ParseError::new(ParseErrorKind::NewcommandRedefinition {
+            name: name.to_owned_string(),
+        }));
     }
     if !exists && !nonexists_ok {
-        return Err(ParseError::new(format!(
-            "\\renewcommand{{{name}}} when {name} does not yet exist; use \\newcommand"
-        )));
+        return Err(ParseError::new(ParseErrorKind::RenewcommandNonexistent {
+            name: name.to_owned_string(),
+        }));
     }
 
     let mut num_args = 0;
@@ -224,7 +226,7 @@ fn new_command(
         let mut token = context.expand_next_token()?;
         while token.text != "]" && token.text != "EOF" {
             // TODO: Should properly expand arg, e.g., ignore {}s
-            arg_text += &token.text;
+            arg_text += token.text.as_str();
             token = context.expand_next_token()?;
         }
         num_args = arg_text
@@ -235,7 +237,7 @@ fn new_command(
 
     if !(exists && skip_if_exists) {
         context.macros_mut().set(
-            name,
+            name.as_str(),
             Some(MacroDefinition::Expansion(MacroExpansion {
                 tokens: arg,
                 num_args,
@@ -251,15 +253,15 @@ fn new_command(
 /// Built-in macros mapping
 /// This is equivalent to KaTeX's `src/macros.js` built-in macros.
 /// Note that this is a `phf::Map` for efficiency, as it is immutable
-#[expect(clippy::print_stdout)]
-#[expect(clippy::print_stderr)]
+#[allow(clippy::print_stdout)]
+#[allow(clippy::print_stderr)]
 pub const BUILTIN_MACROS: phf::Map<&str, MacroDefinition> = phf_map! {
     "\\noexpand" => MacroDefinition::StaticFunction(|context| {
         // The expansion is the token itself; but that token is interpreted
         // as if its meaning were ‘\relax’ if it is a control sequence that
         // would ordinarily be expanded by TeX’s expansion rules.
         let mut token = context.pop_token()?;
-        if context.is_expandable(&token.text) {
+        if context.is_expandable(token.text.as_str()) {
             token.noexpand = Some(true);
             token.treat_as_relax = Some(true);
         }
@@ -361,18 +363,25 @@ pub const BUILTIN_MACROS: phf::Map<&str, MacroDefinition> = phf_map! {
             }
         };
 
-        let parse_number = |s: &str, base: u32, context: &mut dyn MacroContextInterface| -> Result<u32, ParseError> {
+        let parse_number = |
+            text: &TokenText,
+            base: u32,
+            context: &mut dyn MacroContextInterface,
+        | -> Result<u32, ParseError> {
             // Parse a number in the given base, starting with first `token`.
-            let digit = text_to_value(s);
+            let digit = text_to_value(text.as_str());
             let mut number;
             if let Some(digit) = digit && digit < base {
                 number = digit;
             } else {
-                return Err(ParseError::new(format!("Invalid base-{} digit {}", base, token.text)));
+                return Err(ParseError::new(ParseErrorKind::InvalidBaseDigit {
+                    base,
+                    digit: token.text.to_owned_string(),
+                }));
             }
 
             while let Ok(tok) = context.future_mut() && tok.text != "EOF" {
-                let digit = text_to_value(&tok.text);
+                let digit = text_to_value(tok.text.as_str());
                 if let Some(digit) = digit && digit < base {
                     number = number * base + digit;
                     context.pop_token()?;
@@ -385,24 +394,26 @@ pub const BUILTIN_MACROS: phf::Map<&str, MacroDefinition> = phf_map! {
 
         let number = match token.text.as_str() {
             "'" => {
-                let tok_text = context.pop_token()?.text;
+                let tok = context.pop_token()?;
+                let tok_text = tok.text;
                 parse_number(&tok_text, 8, context)?
             },
             "\"" => {
-                let tok_text = context.pop_token()?.text;
+                let tok = context.pop_token()?;
+                let tok_text = tok.text;
                 parse_number(&tok_text, 16, context)?
             },
             "`" => {
                 let token = context.pop_token()?;
                 let code_at;
-                if token.text.starts_with('\\') {
+                if token.text.as_str().starts_with('\\') {
                     code_at = 1;
-                } else if token.text == "EOF" {
+                } else if token.text.as_str() == "EOF" {
                     return Err(ParseError::new("\\char` missing argument"));
                 } else {
                     code_at = 0;
                 }
-                token.text.chars().nth(code_at).ok_or_else(|| ParseError::new("\\char` missing argument"))? as u32
+                token.text.as_str().chars().nth(code_at).ok_or_else(|| ParseError::new("\\char` missing argument"))? as u32
             },
             _ => parse_number(&token.text, 10, context)?,
         };
@@ -428,6 +439,13 @@ pub const BUILTIN_MACROS: phf::Map<&str, MacroDefinition> = phf_map! {
             .rev()
             .map(|t| t.text.as_str())
             .collect::<String>();
+        #[cfg(not(feature = "wasm"))]
+        {
+            let mut handle = io::stdout().lock();
+            let _ = writeln!(handle, "{msg}");
+            let _ = handle.flush();
+        }
+        #[cfg(feature = "wasm")]
         println!("{msg}");
         Ok(MacroExpansionResult::Empty)
     }),
@@ -438,23 +456,30 @@ pub const BUILTIN_MACROS: phf::Map<&str, MacroDefinition> = phf_map! {
             .rev()
             .map(|t| t.text.as_str())
             .collect::<String>();
+        #[cfg(not(feature = "wasm"))]
+        {
+            let mut handle = io::stderr().lock();
+            let _ = writeln!(handle, "{msg}");
+            let _ = handle.flush();
+        }
+        #[cfg(feature = "wasm")]
         eprintln!("{msg}");
         Ok(MacroExpansionResult::Empty)
     }),
     "\\show" => MacroDefinition::StaticFunction(|context| {
         let tok = context.pop_token()?;
         let name = &tok.text;
-        let func_desc =  if context.context().functions.contains_key(name) {
+        let func_desc =  if context.context().functions.contains_key(name.as_str()) {
             "<function>"
         } else {
             "<not a function>"
         };
         println!("{:?} {:?} {} {:?} {:?}",
             tok,
-            context.macros().get(name),
+            context.macros().get(name.as_str()),
             func_desc,
-            context.context().symbols.get_math(name),
-            context.context().symbols.get_text(name)
+            context.context().symbols.get_math(name.as_str()),
+            context.context().symbols.get_text(name.as_str())
         );
         Ok(MacroExpansionResult::Empty)
     }),
@@ -595,11 +620,11 @@ pub const BUILTIN_MACROS: phf::Map<&str, MacroDefinition> = phf_map! {
     "\\dots" => MacroDefinition::StaticFunction(|context| {
         let mut thedots = "\\dotso";
         let next = context.expand_after_future()?.text;
-        if let Some(dots_type) = DOTS_TYPE.get(&next) {
+        if let Some(dots_type) = DOTS_TYPE.get(next.as_str()) {
             thedots = dots_type;
-        } else if next.starts_with("\\not") {
+        } else if next.as_str().starts_with("\\not") {
             thedots = "\\dotsb";
-        } else if let Some(char_info) = context.context().symbols.get_math(&next)
+        } else if let Some(char_info) = context.context().symbols.get_math(next.as_str())
             && let Group::Atom(Atom::Bin | Atom::Rel) = char_info.group {
                 thedots = "\\dotsb";
             }
@@ -607,7 +632,7 @@ pub const BUILTIN_MACROS: phf::Map<&str, MacroDefinition> = phf_map! {
     }),
     "\\dotso" => MacroDefinition::StaticFunction(|context| {
         let next = context.future_mut()?.text;
-        if IS_SPACE_AFTER_DOTS.contains(&next) {
+        if IS_SPACE_AFTER_DOTS.contains(next.as_str()) {
             Ok(MacroExpansionResult::String("\\ldots\\,".to_owned()))
         } else {
             Ok(MacroExpansionResult::String("\\ldots".to_owned()))
@@ -615,7 +640,7 @@ pub const BUILTIN_MACROS: phf::Map<&str, MacroDefinition> = phf_map! {
     }),
     "\\dotsc" => MacroDefinition::StaticFunction(|context| {
         let next = context.future_mut()?.text;
-        if IS_SPACE_AFTER_DOTS.contains(&next) && next != "," {
+        if IS_SPACE_AFTER_DOTS.contains(next.as_str()) && next != "," {
             Ok(MacroExpansionResult::String("\\ldots\\,".to_owned()))
         } else {
             Ok(MacroExpansionResult::String("\\ldots".to_owned()))
@@ -623,7 +648,7 @@ pub const BUILTIN_MACROS: phf::Map<&str, MacroDefinition> = phf_map! {
     }),
     "\\cdots" => MacroDefinition::StaticFunction(|context| {
         let next = context.future_mut()?.text;
-        if IS_SPACE_AFTER_DOTS.contains(&next) {
+        if IS_SPACE_AFTER_DOTS.contains(next.as_str()) {
             Ok(MacroExpansionResult::String("\\@cdots\\,".to_owned()))
         } else {
             Ok(MacroExpansionResult::String("\\@cdots".to_owned()))

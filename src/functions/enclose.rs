@@ -229,7 +229,7 @@ fn html_builder(
             return Ok(make_span(
                 vec!["mord".to_owned(), "cancel-lap".to_owned()],
                 vec![vlist.into()],
-                None,
+                Some(options),
                 None,
             )
             .into());
@@ -361,7 +361,7 @@ fn html_builder(
     let mut img = enclose_span(&inner, label, top_pad, bottom_pad, options);
 
     // Apply border styles
-    if label.contains("fbox") || label.contains("colorbox") || label.contains("boxed") {
+    if label.contains("fbox") || label.contains("boxed") || label.contains("fcolorbox") {
         img.style
             .insert(CssProperty::BorderStyle, "solid".to_owned());
         img.style
@@ -418,19 +418,11 @@ fn html_builder(
         )?
     };
 
-    // Handle cancel height adjustment
-    if label.contains("cancel") {
-        // The cancel package documentation says that cancel lines add their
-        // height to the expression, but tests show that isn't how it
-        // actually works. vlist.height = inner.height;
-        // vlist.depth = inner.depth;
-    }
-
     if label.contains("cancel") && !is_single_char {
         Ok(make_span(
             vec!["mord".to_owned(), "cancel-lap".to_owned()],
             vec![vlist.into()],
-            None,
+            Some(options),
             None,
         )
         .into())

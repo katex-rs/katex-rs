@@ -16,7 +16,7 @@ use crate::parser::parse_node::{
     AnyParseNode, NodeType, ParseNode, ParseNodeDelimsizing, ParseNodeLeftRight,
     ParseNodeLeftRightRight, ParseNodeMiddle, check_symbol_node_type,
 };
-use crate::types::{ArgType, ParseError};
+use crate::types::{ArgType, ParseError, ParseErrorKind};
 use crate::units::make_em;
 use crate::{KatexContext, build_html, build_mathml};
 use core::slice;
@@ -75,15 +75,14 @@ fn check_delimiter(
         {
             return Ok(text.to_owned());
         }
-        return Err(ParseError::new(format!(
-            "Invalid delimiter '{}' after '{}'",
-            node_type, context.func_name
-        )));
+        return Err(ParseError::new(ParseErrorKind::InvalidDelimiterAfter {
+            delimiter: node_type.to_string(),
+            function: context.func_name.clone(),
+        }));
     }
-    Err(ParseError::new(format!(
-        "Invalid delimiter type after '{}'",
-        context.func_name
-    )))
+    Err(ParseError::new(ParseErrorKind::InvalidDelimiterTypeAfter {
+        function: context.func_name.clone(),
+    }))
 }
 
 /// Registers delimsizing functions in the KaTeX context

@@ -275,13 +275,7 @@ fn html_builder(
         vec![mclass.as_ref().to_owned()],
         vec![
             base_html,
-            make_span(
-                vec!["msupsub".to_owned()],
-                vec![supsub.into()],
-                Some(options),
-                None,
-            )
-            .into(),
+            make_span(vec!["msupsub".to_owned()], vec![supsub.into()], None, None).into(),
         ],
         Some(options),
         None,

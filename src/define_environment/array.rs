@@ -23,7 +23,7 @@ use crate::parser::parse_node::{
 };
 use crate::spacing_data::Measurement;
 use crate::style::{DISPLAY, SCRIPT, Style, TEXT};
-use crate::types::{BreakToken, CssProperty, ParseError, Token};
+use crate::types::{BreakToken, CssProperty, ParseError, ParseErrorKind, Token};
 use crate::utils::{push_and_get_mut, push_and_get_ref};
 use crate::{KatexContext, build_html, build_mathml, units};
 use core::fmt::Write as _;
@@ -37,19 +37,19 @@ fn get_hlines(parser: &mut Parser) -> Result<Vec<bool>, ParseError> {
     let mut hline_info = Vec::new();
     parser.gullet.consume_spaces()?;
 
-    let mut nxt = parser.fetch()?.text.clone();
+    let mut nxt = parser.fetch()?.text.to_owned_string();
     if nxt == "\\relax" {
         // \relax is an artifact of the \cr macro below
         parser.consume();
         parser.gullet.consume_spaces()?;
-        nxt.clone_from(&parser.fetch()?.text);
+        parser.fetch()?.text.clone_into(&mut nxt);
     }
 
     while nxt == "\\hline" || nxt == "\\hdashline" {
         parser.consume();
         hline_info.push(nxt == "\\hdashline");
         parser.gullet.consume_spaces()?;
-        nxt.clone_from(&parser.fetch()?.text);
+        parser.fetch()?.text.clone_into(&mut nxt);
     }
 
     Ok(hline_info)
@@ -58,10 +58,9 @@ fn get_hlines(parser: &mut Parser) -> Result<Vec<bool>, ParseError> {
 /// Validates AMS environment context (must be in display mode)
 fn validate_ams_environment_context(context: &EnvContext) -> Result<(), ParseError> {
     if !context.parser.settings.display_mode {
-        return Err(ParseError::new(format!(
-            "{{{}}} can be used only in display mode.",
-            context.env_name
-        )));
+        return Err(ParseError::new(ParseErrorKind::DisplayModeOnly {
+            env: context.env_name.clone(),
+        }));
     }
     Ok(())
 }
@@ -103,13 +102,15 @@ pub fn parse_array(
         // Get current arraystretch if it's not set by the environment
         let stretch = parser.gullet.expand_macro_as_text("\\arraystretch")?;
         if let Some(stretch) = stretch {
-            let stretch_val = stretch
-                .parse::<f64>()
-                .map_err(|_| ParseError::new(format!("Invalid \\arraystretch: {stretch}")))?;
+            let stretch_val = stretch.parse::<f64>().map_err(|_| {
+                ParseError::new(ParseErrorKind::InvalidArrayStretch {
+                    stretch: stretch.clone(),
+                })
+            })?;
             if stretch_val <= 0.0 {
-                return Err(ParseError::new(format!(
-                    "Invalid \\arraystretch: {stretch}"
-                )));
+                return Err(ParseError::new(ParseErrorKind::InvalidArrayStretch {
+                    stretch,
+                }));
             }
             stretch_val
         } else {
@@ -192,7 +193,7 @@ pub fn parse_array(
         });
 
         let (cell, row_immut) = push_and_get_ref(row, cell);
-        let next = parser.fetch()?.text.clone();
+        let next = parser.fetch()?.text.to_owned_string();
 
         match next.as_str() {
             "&" => {
@@ -249,9 +250,9 @@ pub fn parse_array(
                 begin_row(parser)?;
             }
             _ => {
-                return Err(ParseError::new(format!(
-                    "Expected & or \\\\ or \\cr or \\end, found {next}"
-                )));
+                return Err(ParseError::new(ParseErrorKind::ExpectedArrayDelimiter {
+                    found: next,
+                }));
             }
         }
     }
@@ -477,7 +478,7 @@ fn html_builder(
                 .get(col_descr_num)
                 .and_then(|spec| match spec {
                     AlignSpec::Separator { separator } => Some(separator.as_str()),
-                    _ => None,
+                    AlignSpec::Align { .. } => None,
                 })
             else {
                 break;
@@ -523,9 +524,9 @@ fn html_builder(
 
                 cols.push(separator_span.into());
             } else {
-                return Err(ParseError::new(format!(
-                    "Invalid separator type: {separator}"
-                )));
+                return Err(ParseError::new(ParseErrorKind::InvalidSeparatorType {
+                    separator: separator.to_owned(),
+                }));
             }
 
             col_descr_num += 1;
@@ -1036,9 +1037,10 @@ const ALIGNED_HANDLER: EnvHandler = |context, args, _opt_args| {
             // Case 1
             let cur_maths = row.len() / 2;
             if num_maths < cur_maths {
-                return Err(ParseError::new(format!(
-                    "Too many math in a row: expected {num_maths}, but got {cur_maths}"
-                )));
+                return Err(ParseError::new(ParseErrorKind::TooManyMathInRow {
+                    expected: num_maths,
+                    actual: cur_maths,
+                }));
             }
         } else if num_cols < row.len() {
             // Case 2
@@ -1126,7 +1128,9 @@ pub fn define_array(ctx: &mut KatexContext) {
                             separator: ":".to_owned(),
                         })
                     } else {
-                        Err(ParseError::new(format!("Unknown column alignment: {ca}")))
+                        Err(ParseError::new(ParseErrorKind::UnknownColumnAlignment {
+                            alignment: ca.to_owned(),
+                        }))
                     }
                 })
                 .collect::<Result<Vec<_>, _>>()?;
@@ -1203,7 +1207,7 @@ pub fn define_array(ctx: &mut KatexContext) {
                 if context.parser.fetch()?.text == "[" {
                     context.parser.consume();
                     context.parser.gullet.consume_spaces()?;
-                    col_align.clone_from(&context.parser.fetch()?.text);
+                    context.parser.fetch()?.text.clone_into(&mut col_align);
                     if !["l", "c", "r"].contains(&col_align.as_str()) {
                         return Err(ParseError::new("Expected l or c or r"));
                     }
@@ -1211,10 +1215,9 @@ pub fn define_array(ctx: &mut KatexContext) {
                     context.parser.gullet.consume_spaces()?;
                     let next = context.parser.fetch()?;
                     if next.text != "]" {
-                        return Err(ParseError::new(format!(
-                            "Expected ']', got '{}'",
-                            next.text
-                        )));
+                        return Err(ParseError::new(ParseErrorKind::ExpectedClosingBracket {
+                            found: next.text.to_owned_string(),
+                        }));
                     }
                     context.parser.consume();
                     context.parser.consume();
@@ -1313,7 +1316,9 @@ pub fn define_array(ctx: &mut KatexContext) {
                             postgap: None,
                         })
                     } else {
-                        Err(ParseError::new(format!("Unknown column alignment: {ca}")))
+                        Err(ParseError::new(ParseErrorKind::UnknownColumnAlignment {
+                            alignment: ca.to_owned(),
+                        }))
                     }
                 })
                 .collect::<Result<Vec<_>, _>>()?;
@@ -1537,10 +1542,9 @@ pub fn define_array(ctx: &mut KatexContext) {
              _args: Vec<ParseNode>,
              _opt_args: Vec<Option<ParseNode>>|
              -> Result<ParseNode, ParseError> {
-                Err(ParseError::new(format!(
-                    "{} valid only within array environment",
-                    context.func_name
-                )))
+                Err(ParseError::new(ParseErrorKind::FunctionOnlyInArray {
+                    func: context.func_name,
+                }))
             },
         ),
         html_builder: None,

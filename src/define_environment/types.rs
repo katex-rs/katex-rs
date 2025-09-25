@@ -285,11 +285,7 @@ impl Default for EnvSpec {
             arg_types: None,
             allowed_in_text: false,
             num_optional_args: 0,
-            handler: |_, _, _| {
-                Err(ParseError::new(
-                    "Environment handler not implemented".to_owned(),
-                ))
-            },
+            handler: |_, _, _| Err(ParseError::new("Environment handler not implemented")),
         }
     }
 }

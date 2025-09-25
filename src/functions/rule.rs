@@ -29,16 +29,12 @@ pub fn define_rule(ctx: &mut KatexContext) {
             |context: FunctionContext, args: Vec<ParseNode>, opt_args: Vec<Option<ParseNode>>| {
                 // Extract the width argument
                 let AnyParseNode::Size(width_node) = &args[0] else {
-                    return Err(ParseError::new(
-                        "Expected size argument for width".to_owned(),
-                    ));
+                    return Err(ParseError::new("Expected size argument for width"));
                 };
 
                 // Extract the height argument
                 let AnyParseNode::Size(height_node) = &args[1] else {
-                    return Err(ParseError::new(
-                        "Expected size argument for height".to_owned(),
-                    ));
+                    return Err(ParseError::new("Expected size argument for height"));
                 };
 
                 // Extract optional shift argument
@@ -46,9 +42,7 @@ pub fn define_rule(ctx: &mut KatexContext) {
                     match shift_arg {
                         AnyParseNode::Size(s) => Some(s.value.clone()),
                         _ => {
-                            return Err(ParseError::new(
-                                "Expected size argument for shift".to_owned(),
-                            ));
+                            return Err(ParseError::new("Expected size argument for shift"));
                         }
                     }
                 } else {
@@ -104,7 +98,7 @@ fn html_builder(
                 .build(Some(options)),
         ))
     } else {
-        Err(ParseError::new("Expected Rule node".to_owned()))
+        Err(ParseError::new("Expected Rule node"))
     }
 }
 
@@ -153,6 +147,6 @@ fn mathml_builder(
 
         Ok(MathDomNode::Math(wrapper))
     } else {
-        Err(ParseError::new("Expected Rule node".to_owned()))
+        Err(ParseError::new("Expected Rule node"))
     }
 }

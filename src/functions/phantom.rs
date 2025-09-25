@@ -117,12 +117,8 @@ fn html_builder_hphantom(
         return Err(ParseError::new("Expected Hphantom node"));
     };
 
-    let inner = build_html::build_group(
-        ctx,
-        &hphantom_node.body,
-        options,
-        Some(&options.having_cramped_style()),
-    )?;
+    let phantom_options = options.with_phantom();
+    let inner = build_html::build_group(ctx, &hphantom_node.body, &phantom_options, None)?;
     let mut node_span = make_span(vec![], vec![inner], None, None);
     node_span.height = 0.0;
     node_span.depth = 0.0;
@@ -167,12 +163,8 @@ fn html_builder_vphantom(
         return Err(ParseError::new("Expected Vphantom node"));
     };
 
-    let inner = build_html::build_group(
-        ctx,
-        &vphantom_node.body,
-        options,
-        Some(&options.having_cramped_style()),
-    )?;
+    let phantom_options = options.with_phantom();
+    let inner = build_html::build_group(ctx, &vphantom_node.body, &phantom_options, None)?;
     let inner_span = make_span(vec!["inner".to_owned()], vec![inner], None, None);
     let fix = make_span(vec!["fix".to_owned()], vec![], None, None);
 
@@ -213,10 +205,11 @@ fn mathml_builder_hphantom(
         return Err(ParseError::new("Expected Hphantom node"));
     };
 
-    let inner = build_mathml::build_group(ctx, &hphantom_node.body, options)?;
+    let inner =
+        build_mathml::build_expression(ctx, &ord_argument(&hphantom_node.body), options, None)?;
     let phantom = MathNode::builder()
         .node_type(MathNodeType::Mphantom)
-        .children(vec![inner])
+        .children(inner)
         .build();
 
     let mut node = MathNode::builder()
@@ -242,10 +235,11 @@ fn mathml_builder_vphantom(
         return Err(ParseError::new("Expected Vphantom node"));
     };
 
-    let inner = build_mathml::build_group(ctx, &vphantom_node.body, options)?;
+    let inner =
+        build_mathml::build_expression(ctx, &ord_argument(&vphantom_node.body), options, None)?;
     let phantom = MathNode::builder()
         .node_type(MathNodeType::Mphantom)
-        .children(vec![inner])
+        .children(inner)
         .build();
 
     let mut node = MathNode::builder()

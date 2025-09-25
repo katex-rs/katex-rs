@@ -7,7 +7,7 @@ use bon::bon;
 use crate::macro_expander::MacroMap;
 use crate::namespace::KeyMap;
 
-use crate::types::{ErrorLocationProvider, ParseError};
+use crate::types::{ErrorLocationProvider, ParseError, ParseErrorKind};
 use crate::utils::protocol_from_url;
 
 #[cfg(feature = "wasm")]
@@ -304,13 +304,14 @@ impl Settings {
         match self.resolve_strict(error_code, error_msg, token) {
             StrictMode::Ignore => Ok(()),
             StrictMode::Error => {
-                let msg = format!(
-                    "LaTeX-incompatible input and strict mode is set to 'error': {error_msg} [{error_code}]"
-                );
+                let kind = ParseErrorKind::StrictModeError {
+                    message: error_msg.to_owned(),
+                    code: error_code.to_owned(),
+                };
                 if let Some(t) = token {
-                    Err(ParseError::with_token(msg, t))
+                    Err(ParseError::with_token(kind, t))
                 } else {
-                    Err(ParseError::new(msg))
+                    Err(ParseError::new(kind))
                 }
             }
             StrictMode::Warn => {

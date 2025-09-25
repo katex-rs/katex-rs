@@ -5,7 +5,7 @@
 //! given a wide character and rendering mode, returns the font metrics
 //! name and the CSS class needed to render the character properly.
 
-use crate::types::{Mode, ParseError};
+use crate::types::{Mode, ParseError, ParseErrorKind};
 
 /// Mapping rows for Latin letters. Each entry is a triple of
 /// (math CSS class, text CSS class, font metrics name).
@@ -86,9 +86,9 @@ pub fn wide_character_font_from_char(
         // Greek letters. Not supported yet.
         Ok(("", ""))
     } else {
-        Err(ParseError::new(format!(
-            "Unsupported character: {wide_char}"
-        )))
+        Err(ParseError::new(ParseErrorKind::UnsupportedWideCharacter {
+            character: wide_char.to_string(),
+        }))
     }
 }
 

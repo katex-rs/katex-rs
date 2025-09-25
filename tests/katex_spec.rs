@@ -3673,10 +3673,9 @@ fn parse_error_properties() {
                     assert_eq!(e.position, Some(4)); // After "1 + "
                     assert_eq!(e.length, Some(5)); // "\\fraq"
                     assert_eq!(
-                        e.message,
+                        e.to_string(),
                         "KaTeX parse error: Undefined control sequence: \\fraq at position 5: 1 + \\̲f̲r̲a̲q̲{}{}"
                     );
-                    assert_eq!(e.raw_message, "Undefined control sequence: \\fraq");
                 }
             }
             Ok(())
@@ -3692,12 +3691,8 @@ fn parse_error_properties() {
                     assert_eq!(e.position, Some(7));
                     assert_eq!(e.length, Some(0));
                     assert_eq!(
-                        e.message,
+                        e.to_string(),
                         "KaTeX parse error: Unexpected end of input in a macro argument, expected '}' at end of input: \\frac{}"
-                    );
-                    assert_eq!(
-                        e.raw_message,
-                        "Unexpected end of input in a macro argument, expected '}'"
                     );
                 }
             }
@@ -3714,12 +3709,8 @@ fn parse_error_properties() {
                     assert_eq!(e.position, None);
                     assert_eq!(e.length, None);
                     assert_eq!(
-                        e.message,
+                        e.to_string(),
                         "KaTeX parse error: \\verb ended by end of line instead of matching delimiter"
-                    );
-                    assert_eq!(
-                        e.raw_message,
-                        "\\verb ended by end of line instead of matching delimiter"
                     );
                 }
             }
@@ -5164,8 +5155,8 @@ fn extending_katex_by_new_fonts_and_symbols() {
                 .err()
                 .unwrap();
             assert_eq!(
-                result.raw_message,
-                "Font metrics not found for font: mockEasternArabicFont-Regular."
+                result.to_string(),
+                "KaTeX parse error: Font metrics not found for font: mockEasternArabicFont-Regular."
             );
             Ok(())
         },

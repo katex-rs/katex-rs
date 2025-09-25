@@ -7,7 +7,7 @@
 use crate::context::KatexContext;
 use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
 use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNode, ParseNodeTextOrd};
-use crate::types::ParseError;
+use crate::types::{ParseError, ParseErrorKind};
 
 /// Register the \@char function
 pub fn define_char(ctx: &mut KatexContext) {
@@ -49,22 +49,24 @@ pub fn define_char(ctx: &mut KatexContext) {
                 let code_point: u32 = match number_str.parse() {
                     Ok(n) => n,
                     Err(_) => {
-                        return Err(ParseError::new(format!(
-                            "\\@char has non-numeric argument {number_str}"
-                        )));
+                        return Err(ParseError::new(ParseErrorKind::CharNonNumericArgument {
+                            value: number_str.clone(),
+                        }));
                     }
                 };
 
                 // Validate the code point range
                 if code_point > 0x10FFFF {
-                    return Err(ParseError::new(format!(
-                        "\\@char with invalid code point {number_str}"
-                    )));
+                    return Err(ParseError::new(ParseErrorKind::InvalidCharCodePoint {
+                        code: number_str.clone(),
+                    }));
                 }
 
                 // Convert code point to character(s)
                 let text = char::from_u32(code_point).ok_or_else(|| {
-                    ParseError::new(format!("\\@char with invalid code point {number_str}"))
+                    ParseError::new(ParseErrorKind::InvalidCharCodePoint {
+                        code: number_str.clone(),
+                    })
                 })?;
 
                 // Return a textord node with the character

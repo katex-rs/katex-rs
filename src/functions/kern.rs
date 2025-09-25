@@ -31,9 +31,9 @@ pub fn define_kern(ctx: &mut KatexContext) {
                 // Extract the size argument
                 let size_arg = args
                     .first()
-                    .ok_or_else(|| ParseError::new("Expected size argument".to_owned()))?;
+                    .ok_or_else(|| ParseError::new("Expected size argument"))?;
                 let AnyParseNode::Size(size_node) = size_arg else {
-                    return Err(ParseError::new("Expected size argument".to_owned()));
+                    return Err(ParseError::new("Expected size argument"));
                 };
 
                 // Strict mode validations
@@ -136,7 +136,7 @@ fn html_builder(
             Ok(ctx.make_glue(&dimension_static, options)?.into())
         }
     } else {
-        Err(ParseError::new("Expected Kern node".to_owned()))
+        Err(ParseError::new("Expected Kern node"))
     }
 }
 
@@ -157,6 +157,6 @@ fn mathml_builder(
             character: None, // Use default space character
         }))
     } else {
-        Err(ParseError::new("Expected Kern node".to_owned()))
+        Err(ParseError::new("Expected Kern node"))
     }
 }

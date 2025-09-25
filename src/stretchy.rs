@@ -13,6 +13,7 @@ use crate::namespace::KeyMap;
 use crate::options::Options;
 use crate::parser::parse_node::AnyParseNode;
 use crate::types::CssProperty;
+use crate::types::ParseErrorKind;
 use crate::units::make_em;
 use phf::{phf_map, phf_set};
 
@@ -229,9 +230,11 @@ pub fn svg_span(group: &AnyParseNode, options: &Options) -> Result<HtmlDomNode, 
         Ok(span.into())
     } else {
         // Handle other stretchy elements
-        let data = IMAGES_DATA
-            .get(label)
-            .ok_or_else(|| ParseError::new(format!("Unknown stretchy element: {label}")))?;
+        let data = IMAGES_DATA.get(label).ok_or_else(|| {
+            ParseError::new(ParseErrorKind::UnknownStretchyElement {
+                label: label.to_owned(),
+            })
+        })?;
 
         let mut spans: Vec<HtmlDomNode> = Vec::new();
         let height_val = data.height / 1000.0;
@@ -259,10 +262,11 @@ pub fn svg_span(group: &AnyParseNode, options: &Options) -> Result<HtmlDomNode, 
                 ],
             ),
             _ => {
-                return Err(ParseError::new(format!(
-                    "Unsupported number of paths: {}",
-                    data.paths.len()
-                )));
+                return Err(ParseError::new(
+                    ParseErrorKind::UnsupportedStretchyPathCount {
+                        count: data.paths.len(),
+                    },
+                ));
             }
         };
 
@@ -326,10 +330,6 @@ pub fn svg_span(group: &AnyParseNode, options: &Options) -> Result<HtmlDomNode, 
     }
 }
 
-const ENCLOSE_STRETCHY: phf::Set<&'static str> = phf_set! {
-    "fbox", "color", "angl",
-};
-
 /// Create an enclosing span for elements like cancel, fbox, etc.
 pub fn enclose_span(
     inner: &HtmlDomNode,
@@ -340,7 +340,8 @@ pub fn enclose_span(
 ) -> DomSpan {
     let total_height = inner.height() + inner.depth() + top_pad + bottom_pad;
 
-    if ENCLOSE_STRETCHY.contains(label) {
+    let is_box_like = label.contains("fbox") || label.contains("color");
+    if is_box_like || label == "angl" {
         let classes = vec!["stretchy".to_owned(), label.to_owned()];
         let mut span = make_span(classes, vec![], Some(options), None);
 

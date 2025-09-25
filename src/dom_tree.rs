@@ -4,10 +4,11 @@
 //! extra data. They can then be transformed into real DOM nodes with the
 //! `to_node` function or HTML markup using `to_markup`.
 
-use core::fmt::Write as _;
+use core::fmt::{self, Write as _};
 
 use crate::ParseError;
 use crate::namespace::KeyMap;
+use crate::types::ParseErrorKind;
 use bon::bon;
 use phf::phf_map;
 #[cfg(feature = "wasm")]
@@ -20,7 +21,7 @@ use crate::tree::{DocumentFragment, VirtualNode};
 use crate::types::{CssProperty, CssStyle};
 use crate::unicode::script_from_codepoint;
 use crate::units::make_em;
-use crate::utils::escape;
+use crate::utils::escape_into;
 
 /// Span wrapping other DOM nodes with generic child type
 #[derive(Debug, Clone, PartialEq)]
@@ -451,20 +452,37 @@ pub fn to_markup(node: &HtmlDomNode) -> Result<String, ParseError> {
     node.to_markup()
 }
 
-fn write_node_class(markup: &mut String, classes: &[String]) {
-    if !classes.is_empty() {
-        let _ = write!(markup, " class=\"{}\"", escape(&create_class(classes)));
-    }
+fn fmt_error() -> ParseError {
+    ParseError::new(ParseErrorKind::Message("failed to write markup"))
 }
 
-fn write_node_style(markup: &mut String, style: &CssStyle) {
-    if !style.is_empty() {
-        let styles = style.iter().fold(String::new(), |mut s, (key, value)| {
-            let _ = write!(s, "{key}:{value};");
-            s
-        });
-        let _ = write!(markup, " style=\"{}\"", escape(&styles));
+fn map_fmt(result: fmt::Result) -> Result<(), ParseError> {
+    result.map_err(|_| fmt_error())
+}
+
+fn write_node_class<W: fmt::Write>(writer: &mut W, classes: &[String]) -> fmt::Result {
+    if classes.is_empty() {
+        return Ok(());
     }
+
+    writer.write_str(" class=\"")?;
+    escape_into(writer, &create_class(classes))?;
+    writer.write_char('"')
+}
+
+fn write_node_style<W: fmt::Write>(writer: &mut W, style: &CssStyle) -> fmt::Result {
+    if style.is_empty() {
+        return Ok(());
+    }
+
+    writer.write_str(" style=\"")?;
+    for (key, value) in style {
+        writer.write_str(key.as_ref())?;
+        writer.write_char(':')?;
+        escape_into(writer, value)?;
+        writer.write_char(';')?;
+    }
+    writer.write_char('"')
 }
 
 #[cfg(feature = "wasm")]
@@ -488,28 +506,19 @@ fn style_to_node(element: &web_sys::Element, style: &CssStyle) {
 
 /// Implement VirtualNode for `Span<T>`
 impl<T: VirtualNode> VirtualNode for Span<T> {
-    fn to_markup(&self) -> Result<String, ParseError> {
-        let mut markup = String::from("<span");
+    fn write_markup(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), ParseError> {
+        map_fmt(fmt.write_str("<span"))?;
+        map_fmt(write_node_class(fmt, &self.classes))?;
+        map_fmt(write_node_style(fmt, &self.style))?;
+        node_attributes_to_markup(fmt, &self.attributes)?;
+        map_fmt(fmt.write_char('>'))?;
 
-        // Add the class
-        write_node_class(&mut markup, &self.classes);
-
-        // Add the styles, after hyphenation
-        write_node_style(&mut markup, &self.style);
-
-        // Add the attributes
-        node_attributes_to_markup(&mut markup, &self.attributes)?;
-
-        markup.push('>');
-
-        // Add the markup of the children
         for child in &self.children {
-            markup.push_str(&child.to_markup()?);
+            child.write_markup(fmt)?;
         }
 
-        markup.push_str("</span>");
-
-        Ok(markup)
+        map_fmt(fmt.write_str("</span>"))?;
+        Ok(())
     }
 
     #[cfg(feature = "wasm")]
@@ -540,28 +549,19 @@ impl<T: VirtualNode> VirtualNode for Span<T> {
 
 /// Implement VirtualNode for Anchor
 impl VirtualNode for Anchor {
-    fn to_markup(&self) -> Result<String, ParseError> {
-        let mut markup = String::from("<a");
+    fn write_markup(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), ParseError> {
+        map_fmt(fmt.write_str("<a"))?;
+        map_fmt(write_node_class(fmt, &self.classes))?;
+        map_fmt(write_node_style(fmt, &self.style))?;
+        node_attributes_to_markup(fmt, &self.attributes)?;
+        map_fmt(fmt.write_char('>'))?;
 
-        // Add the class
-        write_node_class(&mut markup, &self.classes);
-
-        // Add the styles, after hyphenation
-        write_node_style(&mut markup, &self.style);
-
-        // Add the attributes
-        node_attributes_to_markup(&mut markup, &self.attributes)?;
-
-        markup.push('>');
-
-        // Add the markup of the children
         for child in &self.children {
-            markup.push_str(&child.to_markup()?);
+            child.write_markup(fmt)?;
         }
 
-        markup.push_str("</a>");
-
-        Ok(markup)
+        map_fmt(fmt.write_str("</a>"))?;
+        Ok(())
     }
 
     #[cfg(feature = "wasm")]
@@ -592,22 +592,17 @@ impl VirtualNode for Anchor {
 
 /// Implement VirtualNode for Img
 impl VirtualNode for Img {
-    fn to_markup(&self) -> Result<String, ParseError> {
-        let mut markup = format!(
-            "<img src=\"{}\" alt=\"{}\"",
-            escape(&self.src),
-            escape(&self.alt)
-        );
-
-        // Add the class
-        write_node_class(&mut markup, &self.classes);
-
-        // Add the styles, after hyphenation
-        write_node_style(&mut markup, &self.style);
-
-        markup.push_str("/>");
-
-        Ok(markup)
+    fn write_markup(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), ParseError> {
+        map_fmt(fmt.write_str("<img src=\""))?;
+        map_fmt(escape_into(fmt, &self.src))?;
+        map_fmt(fmt.write_str("\" alt=\""))?;
+        map_fmt(escape_into(fmt, &self.alt))?;
+        map_fmt(fmt.write_char('"'))?;
+        map_fmt(write_node_class(fmt, &self.classes))?;
+        map_fmt(write_node_style(fmt, &self.style))?;
+        map_fmt(fmt.write_str("/"))?;
+        map_fmt(fmt.write_char('>'))?;
+        Ok(())
     }
 
     #[cfg(feature = "wasm")]
@@ -630,7 +625,29 @@ impl VirtualNode for Img {
     }
 }
 
+fn write_symbol_style<W: fmt::Write>(writer: &mut W, italic: f64, style: &CssStyle) -> fmt::Result {
+    if italic <= 0.0 && style.is_empty() {
+        return Ok(());
+    }
+
+    writer.write_str(" style=\"")?;
+    if italic > 0.0 {
+        writer.write_str("margin-right:")?;
+        writer.write_str(&make_em(italic))?;
+        writer.write_char(';')?;
+    }
+    for (key, value) in style {
+        writer.write_str(key.as_ref())?;
+        writer.write_char(':')?;
+        escape_into(writer, value)?;
+        writer.write_char(';')?;
+    }
+    writer.write_char('"')
+}
+
+#[cfg(feature = "wasm")]
 fn symbol_node_style_str(italic: f64, style: &CssStyle) -> String {
+    use crate::utils::escape;
     let mut styles = String::new();
     if italic > 0.0 {
         let _ = write!(styles, "margin-right:{};", make_em(italic));
@@ -643,38 +660,21 @@ fn symbol_node_style_str(italic: f64, style: &CssStyle) -> String {
 
 /// Implement VirtualNode for Symbol
 impl VirtualNode for SymbolNode {
-    fn to_markup(&self) -> Result<String, ParseError> {
-        let mut needs_span =
-            self.italic > 0.0 || !self.classes.is_empty() || !self.style.is_empty();
-        let mut markup = String::from("<span");
-
-        // Add the class
-        if !self.classes.is_empty() {
-            needs_span = true;
-            let _ = write!(
-                markup,
-                " class=\"{}\"",
-                escape(&create_class(&self.classes))
-            );
-        }
-
-        // Add the styles, after hyphenation
-        let styles = symbol_node_style_str(self.italic, &self.style);
-        if !styles.is_empty() {
-            needs_span = true;
-            let _ = write!(markup, " style=\"{styles}\"");
-        }
-
-        let escaped_text = escape(&self.text);
+    fn write_markup(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), ParseError> {
+        let needs_span = self.italic > 0.0 || !self.classes.is_empty() || !self.style.is_empty();
 
         if needs_span {
-            markup.push('>');
-            markup.push_str(&escaped_text);
-            markup.push_str("</span>");
-            Ok(markup)
+            map_fmt(fmt.write_str("<span"))?;
+            map_fmt(write_node_class(fmt, &self.classes))?;
+            map_fmt(write_symbol_style(fmt, self.italic, &self.style))?;
+            map_fmt(fmt.write_char('>'))?;
+            map_fmt(escape_into(fmt, &self.text))?;
+            map_fmt(fmt.write_str("</span>"))?;
         } else {
-            Ok(escaped_text)
+            map_fmt(escape_into(fmt, &self.text))?;
         }
+
+        Ok(())
     }
 
     #[cfg(feature = "wasm")]
@@ -717,22 +717,20 @@ impl VirtualNode for SymbolNode {
 
 /// Implement VirtualNode for SvgNode
 impl VirtualNode for SvgNode {
-    fn to_markup(&self) -> Result<String, ParseError> {
-        let mut markup = String::from("<svg xmlns=\"http://www.w3.org/2000/svg\"");
+    fn write_markup(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), ParseError> {
+        map_fmt(fmt.write_str("<svg xmlns=\"http://www.w3.org/2000/svg\""))?;
+        node_attributes_to_markup(fmt, &self.attributes)?;
+        map_fmt(fmt.write_char('>'))?;
 
-        // Add attributes
-        node_attributes_to_markup(&mut markup, &self.attributes)?;
-
-        markup.push('>');
-
-        // Add the markup of the children
         for child in &self.children {
-            markup.push_str(&child.to_markup()?);
+            match child {
+                SvgChildNode::Path(path) => path.write_markup(fmt)?,
+                SvgChildNode::Line(line) => line.write_markup(fmt)?,
+            }
         }
 
-        markup.push_str("</svg>");
-
-        Ok(markup)
+        map_fmt(fmt.write_str("</svg>"))?;
+        Ok(())
     }
 
     #[cfg(feature = "wasm")]
@@ -759,15 +757,15 @@ impl VirtualNode for SvgNode {
 
 /// Implement VirtualNode for HtmlDomNode
 impl VirtualNode for HtmlDomNode {
-    fn to_markup(&self) -> Result<String, ParseError> {
+    fn write_markup(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), ParseError> {
         match self {
-            Self::DomSpan(span) => span.to_markup(),
-            Self::Anchor(anchor) => anchor.to_markup(),
-            Self::Img(img) => img.to_markup(),
-            Self::Symbol(symbol) => symbol.to_markup(),
-            Self::SvgNode(svg_node) => svg_node.to_markup(),
-            Self::MathML(math_node) => math_node.to_markup(),
-            Self::Fragment(fragment) => fragment.to_markup(),
+            Self::DomSpan(span) => span.write_markup(fmt),
+            Self::Anchor(anchor) => anchor.write_markup(fmt),
+            Self::Img(img) => img.write_markup(fmt),
+            Self::Symbol(symbol) => symbol.write_markup(fmt),
+            Self::SvgNode(svg_node) => svg_node.write_markup(fmt),
+            Self::MathML(math_node) => math_node.write_markup(fmt),
+            Self::Fragment(fragment) => fragment.write_markup(fmt),
         }
     }
 
@@ -1008,17 +1006,20 @@ pub struct PathNode {
 
 impl VirtualNode for PathNode {
     /// Convert this path node into HTML markup string
-    fn to_markup(&self) -> Result<String, ParseError> {
+    fn write_markup(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), ParseError> {
         let path_data = self.alternate.as_ref().map_or_else(
             || {
                 PATH_MAP
                     .get(&self.path_name)
-                    .map_or_else(String::new, |s| escape(s))
+                    .map_or_else(String::new, |s| (*s).to_owned())
             },
-            |alt| escape(alt),
+            Clone::clone,
         );
 
-        Ok(format!("<path d=\"{path_data}\"/>"))
+        map_fmt(fmt.write_str("<path d=\""))?;
+        map_fmt(escape_into(fmt, &path_data))?;
+        map_fmt(fmt.write_str("\"/>"))?;
+        Ok(())
     }
 
     /// Convert this path node into a DOM node representation
@@ -1052,8 +1053,8 @@ pub struct LineNode {
     pub attributes: KeyMap<String, String>,
 }
 
-fn node_attributes_to_markup(
-    markup: &mut String,
+fn node_attributes_to_markup<W: fmt::Write>(
+    writer: &mut W,
     attributes: &KeyMap<String, String>,
 ) -> Result<(), ParseError> {
     for (attr, value) in attributes {
@@ -1061,9 +1062,13 @@ fn node_attributes_to_markup(
             if attr.contains(|c: char| {
                 c.is_whitespace() || "\"'>/=".contains(c) || ('\x00'..='\x1f').contains(&c)
             }) {
-                return Err(ParseError::new(format!("Invalid attribute name: '{attr}'")));
+                return Err(ParseError::new(ParseErrorKind::InvalidAttributeName {
+                    attr: attr.clone(),
+                }));
             }
-            let _ = write!(markup, " {}=\"{}\"", attr, escape(value));
+            map_fmt(write!(writer, " {attr}=\""))?;
+            map_fmt(escape_into(writer, value))?;
+            map_fmt(writer.write_char('"'))?;
         }
     }
     Ok(())
@@ -1085,15 +1090,12 @@ fn node_attributes_to_node(element: &web_sys::Element, attributes: &KeyMap<Strin
 
 impl VirtualNode for LineNode {
     /// Convert this line node into HTML markup string
-    fn to_markup(&self) -> Result<String, ParseError> {
-        let mut markup = String::from("<line");
-
-        // Add attributes
-        node_attributes_to_markup(&mut markup, &self.attributes)?;
-
-        markup.push_str("/>");
-
-        Ok(markup)
+    fn write_markup(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), ParseError> {
+        map_fmt(fmt.write_str("<line"))?;
+        node_attributes_to_markup(fmt, &self.attributes)?;
+        map_fmt(fmt.write_str("/"))?;
+        map_fmt(fmt.write_char('>'))?;
+        Ok(())
     }
 
     /// Convert this line node into a DOM node representation
