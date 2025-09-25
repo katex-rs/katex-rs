@@ -1214,7 +1214,7 @@ pub fn make_line_span(class_name: &str, options: &Options, thickness: Option<f64
 
 /// Makes an anchor element with the given href, classes, children, and options
 ///
-/// Creates an HTML anchor (<a>) element that can contain other DOM nodes as
+/// Creates an HTML anchor (`<a>`) element that can contain other DOM nodes as
 /// children. The anchor's size properties (height, depth, maxFontSize) are
 /// automatically calculated based on its children.
 ///

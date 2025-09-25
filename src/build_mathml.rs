@@ -82,7 +82,7 @@ pub fn make_text(text: &str, mode: Mode, options: Option<&Options>, symbols: &Sy
     TextNode { text: final_text }
 }
 
-/// Wraps nodes in an <mrow> element if there are multiple nodes
+/// Wraps nodes in an `<mrow>` element if there are multiple nodes
 ///
 /// This function implements the MathML convention of grouping multiple elements
 /// within an `<mrow>` container. Single elements are returned directly without
@@ -154,7 +154,7 @@ pub fn make_row(body: &[MathDomNode]) -> MathDomNode {
 ///
 /// # MathML Specification Compliance
 /// Follows the W3C MathML 3.0 specification for allowable `mathvariant` values
-/// as defined at: https://www.w3.org/TR/MathML3/chapter3.html#presm.commatt
+/// as defined at: <https://www.w3.org/TR/MathML3/chapter3.html#presm.commatt>
 pub fn get_variant(
     ctx: &KatexContext,
     group: &AnyParseNode,

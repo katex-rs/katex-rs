@@ -16,14 +16,14 @@
 //!
 //! # Examples
 //!
-//! ```
+//! ```rust
 //! use katex::symbols::{Font, Group, Mode, NonAtom, Symbols};
 //!
 //! let mut symbols = Symbols::new();
 //! symbols.define_symbol(
 //!     Mode::Math,
 //!     Font::Main,
-//!     Group::NonAtom(NonAtom::Mathord),
+//!     Group::NonAtom(NonAtom::MathOrd),
 //!     Some('α'),
 //!     "\\alpha",
 //!     false,
@@ -54,13 +54,12 @@ pub use types::{Atom, CharInfo, Font, Group, Mode, NonAtom};
 ///
 /// # Examples
 ///
-/// ```
+/// ```rust
 /// use katex::symbols::Symbols;
 ///
 /// let symbols = Symbols::new();
-/// // Symbols table is initially empty
-/// assert!(symbols.math.is_empty());
-/// assert!(symbols.text.is_empty());
+/// assert!(symbols.get_math("\\custom").is_none());
+/// assert!(symbols.get_text("\\custom").is_none());
 /// ```
 pub struct Symbols {
     /// Symbol mappings for mathematical expressions
@@ -78,11 +77,11 @@ include!(concat!(env!("OUT_DIR"), "/generated_symbols_data.rs"));
 ///
 /// # Examples
 ///
-/// ```
+/// ```rust
 /// use katex::symbols::Symbols;
 ///
 /// let symbols = Symbols::default();
-/// assert!(symbols.math.is_empty());
+/// assert!(symbols.get_math("\\custom").is_none());
 /// ```
 impl Default for Symbols {
     fn default() -> Self {
@@ -103,12 +102,12 @@ impl Symbols {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```rust
     /// use katex::symbols::Symbols;
     ///
     /// let symbols = Symbols::new();
-    /// assert_eq!(symbols.math.len(), 0);
-    /// assert_eq!(symbols.text.len(), 0);
+    /// assert!(symbols.get_math("\\custom").is_none());
+    /// assert!(symbols.get_text("\\custom").is_none());
     /// ```
     #[must_use]
     pub fn new() -> Self {
@@ -137,14 +136,14 @@ impl Symbols {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```rust
     /// use katex::symbols::{Font, Group, Mode, NonAtom, Symbols};
     ///
     /// let mut symbols = Symbols::new();
     /// symbols.define_symbol(
     ///     Mode::Math,
     ///     Font::Main,
-    ///     Group::NonAtom(NonAtom::Mathord),
+    ///     Group::NonAtom(NonAtom::MathOrd),
     ///     Some('α'),
     ///     "\\alpha",
     ///     true,
@@ -433,23 +432,6 @@ pub const LIGATURES: phf::Map<&str, &str> = phf_map!(
 ///
 /// The corresponding [`Group`] enum variant.
 ///
-/// # Supported Groups
-///
-/// **Atom Groups:**
-/// - `"bin"` → [`Group::Atom(Atom::Bin)`] - Binary operators
-/// - `"close"` → [`Group::Atom(Atom::Close)`] - Closing delimiters
-/// - `"inner"` → [`Group::Atom(Atom::Inner)`] - Inner elements
-/// - `"open"` → [`Group::Atom(Atom::Open)`] - Opening delimiters
-/// - `"punct"` → [`Group::Atom(Atom::Punct)`] - Punctuation
-/// - `"rel"` → [`Group::Atom(Atom::Rel)`] - Relations
-///
-/// **Non-Atom Groups:**
-/// - `"accent"` or `"accent-token"` → [`Group::NonAtom(NonAtom::AccentToken)`]
-/// - `"mathord"` → [`Group::NonAtom(NonAtom::Mathord)`] - Math ordinaries
-/// - `"op"` or `"op-token"` → [`Group::NonAtom(NonAtom::OpToken)`] - Operators
-/// - `"spacing"` → [`Group::NonAtom(NonAtom::Spacing)`] - Spacing elements
-/// - `"textord"` → [`Group::NonAtom(NonAtom::Textord)`] - Text ordinaries
-///
 /// # Error Handling
 ///
 /// Panics with an error message if the string doesn't match any known group.
@@ -490,7 +472,7 @@ impl TryFrom<&str> for Group {
 /// - Greek letters (α, β, γ, etc.)
 /// - Mathematical operators (=, +, −, etc.)
 /// - Relations (≡, ∼, ≅, etc.)
-/// - Delimiters ({, }, [, ], etc.)
+/// - Delimiters ({, }, \[, \], etc.)
 /// - Accents (´, `, ˜, etc.)
 /// - Wide character variants for letters and numbers
 /// - Text symbols for regular typography
@@ -501,12 +483,12 @@ impl TryFrom<&str> for Group {
 ///
 /// # Examples
 ///
-/// ```
+/// ```rust
 /// use katex::symbols::create_symbols;
 ///
 /// let symbols = create_symbols();
-/// assert!(!symbols.math.is_empty());
-/// assert!(!symbols.text.is_empty());
+/// assert!(symbols.get_math("\\alpha").is_some());
+/// assert!(symbols.get_text("\\#").is_some());
 ///
 /// // Look up a Greek letter
 /// if let Some(alpha) = symbols.get_math("\\alpha") {

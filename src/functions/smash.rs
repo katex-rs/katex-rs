@@ -21,7 +21,7 @@ use crate::types::ParseError;
 /// Registers the `\smash` function in the KaTeX context.
 ///
 /// The `\smash` command removes vertical space from mathematical expressions.
-/// It can optionally take a [tb] argument to specify whether to smash the top
+/// It can optionally take a \[tb\] argument to specify whether to smash the top
 /// (t), bottom (b), or both (default).
 ///
 /// # LaTeX Syntax
@@ -34,8 +34,8 @@ use crate::types::ParseError;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///

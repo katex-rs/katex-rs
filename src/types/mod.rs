@@ -310,7 +310,7 @@ pub enum StyleVariant {
 ///
 /// # Cross-references
 /// - See [`Token`] for general token representation.
-/// - Used in [`ParseError`] for error location reporting.
+/// - Used in `ParseError` for error location reporting.
 /// - Related to parsing of groups and commands in the lexer.
 #[derive(Debug, Clone, PartialEq, Eq, EnumString, AsRefStr)]
 pub enum BreakToken {
@@ -355,7 +355,7 @@ pub enum BreakToken {
 ///
 /// # Cross-references
 /// - See [`CssStyle`] for CSS-based font styling.
-/// - Related to [`Style`] for size and positioning adjustments.
+/// - Related to [`StyleVariant`] for size and positioning adjustments.
 /// - Used in symbol lookup and font metric calculations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FontVariant {

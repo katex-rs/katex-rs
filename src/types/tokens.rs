@@ -71,7 +71,7 @@ impl Token {
 /// # Cross-references
 ///
 /// - Part of the error reporting system in
-///   [`ParseError`](crate::types::ParseError).
+///   `ParseError`(crate::types::ParseError).
 /// - Used by parsers to provide location context for syntax errors.
 impl ErrorLocationProvider for Token {
     fn loc(&self) -> Option<&SourceLocation> {
@@ -87,7 +87,7 @@ impl ErrorLocationProvider for Token {
 /// # Cross-references
 ///
 /// - Part of the error reporting system in
-///   [`ParseError`](crate::types::ParseError).
+///   `ParseError`(crate::types::ParseError).
 /// - Used when tokens might be absent but location information is still needed.
 impl ErrorLocationProvider for Option<Token> {
     fn loc(&self) -> Option<&SourceLocation> {

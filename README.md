@@ -3,6 +3,7 @@
 [![Crates.io](https://img.shields.io/crates/v/katex-rs.svg)](https://crates.io/crates/katex-rs)
 [![Documentation](https://docs.rs/katex-rs/badge.svg)](https://docs.rs/katex-rs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![NPM version](https://img.shields.io/npm/v/katex-rs.svg)](https://www.npmjs.com/package/katex-rs)
 
 **KaTeX-rs** is a Rust implementation of [KaTeX](https://github.com/KaTeX/KaTeX), providing fast mathematical typesetting capabilities, not limited to Javascript environments.
 
@@ -17,6 +18,47 @@ This project is based on KaTeX's commit [9fb63136e680715ad83c119366f6f697105d2c5
 - [x] Offline rendering tests
 - [x] Compatible with `no-std` and `wasm` target
 - [ ] Fully consistent with KaTeX result
+
+## How to Use
+
+Add `katex-rs` to your `Cargo.toml`:
+
+```toml
+[dependencies]
+katex-rs = "0.1"
+```
+
+Basic usage:
+
+```rust
+use katex::{KatexContext, Settings, render_to_string};
+
+fn main() -> Result<(), katex::ParseError> {
+    let ctx = KatexContext::default();
+    let settings = Settings::default();
+
+    let html = render_to_string(&ctx, r"x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}", &settings)?;
+    println!("{}", html);
+    Ok(())
+}
+```
+
+For display mode (block math):
+
+```rust
+use katex::{KatexContext, Settings, render_to_string};
+
+fn main() -> Result<(), katex::ParseError> {
+    let ctx = KatexContext::default();
+    let settings = Settings::builder()
+        .display_mode(true)
+        .build();
+
+    let html = render_to_string(&ctx, r"\sum_{i=1}^{n} x_i", &settings)?;
+    println!("{}", html);
+    Ok(())
+}
+```
 
 ### Feature Flags
 
@@ -47,6 +89,10 @@ curl https://drager.github.io/wasm-pack/installer/init.sh -sSf | sh
 cargo install --locked cargo-nextest
 cargo install wasm-pack
 ```
+
+### About `./data` directory
+
+The `./data` directory contains the JSON files extracted with scripts from the original KaTeX repository. Those files are tracked with Git LFS. They are kept here to simplify crate compilation. You can regenerate them with the scripts in `./utils` if needed.
 
 ### Unit tests
 ```bash

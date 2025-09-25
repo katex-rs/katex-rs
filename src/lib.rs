@@ -68,7 +68,7 @@ pub mod macro_expander;
 pub mod macros;
 pub mod mathml_tree;
 pub mod options;
-/// Utilities for working with parse trees and converting them to [`ParseNode`]
+/// Utilities for working with parse trees and converting them to ParseNode
 pub mod parse_tree;
 /// Core parsing logic for LaTeX mathematical expressions.
 pub mod parser;
@@ -118,13 +118,10 @@ pub use crate::context::KatexContext;
 ///
 /// # Parameters
 ///
+/// * `ctx` - The [`KatexContext`] containing registered functions and symbols
 /// * `expression` - The LaTeX mathematical expression to render
-/// * `options` - Optional `SettingsOptions` to customize rendering behavior
-///   such as:
-///   - Display mode vs inline mode
-///   - Output format (HTML, MathML, or both)
-///   - Error handling preferences
-///   - Font and styling options
+/// * `settings` - Rendering configuration controlling output format, strict
+///   mode, custom macros, and other behaviour
 ///
 /// # Returns
 ///
@@ -136,38 +133,40 @@ pub use crate::context::KatexContext;
 ///
 /// Basic usage:
 /// ```rust
-/// use katex::*;
+/// use katex::{KatexContext, Settings, render_to_string};
 ///
-/// let ctx = KatexContext::default();
-/// match render_to_string(&ctx, r"x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}", None) {
-///     Ok(html) => println!("{}", html),
-///     Err(e) => println!("Error: {}", e),
+/// fn main() -> Result<(), katex::ParseError> {
+///     let ctx = KatexContext::default();
+///     let settings = Settings::default();
+///
+///     let html = render_to_string(&ctx, r"x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}", &settings)?;
+///     println!("{html}");
+///     Ok(())
 /// }
 /// ```
 ///
-/// With custom options:
+/// With custom settings:
 /// ```rust
-/// use katex::*;
+/// use katex::{KatexContext, Settings, render_to_string};
 ///
 /// let ctx = KatexContext::default();
-/// let options = SettingsOptions {
-///     display_mode: Some(true),
-///     ..Default::default()
-/// };
-/// match render_to_string(&ctx, r"\sum_{i=1}^{n} x_i", Some(options)) {
-///     Ok(html) => println!("{}", html),
-///     Err(e) => println!("Error: {}", e),
-/// }
+/// let mut settings = Settings::default();
+/// settings.display_mode = true; // Render in display/block mode
+///
+/// let html = render_to_string(&ctx, r"\sum_{i=1}^{n} x_i", &settings).unwrap();
+/// println!("{html}");
 /// ```
 ///
-/// # Error Handling
+/// Here's an example that triggers an error:
 ///
 /// The function provides detailed error messages with position information:
 /// ```rust
-/// use katex::*;
+/// use katex::{KatexContext, Settings, render_to_string};
 ///
 /// let ctx = KatexContext::default();
-/// match render_to_string(&ctx, r"\frac{a}{", None) {
+/// let settings = Settings::default();
+///
+/// match render_to_string(&ctx, r"\frac{a}{", &settings) {
 ///     Ok(_) => println!("Success"),
 ///     Err(e) => println!("Error at position {}: {}", e.position.unwrap_or(0), e),
 /// }
@@ -176,7 +175,7 @@ pub use crate::context::KatexContext;
 /// # Performance
 ///
 /// For optimal performance in high-throughput applications, consider reusing
-/// `Settings` objects rather than creating new ones for each render call.
+/// [`Settings`] objects rather than creating new ones for each render call.
 pub use crate::core::render_to_string;
 
 /// Parse an expression and return the parse tree
@@ -246,34 +245,36 @@ pub use crate::core::render_to_html_tree;
 ///
 /// # Parameters
 ///
-/// * `character` - The character or symbol to look up (as a string)
+/// * `ctx` - Shared [`KatexContext`] containing font metric tables
+/// * `character` - The character or symbol to look up
 /// * `font` - The font family name (e.g., "Main-Regular", "AMS-Regular",
 ///   "Caligraphic-Regular")
-/// * `mode` - The mathematical mode (`Mode::Math` or `Mode::Text`) affecting
-///   metric selection
+/// * `mode` - The mathematical mode (Mode::Math or Mode::Text) affecting metric
+///   selection
 ///
 /// # Returns
 ///
-/// Returns `Option<FontMetrics>` containing:
-/// - `depth`: How far below the baseline the character extends
-/// - `height`: How far above the baseline the character extends
-/// - `italic`: Italic correction for proper spacing after italic characters
-/// - `skew`: Skew adjustment for superscript positioning
-/// - `width`: Total width of the character
-///
-/// Returns `None` if the character or font is not found, or if metrics are
-/// unavailable.
+/// Returns `Result<Option<&CharacterMetrics>, ParseError>`.
+/// - `Ok(Some(metrics))` contains the character dimensions
+/// - `Ok(None)` indicates that no metrics are available for the requested
+///   character/font combination
+/// - `Err(error)` indicates that the font family itself was unknown
 ///
 /// # Examples
 ///
 /// ```rust
 /// use katex::types::Mode;
-/// use katex::*;
+/// use katex::{KatexContext, ParseError, get_character_metrics};
 ///
-/// let metrics = get_character_metrics('A', "Main-Regular", Mode::Math);
-/// if let Some(m) = metrics {
-///     println!("Character width: {}", m.width);
-///     println!("Character height: {}", m.height);
+/// fn main() -> Result<(), ParseError> {
+///     let ctx = KatexContext::default();
+///
+///     if let Some(m) = get_character_metrics(&ctx, 'A', "Main-Regular", Mode::Math)? {
+///         println!("Character width: {}", m.width);
+///         println!("Character height: {}", m.height);
+///     }
+///
+///     Ok(())
 /// }
 /// ```
 ///
@@ -338,60 +339,25 @@ pub use crate::font_metrics_data::CharacterMetrics;
 /// measurements.
 ///
 /// This struct serves as the main interface for accessing pre-computed font
-/// metrics for individual characters across different font families. It
-/// provides methods to retrieve width, height, depth, and other typographic
-/// measurements for mathematical symbols and text characters.
-///
-/// The metrics are generated at compile time from TeX font files and stored
-/// in perfect hash tables for efficient lookup during rendering.
-///
-/// # Methods
-///
-/// * `get_metrics()` - Retrieves complete metrics for a character in a font
-///   family
-/// * `get_width()` - Gets just the width of a character
-/// * `get_height()` - Gets just the height of a character
-/// * `get_depth()` - Gets just the depth of a character
-///
-/// # Supported Font Families
-///
-/// The following font families are supported:
-/// - `AMS-Regular`: American Mathematical Society symbols
-/// - `Caligraphic-Regular`: Calligraphic/script letters
-/// - `Fraktur-Regular`: Fraktur/Gothic letters
-/// - `Main-Bold`, `Main-BoldItalic`, `Main-Italic`, `Main-Regular`: Primary
-///   fonts
-/// - `Math-BoldItalic`, `Math-Italic`: Mathematical alphabets
-/// - `SansSerif-Bold`, `SansSerif-Italic`, `SansSerif-Regular`: Sans-serif
-///   variants
-/// - `Script-Regular`: Script style letters
-/// - `Size1-Regular` through `Size4-Regular`: Size-specific fonts
-/// - `Typewriter-Regular`: Monospace font
+/// metrics for individual characters across different font families. The
+/// metrics are generated at compile time from KaTeX's data files and stored in
+/// perfect hash tables for efficient lookup during rendering.
 ///
 /// # Examples
 ///
 /// ```rust
-/// use katex::*;
+/// use katex::{FontMetricsData, ParseError};
 ///
-/// // Get complete metrics for 'A' in main font
-/// let metrics = FontMetricsData::get_metrics("Main-Regular", 'A' as u32);
-/// if let Some(m) = metrics {
-///     println!("Width: {}, Height: {}", m.width, m.height);
+/// fn main() -> Result<(), ParseError> {
+///     let data = FontMetricsData::default();
+///
+///     if let Some(metrics) = data.get_metric("Main-Regular", 'A' as u32)? {
+///         println!("Width: {}", metrics.width);
+///     }
+///
+///     Ok(())
 /// }
-///
-/// // Get just the width
-/// let width = FontMetricsData::get_width("Main-Regular", 'A' as u32);
 /// ```
-///
-/// # Character Encoding
-///
-/// Characters are specified by their Unicode code points (u32). For ASCII
-/// characters, you can use `'A' as u32` or the numeric code point directly.
-///
-/// # Performance
-///
-/// Font metric lookups use perfect hash tables generated at compile time,
-/// making them extremely fast and suitable for use in rendering loops.
 pub use crate::font_metrics_data::FontMetricsData;
 
 /// Error type for parsing and rendering failures in KaTeX expressions.
@@ -401,39 +367,36 @@ pub use crate::font_metrics_data::FontMetricsData;
 /// wrong, including the error message, position in the source string, and
 /// surrounding context for debugging.
 ///
-/// ParseError implements the standard `Error` and `Display` traits, making it
-/// compatible with Rust's error handling ecosystem.
-///
-/// # Fields
-///
-/// * `message` - The complete error message with context and position
-///   information
-/// * `position` - Optional byte position in the source string where the error
-///   occurred
-/// * `length` - Optional length of the problematic text segment
-/// * `raw_message` - The original error message without added context
+/// `ParseError` implements the standard `Error` and `Display` traits, making
+/// it compatible with Rust's error handling ecosystem.
 ///
 /// # Examples
 ///
 /// ```rust
-/// use katex::*;
+/// use katex::{KatexContext, ParseError, Settings, render_to_string};
 ///
-/// let ctx = KatexContext::default();
-/// match render_to_string(&ctx, r"\frac{a}{", None) {
-///     Ok(_) => println!("Success"),
-///     Err(e) => {
-///         println!("Parse error: {}", e);
-///         if let Some(pos) = e.position {
-///             println!("Error at position: {}", pos);
+/// fn try_render() -> Result<(), ParseError> {
+///     let ctx = KatexContext::default();
+///     let settings = Settings::default();
+///
+///     render_to_string(&ctx, r"\frac{a}{", &settings)?;
+///     Ok(())
+/// }
+///
+/// fn main() {
+///     if let Err(err) = try_render() {
+///         println!("Parse error: {}", err);
+///         if let Some(pos) = err.position {
+///             println!("Error at position: {pos}");
 ///         }
-///         println!("Raw message: {}", e.raw_message());
+///         println!("Raw message: {}", err.raw_message());
 ///     }
 /// }
 /// ```
 ///
 /// # Error Context
 ///
-/// When created with location information (via `ParseError::with_token()`),
+/// When created with location information (via [`ParseError::with_token`]),
 /// the error message includes:
 /// - The position in the source string (1-indexed)
 /// - Surrounding context with the problematic text underlined
@@ -441,14 +404,8 @@ pub use crate::font_metrics_data::FontMetricsData;
 ///
 /// # Integration
 ///
-/// ParseError integrates seamlessly with `?` operator and error handling:
-/// ```rust
-/// use katex::*;
-///
-/// fn render_math(ctx: &KatexContext, expr: &str) -> Result<String, ParseError> {
-///     render_to_string(ctx, expr, None)
-/// }
-/// ```
+/// `ParseError` integrates seamlessly with the `?` operator and standard
+/// error handling patterns.
 pub use crate::types::ParseError;
 
 pub use crate::types::OutputFormat;
@@ -459,46 +416,37 @@ pub use crate::types::OutputFormat;
 /// display modes, error handling, font options, macro definitions, and other
 /// rendering parameters.
 ///
-/// Settings are typically created from `SettingsOptions` using the
-/// `Settings::new()` method, which provides default values for any unspecified
-/// options.
-///
-/// # Fields
-///
-/// * `display_mode` - Whether to render in display (block) or inline mode
-/// * `output` - Output format: HTML, MathML, or both
-/// * `leqno` - Left-align equation numbers
-/// * `fleqn` - Flush left equations
-/// * `throw_on_error` - Whether to throw errors or render error messages
-/// * `error_color` - Color for error message rendering
-/// * `macros` - Custom macro definitions
-/// * `min_rule_thickness` - Minimum thickness for rules and lines
-/// * `color_is_text_color` - Color interpretation mode
-/// * `strict` - Strict mode settings for LaTeX compatibility checking
-/// * `trust` - Trust settings for potentially dangerous content
-/// * `max_size` - Maximum allowed size for expressions
-/// * `max_expand` - Maximum expansion limit for macros
-/// * `global_group` - Whether to use global grouping
+/// [`Settings`] exposes the same configuration knobs as the JavaScript KaTeX
+/// API, including display mode, output format, strict-mode validation, trust
+/// callbacks, and custom macro definitions. All fields are public, so they can
+/// be adjusted directly or via the generated builder (`Settings::builder()`).
 ///
 /// # Examples
 ///
 /// ```rust
-/// use katex::*;
+/// use katex::Settings;
 ///
-/// let options = SettingsOptions {
-///     display_mode: Some(true),
-///     output: Some(OutputFormat::HtmlAndMathml),
-///     throw_on_error: Some(false),
-///     ..Default::default()
-/// };
+/// let mut settings = Settings::default();
+/// settings.display_mode = true;
+/// settings.throw_on_error = false;
+/// ```
 ///
-/// let settings = Settings::new(options);
+/// Using the builder for ergonomic construction:
+/// ```rust
+/// use katex::Settings;
+///
+/// let settings = Settings::builder()
+///     .display_mode(true)
+///     .throw_on_error(false)
+///     .build();
+/// assert!(settings.display_mode);
+/// assert!(!settings.throw_on_error);
 /// ```
 ///
 /// # Default Values
 ///
 /// - `display_mode`: `false` (inline mode)
-/// - `output`: `OutputFormat::HtmlAndMathml`
+/// - `output`: [`OutputFormat::HtmlAndMathml`]
 /// - `throw_on_error`: `true`
 /// - `error_color`: `"#cc0000"` (red)
 /// - `max_size`: `f64::INFINITY`
@@ -507,83 +455,14 @@ pub use crate::types::OutputFormat;
 ///
 /// # Performance Considerations
 ///
-/// For high-performance applications, create `Settings` objects once and reuse
-/// them rather than creating new ones for each render operation.
+/// For high-performance applications, create [`Settings`] objects once and
+/// reuse them rather than creating new ones for each render operation.
 pub use crate::types::Settings;
-/// Options structure for configuring KaTeX rendering behavior.
+/// Strictness and trust configuration types used by [`Settings`].
 ///
-/// This struct provides a convenient way to specify rendering options when
-/// creating a `Settings` instance. All fields are optional, allowing you to
-/// specify only the options you want to customize while using defaults for the
-/// rest.
-///
-/// The fields correspond directly to the fields in `Settings`, but are wrapped
-/// in `Option` to allow partial configuration.
-///
-/// # Fields
-///
-/// * `display_mode` - Render in display (block) mode if `Some(true)`
-/// * `output` - Output format specification
-/// * `leqno` - Left-align equation numbers
-/// * `fleqn` - Flush left equations
-/// * `throw_on_error` - Error handling behavior
-/// * `error_color` - Error message color
-/// * `macros` - Custom macro definitions
-/// * `min_rule_thickness` - Minimum rule thickness
-/// * `color_is_text_color` - Color interpretation mode
-/// * `strict` - Strict mode configuration
-/// * `trust` - Trust settings for security
-/// * `max_size` - Maximum expression size limit
-/// * `max_expand` - Maximum macro expansion limit
-/// * `global_group` - Global grouping setting
-///
-/// # Examples
-///
-/// Basic usage with defaults:
-/// ```rust
-/// use katex::*;
-///
-/// let options = SettingsOptions {
-///     display_mode: Some(true),
-///     throw_on_error: Some(false),
-///     ..Default::default()
-/// };
-/// ```
-///
-/// Advanced configuration:
-/// ```rust
-/// use katex::namespace::KeyMap;
-/// use katex::*;
-///
-/// let mut macros = KeyMap::default();
-/// macros.insert("\\RR".to_string(), "\\mathbb{R}".to_string());
-///
-/// let options = SettingsOptions {
-///     display_mode: Some(true),
-///     output: Some(OutputFormat::Html),
-///     macros: Some(macros),
-///     max_size: Some(1000.0),
-///     ..Default::default()
-/// };
-/// ```
-///
-/// # Default Behavior
-///
-/// When `SettingsOptions` is created with `Default::default()`, all fields are
-/// `None`, which means the `Settings::new()` method will use its own defaults
-/// for all values.
-///
-/// # Conversion
-///
-/// Use `Settings::new(options)` to convert `SettingsOptions` into a complete
-/// `Settings` struct:
-///
-/// ```rust
-/// use katex::*;
-///
-/// let options = SettingsOptions::default();
-/// let settings = Settings::new(options);
-/// ```
+/// These enums and callback types mirror KaTeX's JavaScript configuration and
+/// control validation of potentially unsafe commands (`trust`) as well as how
+/// strictly to enforce LaTeX syntax (`strict`).
 pub use crate::types::{
     StrictFunction, StrictMode, StrictReturn, StrictSetting, TrustContext, TrustFunction,
     TrustSetting,

@@ -20,7 +20,7 @@ use crate::types::{ArgType, Mode, ParseError};
 /// # Error Handling
 ///
 /// Environment handlers should validate the context parameters and return
-/// appropriate [`ParseError`] if the environment is not supported in the
+/// appropriate `ParseError` if the environment is not supported in the
 /// current mode.
 ///
 /// # See Also
@@ -81,11 +81,11 @@ pub struct EnvContext<'a, 'b> {
 ///
 /// Returns a [`Result`] containing either:
 /// - [`AnyParseNode`]: The successfully parsed and processed environment node
-/// - [`ParseError`]: If parsing or processing fails
+/// - `ParseError`: If parsing or processing fails
 ///
 /// # Error Handling
 ///
-/// Handlers should return [`ParseError`] for:
+/// Handlers should return `ParseError` for:
 /// - Invalid arguments or argument counts
 /// - Unsupported parsing modes for the environment
 /// - Malformed environment content
@@ -95,7 +95,7 @@ pub struct EnvContext<'a, 'b> {
 ///
 /// - [`EnvContext`]: Context information provided to handlers
 /// - [`AnyParseNode`]: The parse node types that handlers produce
-/// - [`ParseError`]: Error type for parsing failures
+/// - `ParseError`: Error type for parsing failures
 /// - [`crate::parser`]: Parser module that invokes these handlers
 pub type EnvHandler = fn(
     context: EnvContext,
@@ -114,7 +114,6 @@ pub type EnvHandler = fn(
 /// # See Also
 ///
 /// - [`ArgType`]: Types of arguments that environments can accept
-/// - [`EnvDefSpec`]: Uses these properties in environment definitions
 /// - [`crate::parser`]: Parser that applies these properties
 #[derive(Debug, Clone)]
 pub struct EnvProps {
@@ -189,32 +188,12 @@ impl Default for EnvProps {
 /// Processed environment specification used during LaTeX parsing.
 ///
 /// This struct represents the final, resolved configuration for an environment
-/// after processing the definition specification ([`EnvDefSpec`]). It contains
+/// after processing the definition specification. It contains
 /// all necessary information for the parser to handle the environment
 /// correctly, with defaults applied and validation performed.
 ///
-/// Unlike [`EnvDefSpec`], this struct uses concrete values rather than options,
-/// making it suitable for runtime parsing operations.
-///
 /// # See Also
 ///
-/// - [`EnvDefSpec`]: The definition specification that gets processed into this
-/// - [`EnvHandler`]: The handler function for processing the environment
-/// - [`crate::parser`]: Parser that uses these specifications
-///
-/// Processed environment specification used during LaTeX parsing.
-///
-/// This struct represents the final, resolved configuration for an environment
-/// after processing the definition specification ([`EnvDefSpec`]). It contains
-/// all necessary information for the parser to handle the environment
-/// correctly, with defaults applied and validation performed.
-///
-/// Unlike [`EnvDefSpec`], this struct uses concrete values rather than options,
-/// making it suitable for runtime parsing operations.
-///
-/// # See Also
-///
-/// - [`EnvDefSpec`]: The definition specification that gets processed into this
 /// - [`EnvHandler`]: The handler function for processing the environment
 /// - [`crate::parser`]: Parser that uses these specifications
 #[derive(Debug, Clone)]

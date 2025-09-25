@@ -1,78 +1,100 @@
-//! WebAssembly bindings for KaTeX Rust implementation
+//! WebAssembly bindings that expose a KaTeX-compatible JavaScript API.
 //!
-//! This module provides JavaScript-compatible APIs that mirror the original
-//! KaTeX.js library, allowing seamless integration with web applications.
+//! The real KaTeX package for Node.js exports two primary entry points –
+//! `render` and `renderToString` – as plain JavaScript functions that accept a
+//! KaTeX-style options object.  Consumers expect to be able to call these
+//! functions directly without constructing intermediate Rust objects.  The
+//! previous bindings exported thin wrappers around [`Settings`], which made the
+//! WASM build awkward to use and required a bespoke shim in the screenshotter
+//! tests.
+//!
+//! This module mirrors the Node.js surface.  Options are accepted as plain
+//! JavaScript objects, `ParseError`s are thrown just like in KaTeX.js, and the
+//! exported names match the canonical camelCase spellings.  This allows the
+//! generated `pkg/katex.js` bundle to be dropped into existing KaTeX tooling –
+//! including the upstream screenshotter – without additional glue code.
 
 use js_sys::{Array, Object, Reflect};
-use wasm_bindgen::JsCast;
+use wasm_bindgen::JsCast as _;
 use wasm_bindgen::prelude::*;
+
+use std::sync::OnceLock;
 
 use crate::macro_expander::MacroMap;
 use crate::macros::MacroDefinition;
 use crate::{
+    ParseError,
     context::KatexContext,
     core,
     types::{OutputFormat, Settings, StrictMode, StrictSetting, TrustSetting},
 };
 
-/// Global KaTeX context for WASM
-use std::sync::OnceLock;
-
-static KATEX_CONTEXT: OnceLock<KatexContext> = OnceLock::new();
-
-/// Initialize the global KaTeX context
-
+/// Cached global [`KatexContext`].
 fn get_context() -> &'static KatexContext {
-    KATEX_CONTEXT.get_or_init(KatexContext::default)
+    static CONTEXT: OnceLock<KatexContext> = OnceLock::new();
+    CONTEXT.get_or_init(KatexContext::default)
 }
 
-/// Render LaTeX expression to a DOM element
-
-#[wasm_bindgen]
-pub fn render(
-    tex: &str,
-    element: &web_sys::Node,
-    options: Option<Settings>,
-) -> Result<(), JsValue> {
-    let ctx = get_context();
-    let mut settings = options.unwrap_or_default();
-    settings.output = OutputFormat::HtmlAndMathml;
-
-    core::render(ctx, tex, element, &settings).map_err(|e| JsValue::from_str(&format!("{e}")))
+/// Wrapper carrying the resolved settings together with metadata describing
+/// whether the caller explicitly set the output format.
+struct JsSettings {
+    settings: Settings,
+    output_specified: bool,
 }
 
-/// Render LaTeX expression to HTML string
-
-#[wasm_bindgen]
-pub fn render_to_string(tex: &str, options: Option<Settings>) -> Result<String, JsValue> {
-    let ctx = get_context();
-    let mut settings = options.unwrap_or_default();
-    settings.output = OutputFormat::HtmlAndMathml;
-
-    core::render_to_string(ctx, tex, &settings).map_err(|e| JsValue::from_str(&format!("{e}")))
+fn js_error(message: &str) -> JsValue {
+    JsValue::from_str(message)
 }
 
-fn parse_js_options(js: &JsValue) -> Result<Settings, JsValue> {
-    if js.is_undefined() || js.is_null() {
-        return Ok(Settings::default());
+fn parse_js_bool(value: &JsValue, key: &str) -> Result<bool, JsValue> {
+    value
+        .as_bool()
+        .ok_or_else(|| js_error(&format!("option '{key}' must be a boolean")))
+}
+
+fn parse_js_number(value: &JsValue, key: &str) -> Result<f64, JsValue> {
+    value
+        .as_f64()
+        .ok_or_else(|| js_error(&format!("option '{key}' must be a number")))
+}
+
+fn parse_js_string(value: &JsValue, key: &str) -> Result<String, JsValue> {
+    value
+        .as_string()
+        .ok_or_else(|| js_error(&format!("option '{key}' must be a string")))
+}
+
+fn parse_js_options(options: JsValue) -> Result<JsSettings, JsValue> {
+    if options.is_undefined() || options.is_null() {
+        return Ok(JsSettings {
+            settings: Settings::default(),
+            output_specified: false,
+        });
     }
-    if !js.is_object() {
-        return Err(JsValue::from_str("options must be a plain object"));
-    }
-    let obj: Object = Object::from(js.clone());
 
+    if !options.is_object() {
+        return Err(js_error("options must be a plain object"));
+    }
+
+    let obj: Object = options.into();
     let get = |key: &str| -> Result<JsValue, JsValue> {
         Reflect::get(&obj, &JsValue::from_str(key))
-            .map_err(|_| JsValue::from_str(&format!("failed to read option '{}'", key)))
+            .map_err(|_| js_error(&format!("failed to read option '{key}'")))
     };
     let opt_bool = |key: &str| -> Result<Option<bool>, JsValue> {
         let v = get(key)?;
         if v.is_undefined() || v.is_null() {
             Ok(None)
         } else {
-            v.as_bool()
-                .map(Some)
-                .ok_or_else(|| JsValue::from_str(&format!("option '{}' must be a boolean", key)))
+            Ok(Some(parse_js_bool(&v, key)?))
+        }
+    };
+    let opt_number = |key: &str| -> Result<Option<f64>, JsValue> {
+        let v = get(key)?;
+        if v.is_undefined() || v.is_null() {
+            Ok(None)
+        } else {
+            Ok(Some(parse_js_number(&v, key)?))
         }
     };
     let opt_string = |key: &str| -> Result<Option<String>, JsValue> {
@@ -80,225 +102,236 @@ fn parse_js_options(js: &JsValue) -> Result<Settings, JsValue> {
         if v.is_undefined() || v.is_null() {
             Ok(None)
         } else {
-            v.as_string()
-                .map(Some)
-                .ok_or_else(|| JsValue::from_str(&format!("option '{}' must be a string", key)))
-        }
-    };
-    let opt_f64 = |key: &str| -> Result<Option<f64>, JsValue> {
-        let v = get(key)?;
-        if v.is_undefined() || v.is_null() {
-            Ok(None)
-        } else {
-            v.as_f64()
-                .map(Some)
-                .ok_or_else(|| JsValue::from_str(&format!("option '{}' must be a number", key)))
+            Ok(Some(parse_js_string(&v, key)?))
         }
     };
 
     let mut settings = Settings::default();
+    let mut output_specified = false;
 
-    // display / displayMode
-    if let Some(dm) = opt_bool("displayMode")? {
-        settings.display_mode = dm;
-    } else if let Some(d) = opt_bool("display")? {
-        settings.display_mode = d;
+    if let Some(display_mode) = opt_bool("displayMode")? {
+        settings.display_mode = display_mode;
+    } else if let Some(display) = opt_bool("display")? {
+        settings.display_mode = display;
     }
 
-    // throwOnError / noThrow
     match (opt_bool("throwOnError")?, opt_bool("noThrow")?) {
-        (Some(toe), _) => {
-            settings.throw_on_error = toe;
-        }
-        (None, Some(no_throw)) => {
-            settings.throw_on_error = !no_throw;
-        }
-        (None, None) => {
-            // keep default (true)
-        }
+        (Some(throw_on_error), _) => settings.throw_on_error = throw_on_error,
+        (None, Some(no_throw)) => settings.throw_on_error = !no_throw,
+        (None, None) => {}
     }
 
-    // errorColor
     if let Some(color) = opt_string("errorColor")? {
         settings.error_color = color;
     }
 
-    // macros: { string -> string }
-    let macros_val = get("macros")?;
-    if !macros_val.is_undefined() && !macros_val.is_null() {
-        if Array::is_array(&macros_val) {
-            return Err(JsValue::from_str(
-                "option 'macros' must be a plain object, not an array",
-            ));
-        }
-        if !macros_val.is_object() {
-            return Err(JsValue::from_str("option 'macros' must be an object"));
-        }
-        let macros_obj: Object = Object::from(macros_val);
-        let keys = Object::keys(&macros_obj);
-        let mut m: MacroMap = MacroMap::default();
-        for key in keys.iter() {
-            let k = key
-                .as_string()
-                .ok_or_else(|| JsValue::from_str("macros keys must be strings"))?;
-            let val = Reflect::get(&macros_obj, &JsValue::from_str(&k))
-                .map_err(|_| JsValue::from_str(&format!("failed to read macros['{}']", k)))?;
-            let s = val
-                .as_string()
-                .ok_or_else(|| JsValue::from_str(&format!("macros['{}'] must be a string", k)))?;
-            m.insert(k, MacroDefinition::String(s));
-        }
-        {
-            let mut target = settings.macros.borrow_mut();
-            *target = m;
-        }
+    if let Some(color) = opt_string("color")? {
+        settings.color = Some(color);
     }
 
-    // strict
-    let strict_val = get("strict")?;
-    if !strict_val.is_undefined() && !strict_val.is_null() {
-        if let Some(b) = strict_val.as_bool() {
-            settings.strict = StrictSetting::Bool(b);
-        } else if let Some(s) = strict_val.as_string() {
-            match s.to_lowercase().as_str() {
-                "ignore" => settings.strict = StrictSetting::Mode(StrictMode::Ignore),
-                "warn" => settings.strict = StrictSetting::Mode(StrictMode::Warn),
-                "error" => settings.strict = StrictSetting::Mode(StrictMode::Error),
+    if let Some(leqno) = opt_bool("leqno")? {
+        settings.leqno = leqno;
+    }
+    if let Some(fleqn) = opt_bool("fleqn")? {
+        settings.fleqn = fleqn;
+    }
+    if let Some(color_is_text_color) = opt_bool("colorIsTextColor")? {
+        settings.color_is_text_color = color_is_text_color;
+    }
+    if let Some(global_group) = opt_bool("globalGroup")? {
+        settings.global_group = global_group;
+    }
+
+    if let Some(min_rule_thickness) = opt_number("minRuleThickness")? {
+        if !(min_rule_thickness.is_finite() && min_rule_thickness >= 0.0) {
+            return Err(js_error(
+                "option 'minRuleThickness' must be a non-negative finite number",
+            ));
+        }
+        settings.min_rule_thickness = min_rule_thickness;
+    }
+
+    if let Some(size_multiplier) = opt_number("sizeMultiplier")? {
+        if !(size_multiplier.is_finite() && size_multiplier >= 0.0) {
+            return Err(js_error(
+                "option 'sizeMultiplier' must be a non-negative finite number",
+            ));
+        }
+        settings.size_multiplier = size_multiplier;
+    }
+
+    if let Some(max_size) = opt_number("maxSize")? {
+        if !(max_size.is_finite() && max_size >= 0.0) {
+            return Err(js_error(
+                "option 'maxSize' must be a non-negative finite number",
+            ));
+        }
+        settings.max_size = max_size;
+    }
+
+    if let Some(max_expand) = opt_number("maxExpand")? {
+        if !(max_expand.is_finite() && max_expand >= 0.0) {
+            return Err(js_error(
+                "option 'maxExpand' must be a finite non-negative integer",
+            ));
+        }
+        if max_expand.fract() != 0.0 {
+            return Err(js_error("option 'maxExpand' must be an integer"));
+        }
+        settings.max_expand = max_expand as usize;
+    }
+
+    let strict_value = get("strict")?;
+    if !strict_value.is_undefined() && !strict_value.is_null() {
+        if let Some(strict_bool) = strict_value.as_bool() {
+            settings.strict = StrictSetting::Bool(strict_bool);
+        } else if let Some(strict_string) = strict_value.as_string() {
+            let strict_mode = match strict_string.to_lowercase().as_str() {
+                "ignore" => StrictMode::Ignore,
+                "warn" => StrictMode::Warn,
+                "error" => StrictMode::Error,
                 other => {
-                    return Err(JsValue::from_str(&format!(
-                        "option 'strict' string not recognized: '{}'; expected 'ignore' | 'warn' | 'error'",
-                        other
+                    return Err(js_error(&format!(
+                        "option 'strict' string not recognized: '{other}'; expected 'ignore' | 'warn' | 'error'",
                     )));
                 }
-            }
+            };
+            settings.strict = StrictSetting::Mode(strict_mode);
         } else {
-            return Err(JsValue::from_str(
+            return Err(js_error(
                 "option 'strict' must be a boolean or one of: 'ignore' | 'warn' | 'error'",
             ));
         }
     }
 
-    // trust
-    let trust_val = get("trust")?;
-    if !trust_val.is_undefined() && !trust_val.is_null() {
-        if let Some(b) = trust_val.as_bool() {
-            settings.trust = TrustSetting::Bool(b);
+    let trust_value = get("trust")?;
+    if !trust_value.is_undefined() && !trust_value.is_null() {
+        if let Some(trust_bool) = trust_value.as_bool() {
+            settings.trust = TrustSetting::Bool(trust_bool);
         } else {
-            return Err(JsValue::from_str(
-                "option 'trust' currently supports only boolean",
-            ));
+            return Err(js_error("option 'trust' currently supports only boolean"));
         }
     }
 
-    // output format
-    let output_val = get("output")?;
-    if !output_val.is_undefined() && !output_val.is_null() {
-        if let Some(s) = output_val.as_string() {
-            settings.output = match s.to_lowercase().as_str() {
-                "html" => OutputFormat::Html,
-                "mathml" => OutputFormat::Mathml,
-                "htmlandmathml" => OutputFormat::HtmlAndMathml,
-                _ => OutputFormat::Html, // Default to HTML for screenshot compatibility
+    if let Some(output) = opt_string("output")? {
+        settings.output = match output.to_lowercase().as_str() {
+            "html" => OutputFormat::Html,
+            "mathml" => OutputFormat::Mathml,
+            "htmlandmathml" => OutputFormat::HtmlAndMathml,
+            other => {
+                return Err(js_error(&format!(
+                    "option 'output' must be one of 'html', 'mathml', 'htmlAndMathml'; received '{other}'",
+                )));
+            }
+        };
+        output_specified = true;
+    }
+
+    let macros_value = get("macros")?;
+    if !macros_value.is_undefined() && !macros_value.is_null() {
+        if Array::is_array(&macros_value) {
+            return Err(js_error(
+                "option 'macros' must be a plain object, not an array",
+            ));
+        }
+        if !macros_value.is_object() {
+            return Err(js_error("option 'macros' must be a plain object"));
+        }
+
+        let macros_obj: Object = macros_value.into();
+        let keys = Object::keys(&macros_obj);
+        let mut macros = MacroMap::default();
+        for key in keys.iter() {
+            let Some(name) = key.as_string() else {
+                return Err(js_error("macros keys must be strings"));
             };
-        } else {
-            return Err(JsValue::from_str("option 'output' must be a string"));
+            let value = Reflect::get(&macros_obj, &JsValue::from_str(&name))
+                .map_err(|_| js_error(&format!("failed to read macros['{name}']")))?;
+            let Some(expansion) = value.as_string() else {
+                return Err(js_error(&format!("macros['{name}'] must be a string")));
+            };
+            macros.insert(name, MacroDefinition::String(expansion));
         }
+        *settings.macros.borrow_mut() = macros;
     }
 
-    // simple booleans
-    if let Some(b) = opt_bool("leqno")? {
-        settings.leqno = b;
-    }
-    if let Some(b) = opt_bool("fleqn")? {
-        settings.fleqn = b;
-    }
-    if let Some(b) = opt_bool("colorIsTextColor")? {
-        settings.color_is_text_color = b;
-    }
-    if let Some(b) = opt_bool("globalGroup")? {
-        settings.global_group = b;
-    }
-
-    // numbers
-    if let Some(n) = opt_f64("minRuleThickness")? {
-        if !n.is_finite() || n.is_sign_negative() {
-            return Err(JsValue::from_str(
-                "option 'minRuleThickness' must be a non-negative finite number",
-            ));
-        }
-        settings.min_rule_thickness = n;
-    }
-    if let Some(n) = opt_f64("sizeMultiplier")? {
-        if !n.is_finite() || n.is_sign_negative() {
-            return Err(JsValue::from_str(
-                "option 'sizeMultiplier' must be a non-negative finite number",
-            ));
-        }
-        settings.size_multiplier = n;
-    }
-    if let Some(n) = opt_f64("maxExpand")? {
-        if !n.is_finite() {
-            return Err(JsValue::from_str(
-                "option 'maxExpand' must be a finite non-negative integer",
-            ));
-        }
-        if n < 0.0 {
-            return Err(JsValue::from_str("option 'maxExpand' must be non-negative"));
-        }
-        if (n.fract()).abs() > 0.0 {
-            return Err(JsValue::from_str("option 'maxExpand' must be an integer"));
-        }
-        settings.max_expand = n as usize;
-    }
-
-    // color (math color)
-    if let Some(c) = opt_string("color")? {
-        settings.color = Some(c);
-    }
-
-    Ok(settings)
+    Ok(JsSettings {
+        settings,
+        output_specified,
+    })
 }
 
-/// Render LaTeX expression to a DOM element with options specified as a JS
-/// object
-#[wasm_bindgen]
-pub fn render_with_options(
-    tex: &str,
-    element: web_sys::Element,
-    js_options: JsValue,
-) -> Result<(), JsValue> {
-    let ctx = get_context();
-    let settings = parse_js_options(&js_options)?;
+fn map_parse_error(error: ParseError) -> JsValue {
+    JsValue::from(error)
+}
+
+fn element_from_js(element: JsValue) -> Result<web_sys::Element, JsValue> {
+    if element.is_null() || element.is_undefined() {
+        return Err(js_error("katex.render: element is required"));
+    }
+
+    element
+        .dyn_into::<web_sys::Element>()
+        .map_err(|_| js_error("katex.render: element must be a DOM Element"))
+}
+
+fn normalize_settings(parsed: JsSettings, default_output: Option<OutputFormat>) -> Settings {
+    let mut settings = parsed.settings;
+    if !parsed.output_specified
+        && let Some(output) = default_output
+    {
+        settings.output = output;
+    }
+    settings
+}
+
+/// Exported as `katex.render`.
+#[wasm_bindgen(js_name = render)]
+pub fn render(tex: &str, element: JsValue, options: JsValue) -> Result<(), JsValue> {
+    let element = element_from_js(element)?;
+    let parsed = parse_js_options(options)?;
+    let settings = normalize_settings(parsed, Some(OutputFormat::HtmlAndMathml));
 
     let node: web_sys::Node = element.unchecked_into();
-    core::render(ctx, tex, &node, &settings).map_err(|e| JsValue::from_str(&format!("{e}")))
+    core::render(get_context(), tex, &node, &settings).map_err(map_parse_error)
 }
 
-/// Render LaTeX expression to HTML string with options specified as a JS object
-#[wasm_bindgen]
-pub fn render_to_string_with_options(tex: &str, js_options: JsValue) -> Result<String, JsValue> {
-    let ctx = get_context();
-    let settings = parse_js_options(&js_options)?;
-
-    core::render_to_string(ctx, tex, &settings).map_err(|e| JsValue::from_str(&format!("{e}")))
+/// Exported as `katex.renderToString`.
+#[wasm_bindgen(js_name = renderToString)]
+pub fn render_to_string(tex: &str, options: JsValue) -> Result<String, JsValue> {
+    let parsed = parse_js_options(options)?;
+    let settings = normalize_settings(parsed, Some(OutputFormat::HtmlAndMathml));
+    core::render_to_string(get_context(), tex, &settings).map_err(map_parse_error)
 }
 
-/// Render LaTeX expression to MathML string
-#[wasm_bindgen]
-pub fn render_to_mathml(tex: &str, options: Option<Settings>) -> Result<String, JsValue> {
-    let ctx = get_context();
-    let mut settings = options.unwrap_or_default();
-    settings.output = OutputFormat::Mathml;
-
-    core::render_to_string(ctx, tex, &settings).map_err(|e| JsValue::from_str(&format!("{e}")))
-}
-
-/// Render LaTeX expression to HTML string (HTML-only output)
-#[wasm_bindgen]
-pub fn render_to_html(tex: &str, options: Option<Settings>) -> Result<String, JsValue> {
-    let ctx = get_context();
-    let mut settings = options.unwrap_or_default();
+/// Exported as `katex.renderToHTML`.
+#[wasm_bindgen(js_name = renderToHTML)]
+pub fn render_to_html(tex: &str, options: JsValue) -> Result<String, JsValue> {
+    let parsed = parse_js_options(options)?;
+    let mut settings = parsed.settings;
     settings.output = OutputFormat::Html;
+    core::render_to_string(get_context(), tex, &settings).map_err(map_parse_error)
+}
 
-    core::render_to_string(ctx, tex, &settings).map_err(|e| JsValue::from_str(&format!("{e}")))
+/// Exported as `katex.renderToMathML`.
+#[wasm_bindgen(js_name = renderToMathML)]
+pub fn render_to_mathml(tex: &str, options: JsValue) -> Result<String, JsValue> {
+    let parsed = parse_js_options(options)?;
+    let mut settings = parsed.settings;
+    settings.output = OutputFormat::Mathml;
+    core::render_to_string(get_context(), tex, &settings).map_err(map_parse_error)
+}
+
+/// Exported as `katex.version`.
+#[wasm_bindgen(js_name = version)]
+#[must_use]
+pub fn version() -> String {
+    env!("CARGO_PKG_VERSION").to_owned()
+}
+
+/// Hook to install better panic messages in WASM.
+#[cfg(feature = "wasm")]
+#[wasm_bindgen(start)]
+pub fn start() {
+    console_error_panic_hook::set_once();
 }

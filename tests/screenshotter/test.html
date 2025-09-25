@@ -40,7 +40,6 @@
   <script type="module">
     // ESM init: load WASM and shim, then render based on URL query.
     import initWasm, * as wasm from "./pkg/katex.js";
-    import { createShim } from "./katex-shim.js";
 
     const search = window.location.search || "";
     const searchParams = new URLSearchParams(search);
@@ -292,7 +291,23 @@
         }
       } else {
         await initWasm();
-        window.katex = createShim(wasm);
+        window.katex = (() => {
+          const api = {
+            render: wasm.render,
+            renderToString: wasm.renderToString,
+            renderToHTML: wasm.renderToHTML,
+            renderToMathML: wasm.renderToMathML,
+            ParseError: wasm.ParseError,
+          };
+          if (typeof wasm.version === "function") {
+            try {
+              api.version = wasm.version();
+            } catch (_) {
+              // ignore version retrieval failures; keep API functional
+            }
+          }
+          return api;
+        })();
       }
 
       const tex = searchParams.get("tex") || "";

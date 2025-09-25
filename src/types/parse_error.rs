@@ -235,7 +235,7 @@ impl ErrorLocationProvider for AnyParseNode {
 /// # See Also
 /// - [`AnyParseNode`] for all supported parse node variants
 /// - [`ErrorLocationProvider`] trait for location interface
-/// - [`ParseError`] for error types in mathematical parsing
+/// - `ParseError` for error types in mathematical parsing
 impl ErrorLocationProvider for Option<AnyParseNode> {
     fn loc(&self) -> Option<&SourceLocation> {
         let n = self.as_ref()?;

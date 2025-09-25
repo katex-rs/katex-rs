@@ -96,8 +96,8 @@ pub use environment::define_environment;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -107,12 +107,12 @@ pub use environment::define_environment;
 /// # Error Handling
 ///
 /// Errors may occur during parsing if an unrecognized infix command is
-/// encountered, resulting in a [`ParseError`].
+/// encountered, resulting in a `ParseError`.
 ///
 /// # See Also
 ///
 /// - [`define_relax`] for implementing relaxation commands.
-/// - The [`genfrac`] module for detailed implementation.
+/// - The genfrac module for detailed implementation.
 pub use genfrac::define_genfrac;
 
 /// Registers the `\relax` command in the KaTeX context.
@@ -124,8 +124,8 @@ pub use genfrac::define_genfrac;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -140,7 +140,7 @@ pub use genfrac::define_genfrac;
 /// # See Also
 ///
 /// - [`define_genfrac`] for fraction-related commands.
-/// - The [`relax`] module for detailed implementation.
+/// - The relax module for detailed implementation.
 pub use relax::define_relax;
 
 /// Registers the `\sqrt` function in the KaTeX context.
@@ -150,8 +150,8 @@ pub use relax::define_relax;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -180,7 +180,7 @@ pub use relax::define_relax;
 /// # See Also
 ///
 /// - [`define_genfrac`] for fraction-related commands.
-/// - The [`sqrt`] module for detailed implementation.
+/// - The sqrt module for detailed implementation.
 pub use sqrt::define_sqrt;
 
 /// Registers the `\@char` function in the KaTeX context.
@@ -192,8 +192,8 @@ pub use sqrt::define_sqrt;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -208,7 +208,6 @@ pub use sqrt::define_sqrt;
 /// # See Also
 ///
 /// - [`define_relax`] for other internal commands.
-/// - The [`char`] module for detailed implementation.
 pub use char::define_char;
 
 /// Registers the `\\` (line break) function in the KaTeX context.
@@ -219,8 +218,8 @@ pub use char::define_char;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -234,7 +233,6 @@ pub use char::define_char;
 /// # See Also
 ///
 /// - [`define_char`] for other internal commands.
-/// - The [`cr`] module for detailed implementation.
 pub use cr::define_cr;
 
 /// Font styling functions are documented above.
@@ -250,8 +248,8 @@ pub use cr::define_cr;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -266,7 +264,6 @@ pub use cr::define_cr;
 /// # See Also
 ///
 /// - [`define_char`] for other internal commands.
-/// - The [`math`] module for detailed implementation.
 pub use math::define_math;
 
 /// Registers macro definition functions (\def, \gdef, \edef, \xdef, \let,
@@ -283,8 +280,8 @@ pub use math::define_math;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -302,7 +299,6 @@ pub use math::define_math;
 /// # See Also
 ///
 /// - [`define_char`] for other internal commands.
-/// - The [`def`] module for detailed implementation.
 pub use def::define_def;
 
 /// Registers the `\rule` function in the KaTeX context.
@@ -313,8 +309,8 @@ pub use def::define_def;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -343,7 +339,6 @@ pub use def::define_def;
 /// # See Also
 ///
 /// - [`define_kern`] for spacing-related commands.
-/// - The [`rule`] module for detailed implementation.
 pub use rule::define_rule;
 
 /// Registers the `\verb` function in the KaTeX context.
@@ -355,8 +350,8 @@ pub use rule::define_rule;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -379,7 +374,6 @@ pub use rule::define_rule;
 /// # See Also
 ///
 /// - [`define_rule`] for other text formatting commands.
-/// - The [`verb`] module for detailed implementation.
 pub use verb::define_verb;
 
 /// Registers the `\tag` function in the KaTeX context.
@@ -390,8 +384,8 @@ pub use verb::define_verb;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -433,7 +427,6 @@ pub use verb::define_verb;
 /// # See Also
 ///
 /// - [`define_verb`] for other text formatting commands.
-/// - The [`tag`] module for detailed implementation.
 pub use tag::define_tag;
 
 /// Registers the `\overline` function in the KaTeX context.
@@ -444,8 +437,8 @@ pub use tag::define_tag;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -471,7 +464,6 @@ pub use tag::define_tag;
 /// # See Also
 ///
 /// - [`define_accent`] for accent-related commands.
-/// - The [`overline`] module for detailed implementation.
 pub use overline::define_overline;
 
 /// Registers superscript and subscript functions in the KaTeX context.
@@ -483,8 +475,8 @@ pub use overline::define_overline;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -526,7 +518,6 @@ pub use overline::define_overline;
 ///
 /// - [`define_op`] for operator-related functions with limits.
 /// - [`define_accent`] for accent-related positioning.
-/// - The [`supsub`] module for detailed implementation.
 pub use supsub::define_supsub;
 
 /// Registers atom symbol functions in the KaTeX context.
@@ -538,8 +529,8 @@ pub use supsub::define_supsub;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -558,7 +549,6 @@ pub use supsub::define_supsub;
 /// # See Also
 ///
 /// - [`define_symbols_ord`] for ordinary symbols.
-/// - The [`symbols_op`] module for detailed implementation.
 pub use symbols_op::define_symbols_op;
 
 /// Registers mathord and textord symbol functions in the KaTeX context.
@@ -569,8 +559,8 @@ pub use symbols_op::define_symbols_op;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -586,7 +576,6 @@ pub use symbols_op::define_symbols_op;
 /// # See Also
 ///
 /// - [`define_accent`] for accent-related functions.
-/// - The [`symbols_ord`] module for detailed implementation.
 pub use symbols_ord::define_symbols_ord;
 
 /// Registers accent functions (\hat, \bar, \tilde, etc.) in the KaTeX context.
@@ -598,8 +587,8 @@ pub use symbols_ord::define_symbols_ord;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -635,7 +624,6 @@ pub use symbols_ord::define_symbols_ord;
 /// # See Also
 ///
 /// - [`define_genfrac`] for fraction-related commands.
-/// - The [`accent`] module for detailed implementation.
 pub use accent::define_accent;
 
 /// Registers math class functions (\mathord, \mathbin, \mathrel, etc.) in the
@@ -648,8 +636,8 @@ pub use accent::define_accent;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -689,7 +677,6 @@ pub use accent::define_accent;
 /// # See Also
 ///
 /// - [`define_accent`] for accent-related commands.
-/// - The [`mclass`] module for detailed implementation.
 pub use mclass::define_mclass;
 
 /// Registers extensible arrow functions (\xleftarrow, \xrightarrow, etc.) in
@@ -700,8 +687,8 @@ pub use mclass::define_mclass;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -744,7 +731,6 @@ pub use mclass::define_mclass;
 /// # See Also
 ///
 /// - [`define_accent`] for accent-related commands.
-/// - The [`arrow`] module for detailed implementation.
 pub use arrow::define_arrow;
 
 /// Registers accent under functions (\underleftarrow, \underrightarrow, etc.)
@@ -756,8 +742,8 @@ pub use arrow::define_arrow;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -781,7 +767,6 @@ pub use arrow::define_arrow;
 /// # See Also
 ///
 /// - [`define_accent`] for over-accent commands.
-/// - The [`accentunder`] module for detailed implementation.
 pub use accentunder::define_accentunder;
 
 /// Registers the `\includegraphics` function in the KaTeX context.
@@ -791,8 +776,8 @@ pub use accentunder::define_accentunder;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -833,7 +818,6 @@ pub use accentunder::define_accentunder;
 /// # See Also
 ///
 /// - [`define_href`] for other URL-related commands.
-/// - The [`includegraphics`] module for detailed implementation.
 pub use includegraphics::define_includegraphics;
 
 /// Registers the `\vcenter` function in the KaTeX context.
@@ -843,8 +827,8 @@ pub use includegraphics::define_includegraphics;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -870,7 +854,6 @@ pub use includegraphics::define_includegraphics;
 /// # See Also
 ///
 /// - [`define_accent`] for accent-related commands.
-/// - The [`vcenter`] module for detailed implementation.
 pub use vcenter::define_vcenter;
 
 /// Registers the `\raisebox` function in the KaTeX context.
@@ -880,8 +863,8 @@ pub use vcenter::define_vcenter;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -910,7 +893,6 @@ pub use vcenter::define_vcenter;
 /// # See Also
 ///
 /// - [`define_vcenter`] for vertical centering.
-/// - The [`raisebox`] module for detailed implementation.
 pub use raisebox::define_raisebox;
 
 /// Registers lap functions (\mathllap, \mathrlap, \mathclap) in the KaTeX
@@ -921,8 +903,8 @@ pub use raisebox::define_raisebox;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -950,7 +932,6 @@ pub use raisebox::define_raisebox;
 /// # See Also
 ///
 /// - [`define_phantom`] for invisible content.
-/// - The [`lap`] module for detailed implementation.
 pub use lap::define_lap;
 
 /// Registers the `\html@mathml` function in the KaTeX context.
@@ -961,8 +942,8 @@ pub use lap::define_lap;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -989,7 +970,6 @@ pub use lap::define_lap;
 /// # See Also
 ///
 /// - [`define_html`] for HTML-specific content.
-/// - The [`htmlmathml`] module for detailed implementation.
 pub use htmlmathml::define_htmlmathml;
 
 /// Registers enclose functions (\colorbox, \fcolorbox, \fbox, \cancel, etc.) in
@@ -1001,8 +981,8 @@ pub use htmlmathml::define_htmlmathml;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1052,7 +1032,6 @@ pub use htmlmathml::define_htmlmathml;
 /// # See Also
 ///
 /// - [`define_accent`] for accent-related commands.
-/// - The [`enclose`] module for detailed implementation.
 pub use enclose::define_enclose;
 
 /// Registers href functions (\href, \url) in the KaTeX context.
@@ -1064,8 +1043,8 @@ pub use enclose::define_enclose;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1100,7 +1079,6 @@ pub use enclose::define_enclose;
 /// # See Also
 ///
 /// - [`define_includegraphics`] for other URL-related commands.
-/// - The [`href`] module for detailed implementation.
 pub use href::define_href;
 
 /// Registers color functions (\color, \textcolor, \colorbox, \fcolorbox) in the
@@ -1111,8 +1089,8 @@ pub use href::define_href;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1146,7 +1124,6 @@ pub use href::define_href;
 /// # See Also
 ///
 /// - [`define_enclose`] for other visual styling commands.
-/// - The [`color`] module for detailed implementation.
 pub use color::define_color;
 
 /// Registers delimsizing functions (\bigl, \Bigl, \biggl, etc.) in the KaTeX
@@ -1158,8 +1135,8 @@ pub use color::define_color;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1197,7 +1174,6 @@ pub use color::define_color;
 /// # See Also
 ///
 /// - [`define_leftright`] for automatic delimiter sizing.
-/// - The [`delimsizing`] module for detailed implementation.
 pub use delimsizing::define_delimsizing;
 
 /// Registers leftright functions (\left, \right, \middle) in the KaTeX context.
@@ -1207,8 +1183,8 @@ pub use delimsizing::define_delimsizing;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1244,7 +1220,6 @@ pub use delimsizing::define_delimsizing;
 /// # See Also
 ///
 /// - [`define_delimsizing`] for manual delimiter sizing.
-/// - The [`delimsizing`] module for detailed implementation.
 pub use delimsizing::define_leftright;
 
 /// Registers middle delimiter functions (\middle) in the KaTeX context.
@@ -1254,8 +1229,8 @@ pub use delimsizing::define_leftright;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1282,7 +1257,6 @@ pub use delimsizing::define_leftright;
 /// # See Also
 ///
 /// - [`define_leftright`] for left/right delimiter functions.
-/// - The [`delimsizing`] module for detailed implementation.
 pub use delimsizing::define_middle;
 
 /// Registers hbox functions (\hbox) in the KaTeX context.
@@ -1292,8 +1266,8 @@ pub use delimsizing::define_middle;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -1319,7 +1293,6 @@ pub use delimsizing::define_middle;
 /// # See Also
 ///
 /// - [`define_vcenter`] for vertical centering.
-/// - The [`hbox`] module for detailed implementation.
 pub use hbox::define_hbox;
 
 /// Registers horizontal brace functions (\overbrace, \underbrace) in the KaTeX
@@ -1330,8 +1303,8 @@ pub use hbox::define_hbox;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1363,7 +1336,6 @@ pub use hbox::define_hbox;
 /// # See Also
 ///
 /// - [`define_accent`] for accent-related commands.
-/// - The [`horiz_brace`] module for detailed implementation.
 pub use horiz_brace::define_horiz_brace;
 
 /// Registers HTML extension functions (\htmlClass, \htmlId, \htmlStyle,
@@ -1374,8 +1346,8 @@ pub use horiz_brace::define_horiz_brace;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1418,7 +1390,6 @@ pub use horiz_brace::define_horiz_brace;
 /// # See Also
 ///
 /// - [`define_href`] for hyperlink commands.
-/// - The [`html`] module for detailed implementation.
 pub use html::define_html;
 
 /// Registers kern functions (\kern) in the KaTeX context.
@@ -1428,8 +1399,8 @@ pub use html::define_html;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -1456,7 +1427,6 @@ pub use html::define_html;
 /// # See Also
 ///
 /// - [`define_rule`] for creating visible spacing elements.
-/// - The [`kern`] module for detailed implementation.
 pub use kern::define_kern;
 
 /// Registers mathchoice functions (\mathchoice) in the KaTeX context.
@@ -1467,8 +1437,8 @@ pub use kern::define_kern;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -1497,7 +1467,6 @@ pub use kern::define_kern;
 /// # See Also
 ///
 /// - [`define_sizing`] for size-based styling.
-/// - The [`mathchoice`] module for detailed implementation.
 pub use mathchoice::define_mathchoice;
 
 /// Registers operator functions in the KaTeX context.
@@ -1507,8 +1476,8 @@ pub use mathchoice::define_mathchoice;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1544,7 +1513,6 @@ pub use mathchoice::define_mathchoice;
 /// # See Also
 ///
 /// - [`define_symbols_op`] for operator symbols.
-/// - The [`op`] module for detailed implementation.
 pub use op::define_op;
 
 /// Registers operator name functions in the KaTeX context.
@@ -1554,8 +1522,8 @@ pub use op::define_op;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1582,7 +1550,6 @@ pub use op::define_op;
 /// # See Also
 ///
 /// - [`define_op`] for built-in operators.
-/// - The [`operatorname`] module for detailed implementation.
 pub use operatorname::define_operatorname;
 
 /// Registers ordgroup functions (\@ordgroup) in the KaTeX context.
@@ -1592,8 +1559,8 @@ pub use operatorname::define_operatorname;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -1619,7 +1586,6 @@ pub use operatorname::define_operatorname;
 /// # See Also
 ///
 /// - [`define_mclass`] for math class commands.
-/// - The [`ordgroup`] module for detailed implementation.
 pub use ordgroup::define_ordgroup;
 
 /// Registers phantom functions (\phantom, \hphantom, \vphantom) in the KaTeX
@@ -1630,8 +1596,8 @@ pub use ordgroup::define_ordgroup;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1665,7 +1631,6 @@ pub use ordgroup::define_ordgroup;
 /// # See Also
 ///
 /// - [`define_lap`] for overlapping content.
-/// - The [`phantom`] module for detailed implementation.
 pub use phantom::define_phantom;
 
 /// Registers the `\pmb` function in the KaTeX context.
@@ -1676,8 +1641,8 @@ pub use phantom::define_phantom;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -1703,7 +1668,6 @@ pub use phantom::define_phantom;
 /// # See Also
 ///
 /// - [`define_font`] for proper font styling commands.
-/// - The [`pmb`] module for detailed implementation.
 pub use pmb::define_pmb;
 
 /// Registers font styling functions in the KaTeX context.
@@ -1713,8 +1677,8 @@ pub use pmb::define_pmb;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1756,7 +1720,6 @@ pub use pmb::define_pmb;
 /// # See Also
 ///
 /// - [`define_pmb`] for poor man's bold.
-/// - The [`font`] module for detailed implementation.
 pub use font::define_font;
 
 /// Registers sizing functions (\textstyle, \scriptstyle, etc.) in the KaTeX
@@ -1767,8 +1730,8 @@ pub use font::define_font;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1802,7 +1765,6 @@ pub use font::define_font;
 /// # See Also
 ///
 /// - [`define_mathchoice`] for style-dependent content.
-/// - The [`sizing`] module for detailed implementation.
 pub use sizing::define_sizing;
 
 /// Registers smash functions (\smash) in the KaTeX context.
@@ -1812,8 +1774,8 @@ pub use sizing::define_sizing;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -1842,7 +1804,6 @@ pub use sizing::define_sizing;
 /// # See Also
 ///
 /// - [`define_phantom`] for invisible spacing.
-/// - The [`smash`] module for detailed implementation.
 pub use smash::define_smash;
 
 /// Registers styling functions in the KaTeX context.
@@ -1852,8 +1813,8 @@ pub use smash::define_smash;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1887,7 +1848,6 @@ pub use smash::define_smash;
 /// # See Also
 ///
 /// - [`define_sizing`] for size changes.
-/// - The [`styling`] module for detailed implementation.
 pub use styling::define_styling;
 
 /// Registers symbol spacing functions (\,) in the KaTeX context.
@@ -1897,8 +1857,8 @@ pub use styling::define_styling;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1931,7 +1891,6 @@ pub use styling::define_styling;
 /// # See Also
 ///
 /// - [`define_kern`] for custom spacing amounts.
-/// - The [`symbols_spacing`] module for detailed implementation.
 pub use symbols_spacing::define_spacing;
 
 /// Registers text functions (\text, \textrm, \textsf, etc.) in the KaTeX
@@ -1942,8 +1901,8 @@ pub use symbols_spacing::define_spacing;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the functions are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   functions are registered.
 ///
 /// # Return Value
 ///
@@ -1981,7 +1940,6 @@ pub use symbols_spacing::define_spacing;
 /// # See Also
 ///
 /// - [`define_accent`] for accent commands.
-/// - The [`text`] module for detailed implementation.
 pub use text::define_text;
 
 /// Registers underline functions (\underline) in the KaTeX context.
@@ -1991,8 +1949,8 @@ pub use text::define_text;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the function is
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   function is registered.
 ///
 /// # Return Value
 ///
@@ -2018,7 +1976,6 @@ pub use text::define_text;
 /// # See Also
 ///
 /// - [`define_overline`] for overline commands.
-/// - The [`underline`] module for detailed implementation.
 pub use underline::define_underline;
 
 /// Registers assemble_sup_sub utility functions in the KaTeX context.
@@ -2029,8 +1986,8 @@ pub use underline::define_underline;
 ///
 /// # Parameters
 ///
-/// - `ctx`: A mutable reference to the [`KatexContext`] where the utilities are
-///   registered.
+/// - `ctx`: A mutable reference to the [`crate::KatexContext`] where the
+///   utilities are registered.
 ///
 /// # Return Value
 ///
@@ -2038,6 +1995,4 @@ pub use underline::define_underline;
 /// other modules to use.
 ///
 /// # See Also
-///
-/// - The [`utils::assemble_sup_sub`] module for detailed implementation.
 pub use utils::assemble_sup_sub;

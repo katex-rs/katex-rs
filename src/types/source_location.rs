@@ -53,7 +53,7 @@ impl PartialEq for dyn LexerInterface + '_ {
 ///
 /// # Cross-references
 ///
-/// - Used in [`ParseError`](crate::types::ParseError) for error location
+/// - Used in `ParseError`(crate::types::ParseError) for error location
 ///   reporting.
 /// - Integrated with [`ErrorLocationProvider`] for consistent error handling.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -180,7 +180,7 @@ impl SourceLocation {
         &self.input
     }
 
-    /// Returns the input string as an Rc<String> for sharing.
+    /// Returns the input string as an `Arc<String>` for sharing.
     ///
     /// This method provides access to the reference-counted input string,
     /// allowing it to be shared with other SourceLocation instances.
@@ -272,7 +272,7 @@ impl SourceRangeRef for Option<&SourceLocation> {
 /// # Cross-references
 ///
 /// - Part of the error reporting system in
-///   [`ParseError`](crate::types::ParseError).
+///   `ParseError`(crate::types::ParseError).
 /// - Used by parsers to provide location context for syntax errors.
 impl ErrorLocationProvider for SourceLocation {
     fn loc(&self) -> Option<&SourceLocation> {

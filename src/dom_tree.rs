@@ -332,9 +332,9 @@ pub type DomSpan = Span<HtmlDomNode>;
 pub enum HtmlDomNode {
     /// Span wrapping other DOM nodes
     DomSpan(Span<HtmlDomNode>),
-    /// Anchor (<a>) element with hyperlink
+    /// Anchor (`<a>`) element with hyperlink
     Anchor(Anchor),
-    /// Image embed (<img>) element
+    /// Image embed (`<img>`) element
     Img(Img),
     /// Symbol node containing information about a single symbol
     Symbol(SymbolNode),

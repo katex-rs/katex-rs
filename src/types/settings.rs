@@ -92,7 +92,7 @@ pub enum StrictMode {
 ///
 /// This struct contains all resolved configuration options that control
 /// KaTeX's behavior during mathematical expression parsing and rendering.
-/// Unlike [`SettingsOptions`], all fields have concrete values with no options.
+/// Unlike the builder inputs, all fields have concrete values with no options.
 ///
 /// # LaTeX/KaTeX Context
 /// These settings correspond to LaTeX document and package options that affect
@@ -100,7 +100,7 @@ pub enum StrictMode {
 /// rendering behavior across different expressions and contexts.
 ///
 /// # Cross-references
-/// - See [`SettingsOptions`] for the input configuration structure.
+/// - See [`Settings::builder`] for ergonomic construction of settings.
 /// - Related to [`OutputFormat`], [`StrictSetting`], and [`TrustSetting`].
 /// - Methods provide validation and utility functions.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
@@ -188,7 +188,7 @@ impl Settings {
     /// Creates a new [`Settings`] instance from optional configuration values.
     ///
     /// This constructor applies default values for any `None` options in the
-    /// provided [`SettingsOptions`], ensuring all settings have concrete
+    /// provided builder inputs, ensuring all settings have concrete
     /// values.
     ///
     /// # Parameters
@@ -208,8 +208,8 @@ impl Settings {
     /// - `macros`: Empty map
     /// - `min_rule_thickness`: `0.0`
     /// - `color_is_text_color`: `false`
-    /// - `strict`: [`StrictSetting::Mode(StrictMode::Ignore)`]
-    /// - `trust`: [`TrustSetting::Bool(false)`]
+    /// - `strict`: StrictSetting::Mode(StrictMode::Ignore)
+    /// - `trust`: TrustSetting::Bool(false)
     /// - `max_size`: `f64::INFINITY`
     /// - `max_expand`: `1000`
     /// - `global_group`: `false`
@@ -326,7 +326,7 @@ impl Settings {
     ///
     /// This method checks if the given input should trigger strict error
     /// handling based on the current strict settings. Unlike
-    /// [`report_nonstrict`], this method only returns a boolean without
+    /// report_nonstrict, this method only returns a boolean without
     /// performing any actions.
     ///
     /// # Parameters
@@ -591,7 +591,7 @@ impl Default for StrictSetting {
 /// # Cross-references
 /// - See [`Settings::is_trusted`] for trust validation logic.
 /// - Related to [`TrustSetting`] for configuring trust policies.
-/// - Used with [`CssStyle`] for style validation.
+/// - Used with [`crate::types::CssStyle`] for style validation.
 #[derive(Debug, Clone, Default)]
 pub struct TrustContext {
     /// The LaTeX command name that triggered the trust check (e.g., "\\href",

@@ -402,7 +402,7 @@ pub trait MacroContextInterface<'a> {
     ///
     /// # Error Handling
     ///
-    /// Returns [`ParseError`] if expansion fails due to invalid macro
+    /// Returns `ParseError` if expansion fails due to invalid macro
     /// definitions, circular references, or malformed input.
     fn expand_once(&mut self, expandable_only: Option<bool>) -> Result<Option<isize>, ParseError>;
 
@@ -421,7 +421,7 @@ pub trait MacroContextInterface<'a> {
     ///
     /// # Error Handling
     ///
-    /// Returns [`ParseError`] if expansion fails.
+    /// Returns `ParseError` if expansion fails.
     fn expand_after_future(&mut self) -> Result<Token, ParseError>;
 
     /// Recursively expands the next token until a non-expandable token is
@@ -439,7 +439,7 @@ pub trait MacroContextInterface<'a> {
     ///
     /// # Error Handling
     ///
-    /// Returns [`ParseError`] if expansion fails due to circular references,
+    /// Returns `ParseError` if expansion fails due to circular references,
     /// undefined macros, or other expansion errors.
     fn expand_next_token(&mut self) -> Result<Token, ParseError>;
 
@@ -464,13 +464,13 @@ pub trait MacroContextInterface<'a> {
     ///
     /// # Error Handling
     ///
-    /// Returns [`ParseError`] for expansion failures such as circular
+    /// Returns `ParseError` for expansion failures such as circular
     /// references or invalid macro definitions.
     fn expand_macro(&mut self, name: &str) -> Result<Option<Vec<Token>>, ParseError>;
 
     /// Fully expands a named macro and returns its string representation.
     ///
-    /// This method is similar to [`expand_macro`] but returns the result as a
+    /// This method is similar to expand_macro but returns the result as a
     /// string rather than tokens. This is useful for macros that produce
     /// text output.
     ///
@@ -489,7 +489,7 @@ pub trait MacroContextInterface<'a> {
     ///
     /// # Error Handling
     ///
-    /// Returns [`ParseError`] for expansion failures.
+    /// Returns `ParseError` for expansion failures.
     fn expand_macro_as_text(&mut self, name: &str) -> Result<Option<String>, ParseError>;
 
     /// Fully expands a given token stream.
@@ -509,7 +509,7 @@ pub trait MacroContextInterface<'a> {
     ///
     /// # Error Handling
     ///
-    /// Returns [`ParseError`] if any expansion in the stream fails.
+    /// Returns `ParseError` if any expansion in the stream fails.
     fn expand_tokens(&mut self, tokens: Vec<Token>) -> Result<Vec<Token>, ParseError>;
 
     /// Consumes a single argument from the token stream.
@@ -531,13 +531,13 @@ pub trait MacroContextInterface<'a> {
     ///
     /// # Error Handling
     ///
-    /// Returns [`ParseError`] if argument parsing fails due to mismatched
+    /// Returns `ParseError` if argument parsing fails due to mismatched
     /// delimiters, unexpected end of stream, or invalid syntax.
     fn consume_arg(&mut self, delims: Option<&Vec<String>>) -> Result<MacroArg, ParseError>;
 
     /// Consumes multiple arguments from the token stream.
     ///
-    /// This method repeatedly calls [`consume_arg`] to parse the specified
+    /// This method repeatedly calls consume_arg to parse the specified
     /// number of arguments, returning them as a vector. This is convenient
     /// for macros that take a fixed number of arguments.
     ///
@@ -552,7 +552,7 @@ pub trait MacroContextInterface<'a> {
     ///
     /// # Error Handling
     ///
-    /// Returns [`ParseError`] if any argument parsing fails.
+    /// Returns `ParseError` if any argument parsing fails.
     fn consume_args(&mut self, num_args: usize) -> Result<Vec<Vec<Token>>, ParseError>;
 
     /// Checks if a command name is currently defined.

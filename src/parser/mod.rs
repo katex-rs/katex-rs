@@ -29,8 +29,8 @@ pub use parse_node::ParseNodeError;
 /// # Parsing Strategy
 ///
 /// The parser employs a recursive descent approach with lookahead tokens:
-/// - Main parsing functions (e.g., [`parse`], [`parse_expression`]) consume
-///   tokens sequentially
+/// - Main parsing functions (e.g., parse, parse_expression) consume tokens
+///   sequentially
 /// - The lexer ([`MacroExpander`]) provides tokens on demand, supporting
 ///   arbitrary position access
 /// - Mode switching between "math" and "text" contexts restricts available
@@ -59,7 +59,7 @@ pub use parse_node::ParseNodeError;
 ///
 /// # Error Handling
 ///
-/// Returns [`ParseError`] for syntax errors, undefined commands, and mode
+/// Returns `ParseError` for syntax errors, undefined commands, and mode
 /// violations. Errors include token location information for precise error
 /// reporting.
 ///
@@ -68,7 +68,7 @@ pub use parse_node::ParseNodeError;
 /// - [`parse_node`] - AST node types
 /// - [`MacroExpander`] - Token stream and macro handling
 /// - [`Mode`] - Parsing context modes
-/// - [`ParseError`] - Error types
+/// - `ParseError` - Error types
 pub struct Parser<'a> {
     /// Current parsing mode ([`Mode::Math`] or [`Mode::Text`])
     pub mode: Mode,
@@ -191,13 +191,12 @@ impl<'a> Parser<'a> {
     /// # Error Handling
     ///
     /// This constructor cannot fail, but subsequent parsing operations may
-    /// return [`ParseError`] for invalid input or configuration issues.
+    /// return `ParseError` for invalid input or configuration issues.
     ///
     /// # Cross-references
     ///
     /// - [`Settings`] - Configuration structure
     /// - [`KatexContext`] - Shared parsing context
-    /// - [`parse`] - Main parsing method
     #[must_use]
     pub fn new(input: &'a str, settings: &'a Settings, ctx: &'a KatexContext) -> Self {
         let mode = Mode::Math;
@@ -238,20 +237,9 @@ impl<'a> Parser<'a> {
     /// Consumes the current lookahead token, advancing the parser state.
     ///
     /// This method discards the cached lookahead token (if any) and marks it as
-    /// processed. The next call to [`fetch`] will retrieve a new token from the
+    /// processed. The next call to fetch will retrieve a new token from the
     /// input stream. This is essential for progressing through the token
     /// sequence during parsing.
-    ///
-    /// # Behavior
-    ///
-    /// - If a lookahead token exists in `next_token`, it is cleared
-    /// - Does not perform any validation on the token being consumed
-    /// - Safe to call multiple times or when no lookahead token is cached
-    ///
-    /// # Cross-references
-    ///
-    /// - [`fetch`] - Retrieves the current lookahead token
-    /// - [`consume_spaces`] - Consumes whitespace tokens specifically
     pub fn consume(&mut self) {
         self.next_token = None;
     }
@@ -273,19 +261,19 @@ impl<'a> Parser<'a> {
     ///
     /// - Returns cached token if `next_token` is `Some`
     /// - Fetches new token from [`MacroExpander`] if cache is empty
-    /// - The returned token remains cached until [`consume`] is called
+    /// - The returned token remains cached until consume is called
     /// - Multiple calls without consuming return the same token
     ///
     /// # Error Handling
     ///
-    /// Returns [`ParseError`] for:
+    /// Returns `ParseError` for:
     /// - Macro expansion failures
     /// - Lexer errors during tokenization
     /// - Unexpected end of input in certain contexts
     ///
     /// # Cross-references
     ///
-    /// - [`consume`] - Consumes the current lookahead token
+    /// - consume - Consumes the current lookahead token
     /// - [`Token`] - Token structure
     /// - [`MacroExpander`] - Token source
     pub fn fetch(&mut self) -> Result<&Token, ParseError> {
@@ -329,7 +317,7 @@ impl<'a> Parser<'a> {
     /// # Cross-references
     ///
     /// - [`Mode`] - Enumeration of parsing modes
-    /// - [`parse_expression`] - Expression parsing affected by mode
+    /// - parse_expression - Expression parsing affected by mode
     /// - [`MacroExpander::switch_mode`] - Underlying mode switching
     pub const fn switch_mode(&mut self, new_mode: Mode) {
         self.mode = new_mode;
@@ -341,7 +329,7 @@ impl<'a> Parser<'a> {
     /// This is the primary entry point for parsing LaTeX mathematical
     /// expressions. It processes the complete input from start to finish,
     /// handling macro expansion, expression parsing, and AST construction.
-    /// The result is a vector of parse nodes wrapped in an [`OrdGroup`] to
+    /// The result is a vector of parse nodes wrapped in an OrdGroup to
     /// match KaTeX's top-level structure.
     ///
     /// # Processing Steps
@@ -349,16 +337,15 @@ impl<'a> Parser<'a> {
     /// 1. **Group Setup**: Creates a namespace group for the expression (unless
     ///    `global_group` is enabled)
     /// 2. **Color Handling**: Applies `\color` behavior settings
-    /// 3. **Expression Parsing**: Calls [`parse_expression`] to parse the
-    ///    content
+    /// 3. **Expression Parsing**: Calls parse_expression to parse the content
     /// 4. **Validation**: Ensures the entire input is consumed (ends with EOF)
-    /// 5. **Cleanup**: Closes any open groups and wraps result in [`OrdGroup`]
+    /// 5. **Cleanup**: Closes any open groups and wraps result in OrdGroup
     ///
     /// # Return Value
     ///
     /// Returns a vector of [`ParseNode`] representing the AST on success, or a
-    /// [`ParseError`] if parsing fails at any stage. The vector is
-    /// typically wrapped in an [`OrdGroup`] for top-level expressions.
+    /// `ParseError` if parsing fails at any stage. The vector is
+    /// typically wrapped in an OrdGroup for top-level expressions.
     ///
     /// # Error Handling
     ///
@@ -397,9 +384,9 @@ impl<'a> Parser<'a> {
     ///
     /// # Cross-references
     ///
-    /// - [`parse_expression`] - Core expression parsing logic
+    /// - parse_expression - Core expression parsing logic
     /// - [`ParseNode`] - AST node types
-    /// - [`ParseError`] - Error types
+    /// - `ParseError` - Error types
     /// - [`Settings::global_group`] - Affects group creation behavior
     pub fn parse(&mut self) -> Result<Vec<ParseNode>, ParseError> {
         if !self.settings.global_group {
@@ -478,14 +465,14 @@ impl<'a> Parser<'a> {
     ///   tokens
     /// - **Infix Detection**: Checks for infix operators when `break_on_infix`
     ///   is true
-    /// - **Atom Parsing**: Calls [`parse_atom`] for each atomic element
+    /// - **Atom Parsing**: Calls `parse_atom` for each atomic element
     /// - **Ligature Formation**: Applies typographic ligatures in text mode
     /// - **Infix Rewriting**: Converts infix operators to structured forms
     ///
     /// # Infix Operator Handling
     ///
     /// When `break_on_infix` is `false`, infix operators like `\over` are
-    /// rewritten into [`Genfrac`] nodes with appropriate delimiters:
+    /// rewritten into `Genfrac` nodes with appropriate delimiters:
     /// - `\over` → fraction with bar line
     /// - `\choose` → fraction with parentheses
     /// - `\above` → fraction with bar line (size parsing not yet implemented)
@@ -530,9 +517,9 @@ impl<'a> Parser<'a> {
     ///
     /// # Cross-references
     ///
-    /// - [`parse_atom`] - Parses individual atomic elements
-    /// - [`handle_infix_nodes`] - Rewrites infix operators
-    /// - [`form_ligatures`] - Applies text ligatures
+    /// - parse_atom - Parses individual atomic elements
+    /// - handle_infix_nodes - Rewrites infix operators
+    /// - form_ligatures - Applies text ligatures
     /// - [`BreakToken`] - Expression termination tokens
     pub fn parse_expression(
         &mut self,
@@ -601,7 +588,7 @@ impl<'a> Parser<'a> {
     ///
     /// # Behavior
     ///
-    /// - Repeatedly fetches and consumes tokens that are [`TokenType::Space`]
+    /// - Repeatedly fetches and consumes tokens that are TokenType::Space
     /// - Stops when a non-space token is encountered (becomes the new
     ///   lookahead)
     /// - Does nothing if the current lookahead is already non-space
@@ -609,7 +596,7 @@ impl<'a> Parser<'a> {
     ///
     /// # Return Value
     ///
-    /// Returns `Ok(())` on success, or [`ParseError`] if token fetching fails
+    /// Returns `Ok(())` on success, or `ParseError` if token fetching fails
     /// (e.g., due to macro expansion errors).
     ///
     /// # Examples
@@ -643,10 +630,10 @@ impl<'a> Parser<'a> {
     ///
     /// # Cross-references
     ///
-    /// - [`fetch`] - Retrieves the current lookahead token
-    /// - [`consume`] - Consumes a single token
-    /// - [`TokenType::Space`] - Space token type
-    /// - [`parse_expression`] - Uses this method in math mode
+    /// - fetch - Retrieves the current lookahead token
+    /// - consume - Consumes a single token
+    /// - TokenType::Space - Space token type
+    /// - parse_expression - Uses this method in math mode
     pub fn consume_spaces(&mut self) -> Result<(), ParseError> {
         while self.fetch()?.text == " " {
             self.consume();

@@ -66,8 +66,7 @@ M{} {}h400000v{}h-400000z",
 ///   in SVG units. This allows for dynamic adjustment based on the radicand's
 ///   visual weight.
 /// * `h_line_pad` - Vertical padding above the vinculum to prevent image
-///   cropping in SVG rendering. Uses the constant [`H_LINE_PAD`] as default in
-///   [`sqrt_path`].
+///   cropping in SVG rendering.
 ///
 /// # Returns
 /// A `String` containing the complete SVG path data for the size1 square root
@@ -84,7 +83,6 @@ M{} {}h400000v{}h-400000z",
 ///   context
 /// * [`sqrt_main`] - Main size square root for standard use
 /// * [`sqrt_tall`] - Tall variant for very large radicands
-/// * [`H_LINE_PAD`] - Default padding constant
 #[must_use]
 pub fn sqrt_size1(extra_vinculum: f64, h_line_pad: f64) -> String {
     format!(
@@ -132,8 +130,7 @@ M{} {}h400000v{}h-400000z",
 ///   coordinate units. Enables fine-tuning for different font weights and
 ///   visual contexts.
 /// * `h_line_pad` - Vertical clearance above the vinculum to prevent SVG
-///   cropping artifacts. Typically uses [`H_LINE_PAD`] (80.0) for consistent
-///   spacing.
+///   cropping artifacts.
 ///
 /// # Returns
 /// A `String` with the complete SVG path definition for the size2 square root.
@@ -149,7 +146,6 @@ M{} {}h400000v{}h-400000z",
 /// * [`sqrt_path`] - Size selection logic for square root rendering
 /// * [`sqrt_size1`] - Smaller variant for moderate radicand heights
 /// * [`sqrt_size3`] - Larger variant for very tall content
-/// * [`H_LINE_PAD`] - Standard padding constant
 #[must_use]
 pub fn sqrt_size2(extra_vinculum: f64, h_line_pad: f64) -> String {
     format!(
@@ -194,7 +190,6 @@ M{} {}h400000v{}h-400000z",
 /// * `extra_vinculum` - Extra thickness for the horizontal vinculum in SVG
 ///   units. Allows adjustment for different stroke weights and visual emphasis.
 /// * `h_line_pad` - Padding above the vinculum to avoid SVG rendering clipping.
-///   Commonly set to [`H_LINE_PAD`] for uniform spacing across sizes.
 ///
 /// # Returns
 /// A `String` containing the SVG path for the size3 square root symbol.
@@ -211,7 +206,6 @@ M{} {}h400000v{}h-400000z",
 /// * [`sqrt_path`] - Automatic size selection based on content height
 /// * [`sqrt_size2`] - Medium size for moderately tall radicands
 /// * [`sqrt_size4`] - Largest size for extremely tall content
-/// * [`H_LINE_PAD`] - Default vertical padding constant
 #[must_use]
 pub fn sqrt_size3(extra_vinculum: f64, h_line_pad: f64) -> String {
     format!(
@@ -258,7 +252,6 @@ h400000v{}h-400000z",
 ///   Enables customization for different rendering contexts and font
 ///   characteristics.
 /// * `h_line_pad` - Vertical spacing above the vinculum to prevent cropping.
-///   Uses [`H_LINE_PAD`] as the standard value for consistent typography.
 ///
 /// # Returns
 /// A `String` with the complete SVG path definition for size4 square root
@@ -274,7 +267,6 @@ h400000v{}h-400000z",
 /// * [`sqrt_path`] - Size determination logic for square root selection
 /// * [`sqrt_size3`] - Previous size for very tall but not extreme content
 /// * [`sqrt_tall`] - Alternative tall variant with dynamic height
-/// * [`H_LINE_PAD`] - Standard padding constant for vinculum clearance
 #[must_use]
 pub fn sqrt_size4(extra_vinculum: f64, h_line_pad: f64) -> String {
     format!(
@@ -335,7 +327,7 @@ pub fn phase_path(y: f64) -> String {
 ///   units. Allows fine-tuning for different visual weights and rendering
 ///   contexts.
 /// * `h_line_pad` - Vertical padding above the vinculum to prevent SVG
-///   cropping. Typically [`H_LINE_PAD`] for consistency with other sizes.
+///   cropping.
 /// * `view_box_height` - Total height of the SVG viewBox in coordinate units.
 ///   Determines the vertical extent of the radical symbol and affects curve
 ///   proportions.
@@ -359,7 +351,6 @@ pub fn phase_path(y: f64) -> String {
 /// * [`sqrt_path`] - Size selection that may choose tall variant for large
 ///   content
 /// * [`sqrt_size4`] - Largest fixed-size variant before tall
-/// * [`H_LINE_PAD`] - Default padding constant
 #[must_use]
 pub fn sqrt_tall(extra_vinculum: f64, h_line_pad: f64, view_box_height: f64) -> String {
     let vert_segment = view_box_height - 54.0 - h_line_pad - extra_vinculum;

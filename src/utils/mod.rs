@@ -125,8 +125,8 @@ pub fn escape(text: &str) -> String {
 /// - HTML entities for colon are handled (e.g., `&#58;`, `&colon;`).
 ///
 /// # Cross-references
-/// See [`validate_and_return`] for scheme validation logic.
-/// See [`match_html_colon_entity`] for HTML entity parsing.
+/// See validate_and_return for scheme validation logic.
+/// See match_html_colon_entity for HTML entity parsing.
 #[must_use]
 pub fn protocol_from_url(url: &str) -> Option<String> {
     let mut s = url;

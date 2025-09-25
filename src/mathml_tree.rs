@@ -24,65 +24,65 @@ use web_sys;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, AsRefStr)]
 #[strum(serialize_all = "lowercase")]
 pub enum MathNodeType {
-    /// <math> element
+    /// `<math>` element
     Math,
-    /// <annotation> element
+    /// `<annotation>` element
     Annotation,
-    /// <semantics> element
+    /// `<semantics>` element
     Semantics,
-    /// <mtext> element
+    /// `<mtext>` element
     Mtext,
-    /// <mn> element
+    /// `<mn>` element
     Mn,
-    /// <mo> element
+    /// `<mo>` element
     Mo,
-    /// <mi> element
+    /// `<mi>` element
     Mi,
-    /// <mspace> element
+    /// `<mspace>` element
     Mspace,
-    /// <mover> element
+    /// `<mover>` element
     Mover,
-    /// <munder> element
+    /// `<munder>` element
     Munder,
-    /// <munderover> element
+    /// `<munderover>` element
     Munderover,
-    /// <msup> element
+    /// `<msup>` element
     Msup,
-    /// <msub> element
+    /// `<msub>` element
     Msub,
-    /// <msubsup> element
+    /// `<msubsup>` element
     Msubsup,
-    /// <mfrac> element
+    /// `<mfrac>` element
     Mfrac,
-    /// <mroot> element
+    /// `<mroot>` element
     Mroot,
-    /// <msqrt> element
+    /// `<msqrt>` element
     Msqrt,
-    /// <mtable> element
+    /// `<mtable>` element
     Mtable,
-    /// <mtr> element
+    /// `<mtr>` element
     Mtr,
-    /// <mtd> element
+    /// `<mtd>` element
     Mtd,
-    /// <mlabeledtr> element
+    /// `<mlabeledtr>` element
     Mlabeledtr,
-    /// <mrow> element
+    /// `<mrow>` element
     Mrow,
-    /// <menclose> element
+    /// `<menclose>` element
     Menclose,
-    /// <mstyle> element
+    /// `<mstyle>` element
     Mstyle,
-    /// <mpadded> element
+    /// `<mpadded>` element
     Mpadded,
-    /// <mphantom> element
+    /// `<mphantom>` element
     Mphantom,
-    /// <mglyph> element
+    /// `<mglyph>` element
     Mglyph,
 }
 
 /// Get the appropriate space character based on width
 ///
-/// See https://www.w3.org/TR/2000/WD-MathML2-20000328/chapter6.html
+/// See <https://www.w3.org/TR/2000/WD-MathML2-20000328/chapter6.html>
 /// for a table of space-like characters. We use Unicode representations
 /// instead of &LongNames; as it's not clear how to make the latter via
 /// document.createTextNode.
@@ -330,7 +330,7 @@ impl VirtualNode for TextNode {
     }
 }
 
-/// Space node for MathML, may render as <mspace> or as text
+/// Space node for MathML, may render as `<mspace>` or as text
 #[derive(Debug, Clone)]
 pub struct SpaceNode {
     /// The width of the space in em units
