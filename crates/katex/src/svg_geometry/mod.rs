@@ -163,7 +163,7 @@ M{} {}h400000v{}h-400000z",
         extra_vinculum / 3.13,
         extra_vinculum,
         40.0 + extra_vinculum,
-        100.01 + extra_vinculum,
+        1001.0 + extra_vinculum,
         h_line_pad,
         40.0 + extra_vinculum
     )
