@@ -296,7 +296,7 @@ fn strip_positions_single(node: &mut ParseNode) {
 }
 
 impl TestExpr<'_> {
-    pub fn to_parse(self, settings: &Settings) -> Result<(), ParseError> {
+    pub fn to_parse(&self, settings: &Settings) -> Result<(), ParseError> {
         parse(self.ctx, &self.expr, settings).map(|_| ())
     }
 
@@ -309,7 +309,7 @@ impl TestExpr<'_> {
         }
     }
 
-    pub fn to_parse_like(self, other: &str, settings: &Settings) -> Result<(), ParseError> {
+    pub fn to_parse_like(&self, other: &str, settings: &Settings) -> Result<(), ParseError> {
         // Compare parse trees for equivalence
         let mut tree1 = parse(self.ctx, &self.expr, settings)?;
         let mut tree2 = parse(self.ctx, other, settings)?;
@@ -325,7 +325,7 @@ impl TestExpr<'_> {
         Ok(())
     }
 
-    pub fn to_build(self, settings: &Settings) -> Result<(), ParseError> {
+    pub fn to_build(&self, settings: &Settings) -> Result<(), ParseError> {
         render_to_dom_tree(self.ctx, &self.expr, settings).map(|_| ())
     }
 
@@ -338,7 +338,7 @@ impl TestExpr<'_> {
         }
     }
 
-    pub fn to_build_like(self, other: &str, settings: &Settings) -> Result<(), ParseError> {
+    pub fn to_build_like(&self, other: &str, settings: &Settings) -> Result<(), ParseError> {
         // Compare rendered DOM trees for equivalence
         let dom1 = render_to_dom_tree(self.ctx, &self.expr, settings)?;
         let dom2 = render_to_dom_tree(self.ctx, other, settings)?;
@@ -356,10 +356,6 @@ impl TestExpr<'_> {
                 right_dom: dom2_debug,
             }))
         }
-    }
-
-    pub fn to_html(self, settings: &Settings) -> Result<String, ParseError> {
-        render_to_string(self.ctx, &self.expr, settings)
     }
 
     pub fn not_to_html(self, settings: &Settings) -> Result<(), ParseError> {
@@ -547,11 +543,6 @@ pub fn build_mathml(expr: &str) -> Result<Span<HtmlDomNode>, ParseError> {
 
 pub fn render_to_string_strict(expr: &str) -> Result<String, ParseError> {
     let settings = strict_settings();
-    render_to_string(default_ctx(), expr, &settings)
-}
-
-pub fn render_to_string_display(expr: &str) -> Result<String, ParseError> {
-    let settings = display_settings();
     render_to_string(default_ctx(), expr, &settings)
 }
 

@@ -14,7 +14,7 @@ use crate::dom_tree::HtmlDomNode;
 use crate::functions::{accent, horiz_brace, op, operatorname};
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
-use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNode, ParseNodeSupSub};
+use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNode, ParseNodeOp, ParseNodeSupSub};
 use crate::style::DISPLAY;
 use crate::types::ParseError;
 use crate::units::make_em;
@@ -309,7 +309,24 @@ fn mathml_builder(
     }
 
     let mut children = if let Some(base) = group.base.as_deref() {
-        vec![build_mathml::build_group(ctx, base, options)?]
+        let mut base_clone = base.clone();
+        match &mut base_clone {
+            AnyParseNode::Op(op_node) => match op_node {
+                ParseNodeOp::Symbol {
+                    parent_is_sup_sub, ..
+                }
+                | ParseNodeOp::Body {
+                    parent_is_sup_sub, ..
+                } => {
+                    *parent_is_sup_sub = true;
+                }
+            },
+            AnyParseNode::OperatorName(op_name) => {
+                op_name.parent_is_sup_sub = true;
+            }
+            _ => {}
+        }
+        vec![build_mathml::build_group(ctx, &base_clone, options)?]
     } else {
         vec![
             MathNode::builder()

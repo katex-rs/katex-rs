@@ -9,11 +9,44 @@ use crate::build_common::make_span;
 use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec, ord_argument};
 use crate::dom_tree::HtmlDomNode;
 use crate::functions::utils::assemble_sup_sub;
-use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType, TextNode};
+use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType, TextNode, make_fragment};
 use crate::options::Options;
-use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeOperatorName};
+use crate::parser::parse_node::{
+    AnyParseNode, NodeType, ParseNode, ParseNodeOperatorName, ParseNodeTextOrd,
+};
+use crate::types::ErrorLocationProvider as _;
 use crate::types::ParseError;
 use crate::{KatexContext, build_html, build_mathml};
+
+fn normalize_symbol_text(node: &mut HtmlDomNode) {
+    match node {
+        HtmlDomNode::Symbol(symbol) => {
+            let replaced = symbol
+                .text
+                .replace('\u{2212}', "-")
+                .replace('\u{2217}', "*");
+            if symbol.text != replaced {
+                symbol.text = replaced;
+            }
+        }
+        HtmlDomNode::DomSpan(span) => {
+            for child in &mut span.children {
+                normalize_symbol_text(child);
+            }
+        }
+        HtmlDomNode::Anchor(anchor) => {
+            for child in &mut anchor.children {
+                normalize_symbol_text(child);
+            }
+        }
+        HtmlDomNode::Fragment(fragment) => {
+            for child in &mut fragment.children {
+                normalize_symbol_text(child);
+            }
+        }
+        _ => {}
+    }
+}
 
 /// HTML builder for operatorname nodes
 /// NOTE: Unlike most `htmlBuilder`s, this one handles not only
@@ -44,16 +77,40 @@ pub fn html_builder(
         _ => return Err(ParseError::new("Expected OperatorName or SupSub node")),
     };
 
-    // Build expression with mathrm font
-    let expression = build_html::build_expression(
-        ctx,
-        &operatorname_node.body,
-        &options.with_text_font_family("mathrm".to_owned()),
-        build_html::GroupType::True,
-        (None, None),
-    )?;
+    let body: Vec<AnyParseNode> = operatorname_node
+        .body
+        .iter()
+        .map(|child| {
+            child.text().map_or_else(
+                || child.clone(),
+                |text| {
+                    AnyParseNode::TextOrd(ParseNodeTextOrd {
+                        mode: child.mode(),
+                        loc: child.loc().cloned(),
+                        text: text.to_owned(),
+                    })
+                },
+            )
+        })
+        .collect();
 
-    let base = make_span(vec!["mop".to_owned()], expression, Some(options), None);
+    let base = if body.is_empty() {
+        make_span(vec!["mop".to_owned()], vec![], Some(options), None)
+    } else {
+        let mut expression = build_html::build_expression(
+            ctx,
+            &body,
+            &options.with_font("mathrm".to_owned()),
+            build_html::GroupType::True,
+            (None, None),
+        )?;
+
+        for node in &mut expression {
+            normalize_symbol_text(node);
+        }
+
+        make_span(vec!["mop".to_owned()], expression, Some(options), None)
+    };
 
     if has_limits {
         assemble_sup_sub(
@@ -81,16 +138,58 @@ fn mathml_builder(
         return Err(ParseError::new("Expected OperatorName node"));
     };
 
-    let expression = build_mathml::build_expression_row(
+    let mut expression = build_mathml::build_expression(
         ctx,
         &operatorname_node.body,
-        &options.with_text_font_family("mathrm".to_owned()),
+        &options.with_font("mathrm".to_owned()),
         None,
     )?;
 
+    let mut is_all_string = true;
+
+    for node in &mut expression {
+        match node {
+            MathDomNode::Space(_) => {}
+            MathDomNode::Math(math_node) => match math_node.node_type {
+                MathNodeType::Mi
+                | MathNodeType::Mn
+                | MathNodeType::Mspace
+                | MathNodeType::Mtext => {}
+                MathNodeType::Mo => {
+                    if math_node.children.len() == 1 {
+                        if let MathDomNode::Text(text_node) = &mut math_node.children[0] {
+                            let replaced = text_node
+                                .text
+                                .replace('\u{2212}', "-")
+                                .replace('\u{2217}', "*");
+                            if text_node.text != replaced {
+                                text_node.text = replaced;
+                            }
+                        } else {
+                            is_all_string = false;
+                        }
+                    } else {
+                        is_all_string = false;
+                    }
+                }
+                _ => {
+                    is_all_string = false;
+                }
+            },
+            _ => {
+                is_all_string = false;
+            }
+        }
+    }
+
+    if is_all_string {
+        let word: String = expression.iter().map(MathDomNode::to_text).collect();
+        expression = vec![MathDomNode::Text(TextNode { text: word })];
+    }
+
     let mut identifier = MathNode::builder()
         .node_type(MathNodeType::Mi)
-        .children(vec![expression])
+        .children(expression)
         .build();
 
     identifier
@@ -105,15 +204,22 @@ fn mathml_builder(
         })])
         .build();
 
-    Ok(MathDomNode::Math(
-        MathNode::builder()
-            .node_type(MathNodeType::Mrow)
-            .children(vec![
-                MathDomNode::Math(identifier),
-                MathDomNode::Math(operator),
-            ])
-            .build(),
-    ))
+    let identifier_dom = MathDomNode::Math(identifier);
+    let operator_dom = MathDomNode::Math(operator);
+
+    if operatorname_node.parent_is_sup_sub {
+        Ok(MathDomNode::Math(
+            MathNode::builder()
+                .node_type(MathNodeType::Mrow)
+                .children(vec![identifier_dom, operator_dom])
+                .build(),
+        ))
+    } else {
+        Ok(MathDomNode::Fragment(Box::new(make_fragment(vec![
+            identifier_dom,
+            operator_dom,
+        ]))))
+    }
 }
 
 /// Registers the \operatorname function in the KaTeX context

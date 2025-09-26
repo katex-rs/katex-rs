@@ -857,7 +857,7 @@ impl<'a> Parser<'a> {
             let a = group[i].clone();
             let v = a.text();
             if v == Some("-") && group[i + 1].text() == Some("-") {
-                if (i as isize + 1) < n && group[i + 1].text() == Some("-") {
+                if (i as isize + 1) < n && group[i + 2].text() == Some("-") {
                     group.splice(
                         i..i + 3,
                         vec![ParseNode::TextOrd(parse_node::ParseNodeTextOrd {

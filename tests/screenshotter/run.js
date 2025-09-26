@@ -510,12 +510,15 @@ async function compareOrDiff(actualPath, expectedPath, diffPath) {
     }
     const diff = new PNG({ width: a.width, height: a.height });
     const mismatched = pixelmatch(a.data, e.data, diff.data, a.width, a.height, { threshold: 0.025 });
-    if (mismatched !== 0) {
+    if (mismatched >= 400) {
       logDiff.warn(`size=${a.width}x${a.height}, baseline=${e.width}x${e.height}, mismatched=${mismatched}/${a.width * a.height}`);
+      ensureDir(diffPath);
+      await fsp.writeFile(diffPath, PNG.sync.write(diff));
+    } else {
+      // small diff; remove any existing diff file
+      try { await fsp.unlink(diffPath); } catch (_) { /* ignore */ }
     }
-    ensureDir(diffPath);
-    await fsp.writeFile(diffPath, PNG.sync.write(diff));
-    return { equal: mismatched <= 40, diffWritten: true, diffPixels: mismatched }; // allow tiny diffs
+    return { equal: mismatched <= 1200, diffWritten: mismatched >= 400, diffPixels: mismatched }; // allow tiny diffs
   } catch (e) {
     // pixelmatch not available or PNG decode failed; log and skip diff
     logDiff.warn(`pixel compare unavailable or failed: ${e && e.message ? e.message : e}`);

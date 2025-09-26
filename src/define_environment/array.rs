@@ -26,7 +26,6 @@ use crate::style::{DISPLAY, SCRIPT, Style, TEXT};
 use crate::types::{BreakToken, CssProperty, ParseError, ParseErrorKind, Token};
 use crate::utils::{push_and_get_mut, push_and_get_ref};
 use crate::{KatexContext, build_html, build_mathml, units};
-use core::fmt::Write as _;
 use core::iter::repeat_n;
 // Type definitions for array environment
 
@@ -829,7 +828,22 @@ fn mathml_builder(
                 align: col_align, ..
             } = col
             {
-                let _ = write!(align, "{col_align} ");
+                let mapped_align = match col_align.trim() {
+                    "c" => "center ",
+                    "l" => "left ",
+                    "r" => "right ",
+                    other => {
+                        let mut tmp = other.to_owned();
+                        tmp.push(' ');
+                        align.push_str(&tmp);
+                        if prev_type_was_align {
+                            // columnLines += "none ";
+                        }
+                        prev_type_was_align = true;
+                        continue;
+                    }
+                };
+                align.push_str(mapped_align);
 
                 if prev_type_was_align {
                     // columnLines += "none ";

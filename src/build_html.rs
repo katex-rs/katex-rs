@@ -176,6 +176,75 @@ fn check_partial_group_mut(node: &mut HtmlDomNode) -> Option<&mut Vec<HtmlDomNod
     }
 }
 
+fn find_next_nonspace(nodes: &[HtmlDomNode], mut index: usize) -> Option<&HtmlDomNode> {
+    while index < nodes.len() {
+        if !nodes[index].has_class("mspace") {
+            return Some(&nodes[index]);
+        }
+        index += 1;
+    }
+    None
+}
+
+fn find_last_nonspace_index(children: &[HtmlDomNode]) -> Option<usize> {
+    children
+        .iter()
+        .rposition(|child| !child.has_class("mspace"))
+}
+
+fn fix_partial_group_spacing(
+    ctx: &KatexContext,
+    glue_options: &Options,
+    nodes: &mut [HtmlDomNode],
+) -> Result<(), ParseError> {
+    let mut i = 0;
+    while i < nodes.len() {
+        let (left, right) = nodes.split_at_mut(i + 1);
+        let current = &mut left[i];
+
+        if let Some(children) = check_partial_group_mut(current) {
+            fix_partial_group_spacing(ctx, glue_options, children)?;
+
+            if let Some(last_idx) = find_last_nonspace_index(children) {
+                let has_trailing_space = children
+                    .get(last_idx + 1)
+                    .is_some_and(|child| child.has_class("mspace"));
+                if has_trailing_space {
+                    i += 1;
+                    continue;
+                }
+
+                let prev_type = get_type_of_dom_tree(&children[last_idx], Some(Side::Right));
+                let next_node = find_next_nonspace(right, 0);
+                if let (Some(prev_type), Some(next_node)) = (prev_type, next_node) {
+                    let next_type = get_type_of_dom_tree(next_node, Some(Side::Left))
+                        .or_else(|| get_type_of_dom_tree(next_node, None));
+                    if let Some(next_type) = next_type {
+                        let space = if next_node.has_class("mtight") {
+                            TIGHT_SPACINGS
+                                .get(prev_type.as_str())
+                                .and_then(|inner| inner.get(next_type.as_str()))
+                        } else {
+                            SPACINGS
+                                .get(prev_type.as_str())
+                                .and_then(|inner| inner.get(next_type.as_str()))
+                        };
+
+                        if let Some(space) = space {
+                            let glue = ctx.make_glue(space, glue_options)?;
+                            children.insert(last_idx + 1, glue.into());
+                        }
+                    }
+                }
+            }
+        }
+
+        i += 1;
+    }
+
+    Ok(())
+}
+
 /// Return the outermost node of a domTree.
 fn get_outermost_node(node: &HtmlDomNode, side: Side) -> &HtmlDomNode {
     if let Some(children) = check_partial_group(node)
@@ -510,6 +579,8 @@ pub fn build_expression(
         is_root,
         None,
     )?;
+
+    fix_partial_group_spacing(ctx, &glue_options, &mut groups)?;
 
     Ok(groups)
 }

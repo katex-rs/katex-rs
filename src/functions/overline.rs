@@ -53,8 +53,8 @@ fn html_builder(
     let inner_group = build_html::build_group(
         ctx,
         &overline_node.body,
-        options,
-        Some(&options.having_cramped_style()),
+        &options.having_cramped_style(),
+        None,
     )?;
 
     // Create the line above the body

@@ -9,6 +9,8 @@ use core::fmt;
 use crate::ParseError;
 use crate::types::{CssStyle, ParseErrorKind};
 #[cfg(feature = "wasm")]
+use crate::web_context::WebContext;
+#[cfg(feature = "wasm")]
 use web_sys;
 
 /// Base virtual DOM node interface used in both DOM tree and MathML tree
@@ -27,7 +29,7 @@ pub trait VirtualNode {
 
     /// Convert into a DOM node
     #[cfg(feature = "wasm")]
-    fn to_node(&self) -> web_sys::Node;
+    fn to_node(&self, ctx: &WebContext) -> web_sys::Node;
 }
 
 /// Document fragment containing elements without DOM representation
@@ -131,14 +133,13 @@ impl<ChildType: VirtualNode + Clone + 'static> VirtualNode for DocumentFragment<
     }
 
     #[cfg(feature = "wasm")]
-    fn to_node(&self) -> web_sys::Node {
+    fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
         use wasm_bindgen::JsCast as _;
 
-        let document = web_sys::window().unwrap().document().unwrap();
-        let fragment = document.create_document_fragment();
+        let fragment = ctx.document.create_document_fragment();
 
         for child in &self.children {
-            let node = child.to_node();
+            let node = child.to_node(ctx);
             fragment.append_child(&node).unwrap();
         }
 

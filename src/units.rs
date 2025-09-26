@@ -113,21 +113,24 @@ impl KatexContext {
 /// Round to 4 decimal places and append "em", dropping trailing zeros.
 #[must_use]
 pub fn make_em(n: f64) -> String {
-    // Round to nearest 1/10000
-    let rounded = (n * 1e4).round() / 1e4;
-    // Format with 4 decimals, then trim trailing zeros and optional dot
-    let mut s = format!("{rounded:.4}");
-    // Trim trailing zeros
-    while s.ends_with('0') {
-        s.pop();
+    // Format with 4 decimals like JavaScript's `Number#toFixed(4)`
+    let mut s = format!("{n:.4}");
+
+    if s.contains('.') {
+        while s.ends_with('0') {
+            s.pop();
+        }
+        if s.ends_with('.') {
+            s.pop();
+        }
     }
-    // Trim trailing decimal point, if any
-    if s.ends_with('.') {
-        s.pop();
-    }
-    if s.is_empty() {
+
+    if s == "-0" {
+        "0".clone_into(&mut s);
+    } else if s.is_empty() {
         s.push('0');
     }
+
     s.push_str("em");
     s
 }

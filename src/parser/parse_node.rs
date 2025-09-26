@@ -1928,13 +1928,15 @@ pub struct ParseNodeLap {
 
 /// Alignment options for overlapping content.
 #[derive(Debug, Clone, PartialEq, Eq, AsRefStr)]
-#[strum(serialize_all = "lowercase")]
 pub enum LapAlignment {
     /// Align left
+    #[strum(serialize = "llap")]
     Left,
     /// Align center
+    #[strum(serialize = "clap")]
     Center,
     /// Align right
+    #[strum(serialize = "rlap")]
     Right,
 }
 

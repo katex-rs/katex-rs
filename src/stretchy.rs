@@ -224,8 +224,8 @@ pub fn svg_span(group: &AnyParseNode, options: &Options) -> Result<HtmlDomNode, 
         ]);
         let mut span = make_svg_span(vec![], vec![svg_node], options);
 
+        span.height = height_val;
         span.style.insert(CssProperty::Height, make_em(height_val));
-        span.style.insert(CssProperty::MinWidth, "0".to_owned());
 
         Ok(span.into())
     } else {
@@ -313,6 +313,7 @@ pub fn svg_span(group: &AnyParseNode, options: &Options) -> Result<HtmlDomNode, 
             }
 
             // For multiple paths, collect spans
+            span.height = height_val;
             span.style.insert(CssProperty::Height, make_em(height_val));
             spans.push(span.into());
         }

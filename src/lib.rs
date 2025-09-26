@@ -84,6 +84,9 @@ pub mod units;
 pub mod utils;
 #[cfg(feature = "wasm")]
 pub mod wasm;
+/// Shared web context for DOM operation
+#[cfg(feature = "wasm")]
+pub mod web_context;
 pub mod wide_character;
 
 /// Global context for KaTeX operations, containing all registered functions,

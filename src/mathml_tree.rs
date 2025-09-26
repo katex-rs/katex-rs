@@ -11,6 +11,8 @@ use crate::dom_tree::create_class;
 use crate::tree::{DocumentFragment, VirtualNode};
 use crate::units::make_em;
 use crate::utils::escape_into;
+#[cfg(feature = "wasm")]
+use crate::web_context::WebContext;
 use crate::{
     namespace::KeyMap,
     types::{CssStyle, ParseErrorKind},
@@ -272,11 +274,11 @@ impl VirtualNode for MathNode {
     }
 
     #[cfg(feature = "wasm")]
-    fn to_node(&self) -> web_sys::Node {
+    fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
         use wasm_bindgen::JsCast as _;
 
-        let document = web_sys::window().unwrap().document().unwrap();
-        let element = document
+        let element = ctx
+            .document
             .create_element_ns(
                 Some("http://www.w3.org/1998/Math/MathML"),
                 self.node_type.as_ref(),
@@ -304,14 +306,14 @@ impl VirtualNode for MathNode {
                 {
                     // Combine them
                     let combined_text = format!("{}{}", text_node.text, next_text_node.text);
-                    let text_node = document.create_text_node(&combined_text);
+                    let text_node = ctx.document.create_text_node(&combined_text);
                     element.append_child(&text_node).unwrap();
                     i += 2; // Skip the next one
                     continue;
                 }
             }
             // Normal case
-            let child_node = self.children[i].to_node();
+            let child_node = self.children[i].to_node(ctx);
             element.append_child(&child_node).unwrap();
             i += 1;
         }
@@ -340,9 +342,8 @@ impl VirtualNode for TextNode {
     }
 
     #[cfg(feature = "wasm")]
-    fn to_node(&self) -> web_sys::Node {
-        let document = web_sys::window().unwrap().document().unwrap();
-        document
+    fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
+        ctx.document
             .create_text_node(&self.text)
             .dyn_into::<web_sys::Node>()
             .unwrap()
@@ -387,13 +388,13 @@ impl VirtualNode for SpaceNode {
     }
 
     #[cfg(feature = "wasm")]
-    fn to_node(&self) -> web_sys::Node {
+    fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
         use wasm_bindgen::JsCast as _;
 
-        let document = web_sys::window().unwrap().document().unwrap();
         self.character.as_ref().map_or_else(
             || {
-                let element = document
+                let element = ctx
+                    .document
                     .create_element_ns(Some("http://www.w3.org/1998/Math/MathML"), "mspace")
                     .unwrap();
                 element
@@ -402,7 +403,7 @@ impl VirtualNode for SpaceNode {
                 element.dyn_into::<web_sys::Node>().unwrap()
             },
             |character| {
-                document
+                ctx.document
                     .create_text_node(character)
                     .dyn_into::<web_sys::Node>()
                     .unwrap()
@@ -434,12 +435,12 @@ impl VirtualNode for MathDomNode {
     }
 
     #[cfg(feature = "wasm")]
-    fn to_node(&self) -> web_sys::Node {
+    fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
         match self {
-            Self::Math(node) => node.to_node(),
-            Self::Text(node) => node.to_node(),
-            Self::Space(node) => node.to_node(),
-            Self::Fragment(fragment) => fragment.to_node(),
+            Self::Math(node) => node.to_node(ctx),
+            Self::Text(node) => node.to_node(ctx),
+            Self::Space(node) => node.to_node(ctx),
+            Self::Fragment(fragment) => fragment.to_node(ctx),
         }
     }
 }

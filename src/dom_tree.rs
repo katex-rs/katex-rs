@@ -9,6 +9,8 @@ use core::fmt::{self, Write as _};
 use crate::ParseError;
 use crate::namespace::KeyMap;
 use crate::types::ParseErrorKind;
+#[cfg(feature = "wasm")]
+use crate::web_context::WebContext;
 use bon::bon;
 use phf::phf_map;
 #[cfg(feature = "wasm")]
@@ -374,10 +376,10 @@ impl SvgChildNode {
     /// Convert this SVG child node into a DOM node representation
     #[cfg(feature = "wasm")]
     #[must_use]
-    pub fn to_node(&self) -> web_sys::Node {
+    pub fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
         match self {
-            Self::Path(path_node) => path_node.to_node(),
-            Self::Line(line_node) => line_node.to_node(),
+            Self::Path(path_node) => path_node.to_node(ctx),
+            Self::Line(line_node) => line_node.to_node(ctx),
         }
     }
 }
@@ -443,8 +445,8 @@ fn init_node(classes: &mut Vec<String>, style: &mut CssStyle, options: &Options)
 /// Convert into an HTML node
 #[cfg(feature = "wasm")]
 #[must_use]
-pub fn to_node(node: &HtmlDomNode) -> web_sys::Node {
-    node.to_node()
+pub fn to_node(node: &HtmlDomNode, ctx: &WebContext) -> web_sys::Node {
+    node.to_node(ctx)
 }
 
 /// Convert into an HTML markup string
@@ -522,11 +524,10 @@ impl<T: VirtualNode> VirtualNode for Span<T> {
     }
 
     #[cfg(feature = "wasm")]
-    fn to_node(&self) -> web_sys::Node {
+    fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
         use wasm_bindgen::JsCast as _;
 
-        let document = web_sys::window().unwrap().document().unwrap();
-        let element = document.create_element("span").unwrap();
+        let element = ctx.document.create_element("span").unwrap();
 
         // Add classes
         class_to_node(&element, &self.classes);
@@ -539,7 +540,7 @@ impl<T: VirtualNode> VirtualNode for Span<T> {
 
         // Add children
         for child in &self.children {
-            let child_node = child.to_node();
+            let child_node = child.to_node(ctx);
             element.append_child(&child_node).unwrap();
         }
 
@@ -565,11 +566,10 @@ impl VirtualNode for Anchor {
     }
 
     #[cfg(feature = "wasm")]
-    fn to_node(&self) -> web_sys::Node {
+    fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
         use wasm_bindgen::JsCast as _;
 
-        let document = web_sys::window().unwrap().document().unwrap();
-        let element = document.create_element("a").unwrap();
+        let element = ctx.document.create_element("a").unwrap();
 
         // Add classes
         class_to_node(&element, &self.classes);
@@ -582,7 +582,7 @@ impl VirtualNode for Anchor {
 
         // Add children
         for child in &self.children {
-            let child_node = child.to_node();
+            let child_node = child.to_node(ctx);
             element.append_child(&child_node).unwrap();
         }
 
@@ -606,11 +606,10 @@ impl VirtualNode for Img {
     }
 
     #[cfg(feature = "wasm")]
-    fn to_node(&self) -> web_sys::Node {
+    fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
         use wasm_bindgen::JsCast as _;
 
-        let document = web_sys::window().unwrap().document().unwrap();
-        let element = document.create_element("img").unwrap();
+        let element = ctx.document.create_element("img").unwrap();
 
         element.set_attribute("src", &self.src).unwrap();
         element.set_attribute("alt", &self.alt).unwrap();
@@ -678,15 +677,13 @@ impl VirtualNode for SymbolNode {
     }
 
     #[cfg(feature = "wasm")]
-    fn to_node(&self) -> web_sys::Node {
+    fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
         use wasm_bindgen::JsCast as _;
-
-        let document = web_sys::window().unwrap().document().unwrap();
 
         let needs_span = self.italic > 0.0 || !self.classes.is_empty() || !self.style.is_empty();
 
         if needs_span {
-            let element = document.create_element("span").unwrap();
+            let element = ctx.document.create_element("span").unwrap();
 
             // Add classes
             if !self.classes.is_empty() {
@@ -701,13 +698,13 @@ impl VirtualNode for SymbolNode {
             }
 
             // Add text content
-            let text_node = document.create_text_node(&self.text);
+            let text_node = ctx.document.create_text_node(&self.text);
             element.append_child(&text_node).unwrap();
 
             element.dyn_into::<web_sys::Node>().unwrap()
         } else {
             // Just return a text node
-            document
+            ctx.document
                 .create_text_node(&self.text)
                 .dyn_into::<web_sys::Node>()
                 .unwrap()
@@ -734,11 +731,11 @@ impl VirtualNode for SvgNode {
     }
 
     #[cfg(feature = "wasm")]
-    fn to_node(&self) -> web_sys::Node {
+    fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
         use wasm_bindgen::JsCast as _;
 
-        let document = web_sys::window().unwrap().document().unwrap();
-        let element = document
+        let element = ctx
+            .document
             .create_element_ns(Some("http://www.w3.org/2000/svg"), "svg")
             .unwrap();
 
@@ -747,7 +744,7 @@ impl VirtualNode for SvgNode {
 
         // Add children
         for child in &self.children {
-            let child_node = child.to_node();
+            let child_node = child.to_node(ctx);
             element.append_child(&child_node).unwrap();
         }
 
@@ -770,15 +767,15 @@ impl VirtualNode for HtmlDomNode {
     }
 
     #[cfg(feature = "wasm")]
-    fn to_node(&self) -> web_sys::Node {
+    fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
         match self {
-            Self::DomSpan(span) => span.to_node(),
-            Self::Anchor(anchor) => anchor.to_node(),
-            Self::Img(img) => img.to_node(),
-            Self::Symbol(symbol) => symbol.to_node(),
-            Self::SvgNode(svg_node) => svg_node.to_node(),
-            Self::MathML(math_node) => math_node.to_node(),
-            Self::Fragment(fragment) => fragment.to_node(),
+            Self::DomSpan(span) => span.to_node(ctx),
+            Self::Anchor(anchor) => anchor.to_node(ctx),
+            Self::Img(img) => img.to_node(ctx),
+            Self::Symbol(symbol) => symbol.to_node(ctx),
+            Self::SvgNode(svg_node) => svg_node.to_node(ctx),
+            Self::MathML(math_node) => math_node.to_node(ctx),
+            Self::Fragment(fragment) => fragment.to_node(ctx),
         }
     }
 }
@@ -1024,11 +1021,11 @@ impl VirtualNode for PathNode {
 
     /// Convert this path node into a DOM node representation
     #[cfg(feature = "wasm")]
-    fn to_node(&self) -> web_sys::Node {
+    fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
         use wasm_bindgen::JsCast as _;
 
-        let document = web_sys::window().unwrap().document().unwrap();
-        let element = document
+        let element = ctx
+            .document
             .create_element_ns(Some("http://www.w3.org/2000/svg"), "path")
             .unwrap();
 
@@ -1100,11 +1097,11 @@ impl VirtualNode for LineNode {
 
     /// Convert this line node into a DOM node representation
     #[cfg(feature = "wasm")]
-    fn to_node(&self) -> web_sys::Node {
+    fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
         use wasm_bindgen::JsCast as _;
 
-        let document = web_sys::window().unwrap().document().unwrap();
-        let element = document
+        let element = ctx
+            .document
             .create_element_ns(Some("http://www.w3.org/2000/svg"), "line")
             .unwrap();
 

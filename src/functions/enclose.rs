@@ -13,7 +13,6 @@ use crate::spacing_data::Measurement;
 use crate::stretchy::enclose_span;
 use crate::svg_geometry::phase_path;
 use crate::types::{ArgType, CssProperty, Mode, ParseError};
-use crate::units::make_em;
 use crate::units::make_em as units_make_em;
 use crate::{KatexContext, build_common};
 use crate::{build_html, build_mathml};
@@ -204,10 +203,7 @@ fn html_builder(
             None,
             None,
         );
-        img.style.insert(
-            CssProperty::Height,
-            make_em(options.font_metrics().default_rule_thickness / scale),
-        );
+        img.height = options.font_metrics().default_rule_thickness / scale;
         img_shift = -0.5 * options.font_metrics().x_height;
 
         // Create the vlist
@@ -218,7 +214,6 @@ fn html_builder(
                     VListElemAndShift::builder()
                         .elem(img.into())
                         .shift(img_shift)
-                        .wrapper_classes(vec!["svg-align".to_owned()])
                         .build(),
                 ],
             },
@@ -235,7 +230,13 @@ fn html_builder(
             .into());
         }
 
-        return Ok(make_span(vec!["mord".to_owned()], vec![vlist.into()], None, None).into());
+        return Ok(make_span(
+            vec!["mord".to_owned()],
+            vec![vlist.into()],
+            Some(options),
+            None,
+        )
+        .into());
     }
 
     if label == "phase" {
@@ -332,6 +333,14 @@ fn html_builder(
         }
     }
 
+    // Record the dimensions of the inner element before it is moved into the
+    // vertical list. JavaScript KaTeX preserves the original height/depth for
+    // cancel-style enclosures so that the strike does not affect surrounding
+    // layout. Without capturing these values beforehand we lose access once the
+    // node is consumed.
+    let inner_height = inner.height();
+    let inner_depth = inner.depth();
+
     // Calculate padding
     if label.contains("box") {
         rule_thickness = options
@@ -386,7 +395,7 @@ fn html_builder(
     }
 
     // Create the vlist
-    let vlist = if enclose_node.background_color.is_some() {
+    let mut vlist = if enclose_node.background_color.is_some() {
         make_v_list(
             VListParam::IndividualShift {
                 children: vec![
@@ -418,6 +427,14 @@ fn html_builder(
         )?
     };
 
+    // Strike-through operators should not extend the surrounding box. Align
+    // with the reference implementation by restoring the inner height/depth so
+    // that only the glyph content contributes to layout metrics.
+    if label.contains("cancel") {
+        vlist.height = inner_height;
+        vlist.depth = inner_depth;
+    }
+
     if label.contains("cancel") && !is_single_char {
         Ok(make_span(
             vec!["mord".to_owned(), "cancel-lap".to_owned()],
@@ -427,7 +444,13 @@ fn html_builder(
         )
         .into())
     } else {
-        Ok(make_span(vec!["mord".to_owned()], vec![vlist.into()], None, None).into())
+        Ok(make_span(
+            vec!["mord".to_owned()],
+            vec![vlist.into()],
+            Some(options),
+            None,
+        )
+        .into())
     }
 }
 

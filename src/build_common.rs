@@ -39,7 +39,7 @@ pub const FONT_MAP: phf::Map<&str, FontMapEntry> = phf_map! {
     },
     "mathit" => FontMapEntry {
         variant: "italic",
-        font_name: "Math-Italic",
+        font_name: "Main-Italic",
     },
     "mathnormal" => FontMapEntry {
         variant: "italic",
@@ -55,7 +55,7 @@ pub const FONT_MAP: phf::Map<&str, FontMapEntry> = phf_map! {
     },
     "mathscr" => FontMapEntry {
         variant: "script",
-        font_name: "Caligraphic-Regular",
+        font_name: "Script-Regular",
     },
     "mathfrak" => FontMapEntry {
         variant: "fraktur",
@@ -625,7 +625,10 @@ pub fn mathsym(
     options: &Options,
     classes: Option<&[String]>,
 ) -> Result<SymbolNode, ParseError> {
-    if options.font == "boldsymbol" && lookup_symbol(ctx, value, "Main-Bold", mode)?.is_some() {
+    if options.font == "boldsymbol"
+        && lookup_symbol(ctx, value, "Main-Bold", mode)?
+            .is_some_and(|lookup| lookup.metrics.is_some())
+    {
         let mut combined_classes = classes.unwrap_or(&[]).to_vec();
         combined_classes.push("mathbf".to_owned());
         make_symbol(
@@ -880,7 +883,9 @@ pub fn make_ord(
             )
         };
 
-        if lookup_symbol(ctx, text, &font_name, mode)?.is_some() {
+        if lookup_symbol(ctx, text, &font_name, mode)?
+            .is_some_and(|lookup| lookup.metrics.is_some())
+        {
             let mut combined_classes = classes;
             combined_classes.extend(font_classes);
             return Ok(make_symbol(
@@ -896,6 +901,9 @@ pub fn make_ord(
 
         // Handle ligature decomposition for monospace fonts
         if font_name.starts_with("Typewriter") && is_ligature(text) {
+            let mut base_classes = classes.clone();
+            base_classes.extend(font_classes.clone());
+
             let mut parts = Vec::new();
             for ch in text.chars() {
                 let char_str = ch.to_string();
@@ -905,17 +913,11 @@ pub fn make_ord(
                     &font_name,
                     mode,
                     Some(options),
-                    Some(&classes),
+                    Some(&base_classes),
                 )?;
                 parts.push(symbol.into());
             }
-            return Ok(HtmlDomNode::DomSpan(
-                Span::builder()
-                    .children(parts)
-                    .classes(classes)
-                    .max_font_size(options.size_multiplier)
-                    .build(None),
-            ));
+            return Ok(make_fragment(&parts).into());
         }
     }
 
@@ -1110,7 +1112,10 @@ fn bold_symbol(
     _classes: &[String],
     ord_type: Mode,
 ) -> Result<FontData, ParseError> {
-    if ord_type != Mode::Text && lookup_symbol(ctx, text, "Math-BoldItalic", mode)?.is_some() {
+    if ord_type != Mode::Text
+        && lookup_symbol(ctx, text, "Math-BoldItalic", mode)?
+            .is_some_and(|lookup| lookup.metrics.is_some())
+    {
         Ok(FontData {
             font_name: "Math-BoldItalic".to_owned(),
             font_class: "boldsymbol".to_owned(),

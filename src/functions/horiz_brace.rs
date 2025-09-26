@@ -51,31 +51,36 @@ pub fn html_builder(
     // Pull out the `ParseNode<"horizBrace">` if `grp` is a "supsub" node.
     let (group, sup_sub_group) = match node {
         ParseNode::SupSub(supsub) => {
-            // If our base is a horizontal brace, and we have superscripts and
-            // subscripts, the supsub will defer to us. In particular, we want
-            // to attach the superscripts and subscripts to the inner body (so
-            // that the position of the superscripts and subscripts won't be
-            // affected by the height of the brace). We accomplish this by
-            // sticking the base of the brace into the base of the supsub, and
-            // rendering that, while keeping track of where the brace is.
-            if let Some(base) = &supsub.base
-                && let ParseNode::HorizBrace(hb) = base.as_ref()
-            {
-                // The real brace group is the base of the supsub group
-                let group = hb;
-                // The character box is the base of the brace group
-                let base = &group.base;
-                let mut cloned = supsub.clone();
-                // Stick the character box into the base of the supsub group
-                cloned.base = Some(Box::new(*base.clone()));
-                let grp = ParseNode::SupSub(cloned);
-                // Rerender the supsub group with its new base, and store that
-                // result.
-                let sup_sub_group = build_html::build_group(ctx, &grp, options, None)?;
-                (group, Some(sup_sub_group))
-            } else {
+            let base = supsub
+                .base
+                .as_ref()
+                .ok_or_else(|| ParseError::new("Expected base in SupSub node"))?;
+            let ParseNode::HorizBrace(group) = base.as_ref() else {
                 return Err(ParseError::new("Expected HorizBrace node in SupSub base"));
-            }
+            };
+
+            let style = options.style;
+            let sup_group = if let Some(sup) = &supsub.sup {
+                let sup_options = options.having_style(style.sup());
+                Some(build_html::build_group(
+                    ctx,
+                    sup,
+                    &sup_options,
+                    Some(options),
+                )?)
+            } else if let Some(sub) = &supsub.sub {
+                let sub_options = options.having_style(style.sub());
+                Some(build_html::build_group(
+                    ctx,
+                    sub,
+                    &sub_options,
+                    Some(options),
+                )?)
+            } else {
+                None
+            };
+
+            (group, sup_group)
         }
         ParseNode::HorizBrace(hb) => (hb, None),
         _ => return Err(ParseError::new("Expected HorizBrace node or SupSub node")),
@@ -163,8 +168,7 @@ pub fn html_builder(
         } else {
             let vlist = make_v_list(
                 VListParam::Bottom {
-                    position_data: v_span.height
-                        + v_span.depth
+                    position_data: v_span.depth
                         + 0.2
                         + sup_sub_group.height()
                         + sup_sub_group.depth(),

@@ -222,6 +222,8 @@ pub enum ParseErrorKind {
     UnknownColumnAlignment { alignment: String },
     #[error("Failed to append child node: {details}")]
     FailedToAppendChild { details: String },
+    #[error("Document is not available in the current environment")]
+    MissingDocument,
     #[error("Unknown delimiter label")]
     UnknownDelimiterLabel,
     #[error("Unknown accent '{accent}'")]

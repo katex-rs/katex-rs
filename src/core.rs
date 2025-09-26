@@ -80,10 +80,14 @@ pub fn render(
     base_node: &Node,
     settings: &Settings,
 ) -> Result<(), ParseError> {
+    use crate::web_context::WebContext;
+
     base_node.set_text_content(None);
     let tree = parse_tree(ctx, expression, settings)?;
     let dom_tree = build_tree(ctx, &tree, expression, settings)?;
-    let node = dom_tree.to_node();
+    let web_ctx = WebContext::from_window()
+        .ok_or_else(|| ParseError::new(ParseErrorKind::MissingDocument))?;
+    let node = dom_tree.to_node(&web_ctx);
     base_node.append_child(&node).map_err(|e| {
         ParseError::new(ParseErrorKind::FailedToAppendChild {
             details: format!("{e:?}"),

@@ -594,7 +594,7 @@ pub fn create_symbols() -> Symbols {
         );
 
         // Italic (U+1D434-1D467)
-        let wide_char = create_wide_char(0xD835, 0xDC34u16).to_string();
+        let wide_char = create_wide_char(0xD835, 0xDC34 + i as u16).to_string();
         symbols.define_symbol(
             Mode::Math,
             Font::Main,

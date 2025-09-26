@@ -137,7 +137,18 @@ fn html_builder(
     }
 
     let mut span = make_span(classes, elements, Some(options), None);
-    span.attributes.extend(html_node.attributes.clone());
+
+    // Avoid overriding the computed class list. KaTeX.js deliberately skips
+    // copying the `class` attribute from the original node because
+    // `buildCommon.makeSpan` already encoded the classes (including the
+    // `enclosing` helper class). Extending with the raw attribute here would
+    // drop that helper class and change layout semantics.
+    for (attr, value) in &html_node.attributes {
+        if attr == "class" {
+            continue;
+        }
+        span.attributes.insert(attr.clone(), value.clone());
+    }
 
     Ok(span.into())
 }
