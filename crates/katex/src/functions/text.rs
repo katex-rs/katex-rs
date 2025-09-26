@@ -4,12 +4,12 @@
 //! migrated from KaTeX's text.js.
 
 use crate::build_common::make_span;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec, ord_argument};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec, ord_argument};
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::MathDomNode;
 use crate::options::{FontShape, FontWeight, Options};
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeText};
-use crate::types::{ArgType, Mode, ParseError};
+use crate::types::{ArgType, Mode, ParseError, ParseErrorKind};
 use crate::{build_html, build_mathml};
 use phf::phf_map;
 
@@ -96,13 +96,13 @@ pub fn define_text(ctx: &mut crate::KatexContext) {
             allowed_in_text: true,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let body = ord_argument(&args[0]);
             Ok(ParseNode::Text(ParseNodeText {
                 mode: context.parser.mode,
                 loc: context.loc(),
                 body,
-                font: Some(context.func_name),
+                font: Some(context.func_name.to_owned()),
             }))
         }),
         html_builder: Some(html_builder),
@@ -117,7 +117,9 @@ fn html_builder(
     ctx: &crate::KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::Text(group) = node else {
-        return Err(ParseError::new("Expected Text node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Text,
+        }));
     };
 
     let new_options = options_with_font(group, options);
@@ -144,7 +146,9 @@ fn mathml_builder(
     ctx: &crate::KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Text(group) = node else {
-        return Err(ParseError::new("Expected Text node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Text,
+        }));
     };
 
     let new_options = options_with_font(group, options);

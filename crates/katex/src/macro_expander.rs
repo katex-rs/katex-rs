@@ -116,7 +116,7 @@ impl<'a> MacroExpander<'a> {
         }
 
         // indicate the end of an argument
-        self.push_token(Token::new("EOF".to_owned(), None));
+        self.push_token(Token::new("EOF", None));
         self.push_tokens(tokens);
 
         // compute range token with empty text
@@ -133,14 +133,14 @@ impl<'a> MacroExpander<'a> {
         if let Some(d) = delimiters {
             if d.len() != num_args + 1 {
                 return Err(ParseError::new(
-                    "The length of delimiters doesn't match the number of args!",
+                    ParseErrorKind::MacroDelimiterLengthMismatch,
                 ));
             }
             for expected in &d[0] {
                 let tok = self.pop_token()?;
                 if expected != &tok.text {
                     return Err(ParseError::with_token(
-                        "Use of the macro doesn't match its definition",
+                        ParseErrorKind::MacroDefinitionMismatch,
                         &tok,
                     ));
                 }
@@ -160,9 +160,7 @@ impl<'a> MacroExpander<'a> {
     fn count_expansion(&mut self, amount: usize) -> Result<(), ParseError> {
         self.expansion_count += amount;
         if self.expansion_count > self.settings.max_expand {
-            return Err(ParseError::new(
-                "Too many expansions: infinite loop or need to increase maxExpand setting",
-            ));
+            return Err(ParseError::new(ParseErrorKind::MacroTooManyExpansions));
         }
         Ok(())
     }
@@ -206,7 +204,7 @@ impl<'a> MacroExpander<'a> {
                 if tokens[i as usize].text == "#" {
                     if i == 0 {
                         return Err(ParseError::with_token(
-                            "Incomplete placeholder at end of macro body",
+                            ParseErrorKind::MacroIncompletePlaceholder,
                             &tokens[i as usize],
                         ));
                     }
@@ -227,7 +225,12 @@ impl<'a> MacroExpander<'a> {
                         continue;
                     }
 
-                    return Err(ParseError::with_token("Not a valid argument number", &tok));
+                    return Err(ParseError::with_token(
+                        ParseErrorKind::InvalidMacroArgumentNumber {
+                            value: tok.text.to_owned_string(),
+                        },
+                        &tok,
+                    ));
                 }
                 i -= 1;
             }
@@ -243,11 +246,10 @@ impl<'a> MacroExpander<'a> {
         self.push_tokens(tokens);
         while self.stack.len() > old_len {
             if self.expand_once_internal(true)?.is_none() {
-                let mut token = self.stack.pop().ok_or_else(|| {
-                    ParseError::new(
-                        "Internal error: stack unexpectedly empty during token expansion",
-                    )
-                })?;
+                let mut token = self
+                    .stack
+                    .pop()
+                    .ok_or_else(|| ParseError::new(ParseErrorKind::MacroStackUnexpectedlyEmpty))?;
                 if token.treat_as_relax == Some(true) {
                     // the expansion of \noexpand is the token itself
                     token.noexpand = Some(false);
@@ -344,14 +346,14 @@ impl<'a> MacroContextInterface<'a> for MacroExpander<'a> {
         self.stack
             .last()
             .cloned()
-            .ok_or_else(|| ParseError::new("stack is empty"))
+            .ok_or_else(|| ParseError::new(ParseErrorKind::EmptyMacroExpanderStack))
     }
 
     fn pop_token(&mut self) -> Result<Token, ParseError> {
         self.future_mut()?;
         self.stack
             .pop()
-            .ok_or_else(|| ParseError::new("stack is empty"))
+            .ok_or_else(|| ParseError::new(ParseErrorKind::EmptyMacroExpanderStack))
     }
 
     fn consume_spaces(&mut self) -> Result<(), ParseError> {
@@ -378,11 +380,10 @@ impl<'a> MacroContextInterface<'a> for MacroExpander<'a> {
     fn expand_next_token(&mut self) -> Result<Token, ParseError> {
         loop {
             if self.expand_once_internal(false)?.is_none() {
-                let mut token = self.stack.pop().ok_or_else(|| {
-                    ParseError::new(
-                        "Internal error: stack unexpectedly empty during token expansion",
-                    )
-                })?;
+                let mut token = self
+                    .stack
+                    .pop()
+                    .ok_or_else(|| ParseError::new(ParseErrorKind::MacroStackUnexpectedlyEmpty))?;
                 if token.treat_as_relax == Some(true) {
                     token.set_text("\\relax");
                 }
@@ -434,7 +435,10 @@ impl<'a> MacroContextInterface<'a> for MacroExpander<'a> {
             } else if tok.text == "}" {
                 depth -= 1;
                 if depth == -1 {
-                    return Err(ParseError::with_token("Extra }", &tok));
+                    return Err(ParseError::with_token(
+                        ParseErrorKind::ExtraCloseBrace,
+                        &tok,
+                    ));
                 }
             } else if tok.text == "EOF" {
                 let expected = delims.as_ref().map_or("}", |d| {

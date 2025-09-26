@@ -192,9 +192,7 @@ pub fn markup_to_string<T: VirtualNode + ?Sized>(node: &T) -> Result<String, Par
         if let Some(err) = error.into_inner() {
             return Err(err);
         }
-        return Err(ParseError::new(ParseErrorKind::Message(
-            "failed to write markup",
-        )));
+        return Err(ParseErrorKind::MarkupWriteFailure.into());
     }
 
     Ok(buffer)

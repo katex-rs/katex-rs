@@ -4,12 +4,12 @@
 //! \mathclap) migrated from KaTeX's lap.js.
 
 use crate::build_common::make_span;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{LapAlignment, NodeType, ParseNode, ParseNodeLap};
-use crate::types::{ArgType, CssProperty, ParseError};
+use crate::types::{ArgType, CssProperty, ParseError, ParseErrorKind};
 use crate::units::make_em;
 use crate::{KatexContext, build_html, build_mathml};
 
@@ -24,13 +24,13 @@ pub fn define_lap(ctx: &mut KatexContext) {
             arg_types: Some(vec![ArgType::Primitive]),
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             if args.len() != 1 {
-                return Err(ParseError::new("Lap functions require exactly 1 argument"));
+                return Err(ParseError::new(ParseErrorKind::LapRequiresSingleArgument));
             }
 
             let body = args[0].clone();
-            let alignment = match context.func_name.as_str() {
+            let alignment = match context.func_name {
                 "\\mathllap" => LapAlignment::Left,
                 "\\mathrlap" => LapAlignment::Right,
                 "\\mathclap" => LapAlignment::Center,
@@ -56,7 +56,9 @@ fn html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::Lap(lap_node) = node else {
-        return Err(ParseError::new("Expected Lap node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Lap,
+        }));
     };
 
     // Build the base group
@@ -131,7 +133,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Lap(lap_node) = node else {
-        return Err(ParseError::new("Expected Lap node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Lap,
+        }));
     };
 
     // Build the base group

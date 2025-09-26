@@ -98,7 +98,7 @@ pub fn get_wide_character_font(
     mode: Mode,
 ) -> Result<(&'static str, &'static str), ParseError> {
     wide_char.chars().next().map_or_else(
-        || Err(ParseError::new("Unsupported character: <empty>")),
+        || Err(ParseError::new(ParseErrorKind::EmptyWideCharacterInput)),
         |ch| wide_character_font_from_char(ch, mode),
     )
 }

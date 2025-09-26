@@ -7,14 +7,14 @@ use crate::namespace::KeyMap;
 
 use crate::build_common::{VListElemAndShift, VListParam, make_span, make_v_list};
 use crate::build_html::build_group;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeXArrow};
 use crate::stretchy::math_ml_node;
 use crate::stretchy::svg_span;
-use crate::types::ParseError;
+use crate::types::{ParseError, ParseErrorKind};
 use crate::{KatexContext, build_mathml};
 
 /// Extensible arrow commands
@@ -59,7 +59,7 @@ pub fn define_arrow(ctx: &mut KatexContext) {
             num_optional_args: 1,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, opt_args| {
+        handler: Some(|context, args, opt_args| {
             // Allow internal use of \\cdlongequal without a body
             let body = args.first();
             let below = opt_args
@@ -70,7 +70,7 @@ pub fn define_arrow(ctx: &mut KatexContext) {
             Ok(ParseNode::XArrow(ParseNodeXArrow {
                 mode: context.parser.mode,
                 loc: context.loc(),
-                label: context.func_name,
+                label: context.func_name.to_owned(),
                 body: body.map(|node| Box::new(node.clone())),
                 below,
             }))
@@ -87,7 +87,9 @@ fn html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::XArrow(xarrow) = node else {
-        return Err(ParseError::new("Expected XArrow node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::XArrow,
+        }));
     };
 
     let style = &options.style;
@@ -203,7 +205,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::XArrow(xarrow) = node else {
-        return Err(ParseError::new("Expected XArrow node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::XArrow,
+        }));
     };
 
     let mut arrow_node = math_ml_node(&xarrow.label);

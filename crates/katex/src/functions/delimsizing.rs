@@ -19,7 +19,6 @@ use crate::parser::parse_node::{
 use crate::types::{ArgType, ParseError, ParseErrorKind};
 use crate::units::make_em;
 use crate::{KatexContext, build_html, build_mathml};
-use core::slice;
 
 use phf::phf_map;
 
@@ -65,7 +64,7 @@ static DELIMITERS: phf::Set<&'static str> = phf::phf_set! {
 /// Validates delimiter arguments
 fn check_delimiter(
     delim: Option<&AnyParseNode>,
-    context: &FunctionContext,
+    context: &FunctionContext<'_, '_, '_>,
 ) -> Result<String, ParseError> {
     let sym_delim = check_symbol_node_type(delim);
     if let Some(node_type) = sym_delim {
@@ -77,11 +76,11 @@ fn check_delimiter(
         }
         return Err(ParseError::new(ParseErrorKind::InvalidDelimiterAfter {
             delimiter: node_type.to_string(),
-            function: context.func_name.clone(),
+            function: context.func_name.to_owned(),
         }));
     }
     Err(ParseError::new(ParseErrorKind::InvalidDelimiterTypeAfter {
-        function: context.func_name.clone(),
+        function: context.func_name.to_owned(),
     }))
 }
 
@@ -97,10 +96,10 @@ pub fn define_delimsizing(ctx: &mut KatexContext) {
             arg_types: Some(vec![ArgType::Primitive]),
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let delim_text = check_delimiter(args.first(), &context)?;
 
-            let (mclass, size) = DELIMITER_SIZES[&context.func_name];
+            let (mclass, size) = DELIMITER_SIZES[context.func_name];
 
             Ok(ParseNode::Delimsizing(ParseNodeDelimsizing {
                 mode: context.parser.mode,
@@ -126,7 +125,7 @@ pub fn define_leftright(ctx: &mut KatexContext) {
             primitive: true,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let delim_text = check_delimiter(args.first(), &context)?;
 
             let loc = context.loc();
@@ -139,7 +138,7 @@ pub fn define_leftright(ctx: &mut KatexContext) {
             let Some(AnyParseNode::LeftRightRight(right_node)) =
                 parser.parse_function(None, None)?
             else {
-                return Err(ParseError::new("Expected \\right after \\left"));
+                return Err(ParseError::new(ParseErrorKind::ExpectedRightAfterLeft));
             };
 
             Ok(ParseNode::LeftRight(ParseNodeLeftRight {
@@ -164,7 +163,7 @@ pub fn define_leftright(ctx: &mut KatexContext) {
             primitive: true,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let delim_text = check_delimiter(args.first(), &context)?;
 
             let color = context.parser.gullet.macros_mut().get("\\current@color");
@@ -172,9 +171,7 @@ pub fn define_leftright(ctx: &mut KatexContext) {
                 if let Some(s) = color_val.as_str() {
                     Some(s.to_owned())
                 } else {
-                    return Err(ParseError::new(
-                        "\\current@color set to non-string in \\right",
-                    ));
+                    return Err(ParseError::new(ParseErrorKind::CurrentColorMustBeString));
                 }
             } else {
                 None
@@ -202,9 +199,9 @@ pub fn define_middle(ctx: &mut KatexContext) {
             primitive: true,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             if context.parser.leftright_depth == 0.0 {
-                return Err(ParseError::new("\\middle without preceding \\left"));
+                return Err(ParseError::new(ParseErrorKind::MiddleWithoutPrecedingLeft));
             }
 
             let delim_text = check_delimiter(args.first(), &context)?;
@@ -227,7 +224,9 @@ fn delimsizing_html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::Delimsizing(group) = node else {
-        return Err(ParseError::new("Expected Delimsizing node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Delimsizing,
+        }));
     };
 
     if group.delim == "." {
@@ -242,7 +241,7 @@ fn delimsizing_html_builder(
         usize::from(group.size),
         options,
         group.mode,
-        slice::from_ref(&group.mclass),
+        vec![group.mclass.clone()],
     )?
     .into())
 }
@@ -254,7 +253,9 @@ fn delimsizing_mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Delimsizing(group) = node else {
-        return Err(ParseError::new("Expected Delimsizing node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Delimsizing,
+        }));
     };
 
     let children = if group.delim == "." {
@@ -292,7 +293,9 @@ fn leftright_html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::LeftRight(group) = node else {
-        return Err(ParseError::new("Expected LeftRight node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::LeftRight,
+        }));
     };
 
     // Build the inner expression
@@ -329,7 +332,7 @@ fn leftright_html_builder(
 
     // Handle left delimiter
     let left_delim = if group.left == "." {
-        build_html::make_null_delimiter(options, &["mopen".to_owned()])
+        build_html::make_null_delimiter(options, vec!["mopen".to_owned()])
     } else {
         left_right_delim(
             ctx,
@@ -338,7 +341,7 @@ fn leftright_html_builder(
             inner_depth,
             options,
             group.mode,
-            &["mopen".to_owned()],
+            vec!["mopen".to_owned()],
         )?
     };
     inner_modified.insert(0, left_delim.into());
@@ -356,7 +359,7 @@ fn leftright_html_builder(
                     inner_depth,
                     options,
                     group.mode,
-                    &[],
+                    vec![],
                 )?;
             }
         }
@@ -364,7 +367,7 @@ fn leftright_html_builder(
 
     // Handle right delimiter
     let right_delim = if group.right == "." {
-        build_html::make_null_delimiter(options, &["mclose".to_owned()])
+        build_html::make_null_delimiter(options, vec!["mclose".to_owned()])
     } else {
         let mut right_options = options;
         let maybe_option;
@@ -379,7 +382,7 @@ fn leftright_html_builder(
             inner_depth,
             right_options,
             group.mode,
-            &["mclose".to_owned()],
+            vec!["mclose".to_owned()],
         )?
     };
     inner_modified.push(right_delim.into());
@@ -400,7 +403,9 @@ fn leftright_mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::LeftRight(group) = node else {
-        return Err(ParseError::new("Expected LeftRight node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::LeftRight,
+        }));
     };
 
     let inner = build_mathml::build_expression(ctx, &group.body, options, None)?;
@@ -438,7 +443,7 @@ fn leftright_mathml_builder(
         children.push(MathDomNode::Math(right_node));
     }
 
-    Ok(make_row(&children))
+    Ok(make_row(children))
 }
 
 /// HTML builder for middle nodes
@@ -448,13 +453,15 @@ fn middle_html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::Middle(group) = node else {
-        return Err(ParseError::new("Expected Middle node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Middle,
+        }));
     };
 
     let mut middle_delim = if group.delim == "." {
-        build_html::make_null_delimiter(options, &[])
+        build_html::make_null_delimiter(options, vec![])
     } else {
-        sized_delim(ctx, &group.delim, 1, options, group.mode, &[])?
+        sized_delim(ctx, &group.delim, 1, options, group.mode, vec![])?
     };
 
     // Mark as middle delimiter
@@ -470,7 +477,9 @@ fn middle_mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Middle(group) = node else {
-        return Err(ParseError::new("Expected Middle node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Middle,
+        }));
     };
 
     // Firefox compatibility: use plain "|" instead of "\vert"

@@ -1,4 +1,5 @@
 mod flamegraph;
+mod screenshotter;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -19,6 +20,8 @@ struct Cli {
 enum Command {
     /// Generate CPU flamegraphs for the available performance harnesses.
     Flamegraph(flamegraph::FlamegraphArgs),
+    /// Run the browser-based screenshotter tests using WebDriver.
+    Screenshotter(screenshotter::ScreenshotterArgs),
 }
 
 fn main() -> Result<()> {
@@ -26,5 +29,6 @@ fn main() -> Result<()> {
 
     match cli.command {
         Command::Flamegraph(args) => flamegraph::run(args),
+        Command::Screenshotter(args) => screenshotter::run(args),
     }
 }

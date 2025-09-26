@@ -6,14 +6,14 @@
 use crate::build_common::{
     self, VListChild, VListElem, VListKern, VListParam, make_span, make_v_list,
 };
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::delimiter::make_sqrt_image;
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeSqrt};
 use crate::style::{SCRIPTSCRIPT, TEXT};
-use crate::types::{CssProperty, ParseError};
+use crate::types::{CssProperty, ParseError, ParseErrorKind};
 use crate::units::make_em;
 use crate::{KatexContext, build_html, build_mathml};
 
@@ -27,7 +27,7 @@ pub fn define_sqrt(ctx: &mut KatexContext) {
             num_optional_args: 1,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, opt_args| {
+        handler: Some(|context, args, opt_args| {
             let body = args[0].clone();
             let index = opt_args[0].clone();
             Ok(ParseNode::Sqrt(Box::new(ParseNodeSqrt {
@@ -49,7 +49,9 @@ fn html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::Sqrt(sqrt_node) = node else {
-        return Err(ParseError::new("Expected Sqrt node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Sqrt,
+        }));
     };
 
     // Square roots are handled in the TeXbook pg. 443, Rule 11.
@@ -184,7 +186,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Sqrt(sqrt_node) = node else {
-        return Err(ParseError::new("Expected Sqrt node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Sqrt,
+        }));
     };
 
     let body_group = build_mathml::build_group(ctx, &sqrt_node.body, options)?;

@@ -103,19 +103,12 @@ fn style_wrap(
     delim: HtmlDomNode,
     to_style: &'static Style,
     options: &Options,
-    classes: &[String],
+    classes: Vec<String>,
 ) -> DomSpan {
     let new_options = options.having_base_style(Some(to_style));
-    let mut span = make_span(
-        classes
-            .iter()
-            .cloned()
-            .chain(new_options.sizing_classes(options))
-            .collect::<Vec<_>>(),
-        vec![delim],
-        Some(options),
-        None,
-    );
+    let mut combined_classes = classes;
+    combined_classes.extend(new_options.sizing_classes(options));
+    let mut span = make_span(combined_classes, vec![delim], Some(options), None);
 
     let multiplier = new_options.size_multiplier / options.size_multiplier;
     span.height *= multiplier;
@@ -135,7 +128,7 @@ pub fn make_small_delim(
     center: bool,
     options: &Options,
     mode: Mode,
-    classes: &[String],
+    classes: Vec<String>,
 ) -> Result<DomSpan, ParseError> {
     let text = make_symbol(
         ctx,
@@ -143,12 +136,12 @@ pub fn make_small_delim(
         "Main-Regular",
         mode,
         Some(options),
-        Some(classes),
+        Some(classes.clone()),
     )?;
     let mut span = style_wrap(text.into(), style, options, classes);
 
     if center {
-        span = center_span(&span, options, TEXT);
+        span = center_span(span, options, TEXT);
     }
 
     Ok(span)
@@ -175,7 +168,7 @@ pub fn make_large_delim(
     center: bool,
     options: &Options,
     mode: Mode,
-    classes: &[String],
+    classes: Vec<String>,
 ) -> Result<DomSpan, ParseError> {
     let inner = mathrm_size(ctx, delim, size, mode, options)?;
     let mut span = style_wrap(
@@ -192,14 +185,14 @@ pub fn make_large_delim(
     );
 
     if center {
-        span = center_span(&span, options, TEXT);
+        span = center_span(span, options, TEXT);
     }
 
     Ok(span)
 }
 
 /// Center a span around the axis
-fn center_span(span: &DomSpan, options: &Options, style: &'static Style) -> DomSpan {
+fn center_span(mut span: DomSpan, options: &Options, style: &'static Style) -> DomSpan {
     let new_options = options.having_base_style(Some(style));
     let shift = (1.0 - options.size_multiplier / new_options.size_multiplier)
         * options.font_metrics().axis_height;
@@ -207,7 +200,6 @@ fn center_span(span: &DomSpan, options: &Options, style: &'static Style) -> DomS
     // Apply the shift to center the span around the axis
     // In KaTeX.js, this modifies the span's style to apply vertical positioning
     // We'll create a modified span with the vertical shift applied
-    let mut span = span.clone();
     span.classes.push("delimcenter".to_owned());
     span.height -= shift;
     span.depth += shift;
@@ -258,7 +250,7 @@ fn make_inner(
     options: &Options,
 ) -> Result<VListChild, ParseError> {
     let Some(first_char) = ch.chars().next() else {
-        return Err(ParseError::new("Delimiter character is empty"));
+        return Err(ParseError::new(ParseErrorKind::EmptyDelimiterCharacter));
     };
     // Get font metrics data
 
@@ -315,7 +307,7 @@ pub fn make_stacked_delim(
     center: bool,
     options: &Options,
     mode: Mode,
-    classes: &[String],
+    classes: Vec<String>,
 ) -> Result<DomSpan, ParseError> {
     // There are four parts, the top, an optional middle, a repeated part, and a
     // bottom.
@@ -758,7 +750,7 @@ pub fn sized_delim(
     size: usize,
     options: &Options,
     mode: Mode,
-    classes: &[String],
+    classes: Vec<String>,
 ) -> Result<DomSpan, ParseError> {
     // < and > turn into \langle and \rangle in delimiters
     let delim = match delim {
@@ -847,7 +839,7 @@ pub fn custom_sized_delim(
     center: bool,
     options: &Options,
     mode: Mode,
-    classes: &[String],
+    classes: Vec<String>,
 ) -> Result<DomSpan, ParseError> {
     let delim = match delim {
         "<" | "\\lt" | "\u{27e8}" => "\\langle",
@@ -890,7 +882,7 @@ pub fn left_right_delim(
     depth: f64,
     options: &Options,
     mode: Mode,
-    classes: &[String],
+    classes: Vec<String>,
 ) -> Result<DomSpan, ParseError> {
     // We always center \left/\right delimiters, so the axis is always shifted
     let axis_height = options.font_metrics().axis_height * options.size_multiplier;

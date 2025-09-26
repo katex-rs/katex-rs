@@ -9,15 +9,15 @@ use crate::build_common::{
     self, VEC_SVG_DATA, VListChild, VListElem, VListParam, make_span, make_v_list, static_svg,
 };
 use crate::build_mathml::make_text;
-use crate::define_function::{
-    FunctionContext, FunctionDefSpec, FunctionPropSpec, normalize_argument,
-};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec, normalize_argument};
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeAccent, ParseNodeTextOrd};
 use crate::stretchy::{math_ml_node, svg_span};
-use crate::types::{ArgType, CssProperty, CssStyle, ErrorLocationProvider, Mode, ParseError};
+use crate::types::{
+    ArgType, CssProperty, CssStyle, ErrorLocationProvider, Mode, ParseError, ParseErrorKind,
+};
 use crate::units::make_em;
 use crate::{KatexContext, build_html, build_mathml};
 use phf::phf_set;
@@ -81,9 +81,9 @@ pub fn define_accent(ctx: &mut KatexContext) {
             num_args: 1,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let base = normalize_argument(&args[0]);
-            let is_stretchy = !NON_STRETCHY_ACCENTS.contains(context.func_name.as_str());
+            let is_stretchy = !NON_STRETCHY_ACCENTS.contains(context.func_name);
             let is_shifty = !is_stretchy
                 || context.func_name == "\\widehat"
                 || context.func_name == "\\widetilde"
@@ -92,7 +92,7 @@ pub fn define_accent(ctx: &mut KatexContext) {
             Ok(ParseNode::Accent(Box::new(ParseNodeAccent {
                 mode: context.parser.mode,
                 loc: context.loc(),
-                label: context.func_name,
+                label: context.func_name.to_owned(),
                 is_stretchy: Some(is_stretchy),
                 is_shifty: Some(is_shifty),
                 base: base.clone(),
@@ -113,7 +113,7 @@ pub fn define_accent(ctx: &mut KatexContext) {
             arg_types: Some(vec![ArgType::Primitive]),
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let base = args[0].clone();
 
             // In math mode, switch to text mode for accents
@@ -134,7 +134,7 @@ pub fn define_accent(ctx: &mut KatexContext) {
             Ok(ParseNode::Accent(Box::new(ParseNodeAccent {
                 mode,
                 loc: context.loc(),
-                label: context.func_name,
+                label: context.func_name.to_owned(),
                 is_stretchy: Some(false),
                 is_shifty: Some(true),
                 base,
@@ -181,10 +181,16 @@ pub fn html_builder(
 
                 (group, base, Some(supsub_group))
             } else {
-                return Err(ParseError::new("Expected Accent node in SupSub base"));
+                return Err(ParseError::new(ParseErrorKind::ExpectedSupSubBaseNode {
+                    node: NodeType::Accent,
+                }));
             }
         }
-        _ => return Err(ParseError::new("Expected Accent node or SupSub node")),
+        _ => {
+            return Err(ParseError::new(ParseErrorKind::ExpectedNodeOrSupSub {
+                node: NodeType::Accent,
+            }));
+        }
     };
 
     // Build the base group
@@ -208,7 +214,9 @@ pub fn html_builder(
         if let HtmlDomNode::Symbol(symbol) = base_group {
             symbol.skew
         } else {
-            return Err(ParseError::new("Expected Symbol node for base character"));
+            return Err(ParseError::new(ParseErrorKind::ExpectedSymbolNode {
+                context: "base character",
+            }));
         }
         // Note that we now throw away baseGroup, because the layers we
         // removed with getBaseElem might contain things like \color which
@@ -269,7 +277,9 @@ pub fn html_builder(
             });
             let HtmlDomNode::Symbol(mut accent) = build_common::make_ord(ctx, &ord, options)?
             else {
-                return Err(ParseError::new("Expected Symbol node for accent"));
+                return Err(ParseError::new(ParseErrorKind::ExpectedSymbolNode {
+                    context: "accent",
+                }));
             };
 
             // Remove the italic correction of the accent, because it only serves to
@@ -364,7 +374,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Accent(group) = node else {
-        return Err(ParseError::new("Expected Accent node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Accent,
+        }));
     };
 
     let accent_node = if group.is_stretchy.unwrap_or(false) {

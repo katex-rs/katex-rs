@@ -4,11 +4,11 @@
 //! KaTeX's math rendering process. It includes utilities for creating symbols
 //! and other DOM elements with proper styling and metrics.
 
+use core::mem;
+
 use crate::ParseError;
 use crate::context::KatexContext;
-use crate::dom_tree::{
-    Anchor, DomSpan, HtmlDomFragment, HtmlDomNode, Span, SvgNode, SymbolNode, create_class,
-};
+use crate::dom_tree::{Anchor, DomSpan, HtmlDomFragment, HtmlDomNode, Span, SvgNode, SymbolNode};
 use crate::font_metrics::get_character_metrics;
 use crate::font_metrics_data::CharacterMetrics;
 use crate::namespace::KeyMap;
@@ -17,7 +17,7 @@ use crate::parser::parse_node::AnyParseNode;
 use crate::spacing_data::Measurement;
 use crate::symbols::{Font, Mode, is_ligature};
 use crate::tree::DocumentFragment;
-use crate::types::{CssProperty, CssStyle};
+use crate::types::{CssProperty, CssStyle, ParseErrorKind};
 use crate::units::make_em;
 use crate::wide_character::get_wide_character_font;
 use bon::bon;
@@ -235,17 +235,8 @@ pub struct VListChildrenAndDepth {
 
 /// Compute height, depth, and max_font_size of an element based on its children
 fn size_element_from_children_dom(node: &mut DomSpan) {
-    let mut height = 0.0f64;
-    let mut depth = 0.0f64;
-    let mut max_font_size = 0.0f64;
+    let (height, depth, max_font_size) = size_properties(&node.children);
 
-    for child in &node.children {
-        height = height.max(child.height());
-        depth = depth.max(child.depth());
-        max_font_size = max_font_size.max(child.max_font_size());
-    }
-
-    // Update the node's values
     node.height = height;
     node.depth = depth;
     node.max_font_size = max_font_size;
@@ -259,11 +250,13 @@ pub fn make_span(
     options: Option<&Options>,
     style: Option<CssStyle>,
 ) -> DomSpan {
-    let mut node = Span::builder()
-        .children(children)
-        .classes(classes)
-        .maybe_style(style)
-        .build(options);
+    // `Span::builder` offers a flexible construction API but it also ends up
+    // allocating intermediate buffers on every invocation. The vast majority of
+    // `make_span` calls populate just a handful of fields, so we build the span
+    // directly instead of going through the builder. This trims a noticeable
+    // amount of per-node work in tight rendering loops.
+
+    let mut node = Span::from_parts(children, classes, style, options);
 
     // Compute height, depth, and max_font_size from children
     size_element_from_children_dom(&mut node);
@@ -423,45 +416,77 @@ pub fn get_v_list_children_and_depth(
         VListParam::IndividualShift {
             children: old_children,
         } => {
-            let mut children: Vec<VListChild> = Vec::new();
-
-            // Add the first child
-            let first_child = &old_children[0];
-            let first_elem = VListElem {
-                elem: first_child.elem.clone(),
-                shift: Some(first_child.shift),
-                margin_left: first_child.margin_left.clone(),
-                margin_right: first_child.margin_right.clone(),
-                wrapper_classes: first_child.wrapper_classes.clone(),
-                wrapper_style: first_child.wrapper_style.clone(),
+            let mut iter = old_children.into_iter();
+            let Some(first_child) = iter.next() else {
+                return Ok(VListChildrenAndDepth {
+                    children: Vec::new(),
+                    depth: 0.0,
+                });
             };
-            children.push(first_elem.into());
 
-            // Calculate initial depth
-            let depth = -old_children[0].shift - old_children[0].elem.depth();
+            let VListElemAndShift {
+                elem,
+                shift,
+                margin_left,
+                margin_right,
+                wrapper_classes,
+                wrapper_style,
+            } = first_child;
+
+            let elem_height = elem.height();
+            let elem_depth = elem.depth();
+            let depth = -shift - elem_depth;
             let mut curr_pos = depth;
+            let mut prev_height = elem_height;
+            let mut prev_depth = elem_depth;
+
+            let mut children: Vec<VListChild> = Vec::new();
+            children.push(
+                VListElem {
+                    elem,
+                    shift: Some(shift),
+                    margin_left,
+                    margin_right,
+                    wrapper_classes,
+                    wrapper_style,
+                }
+                .into(),
+            );
 
             // Add in kerns to the list of children to get each element to be
             // shifted to the correct specified shift
-            for i in 1..old_children.len() {
-                let child = &old_children[i];
-                let diff = -child.shift - curr_pos - child.elem.depth();
-                let size =
-                    diff - (old_children[i - 1].elem.height() + old_children[i - 1].elem.depth());
+            for child in iter {
+                let VListElemAndShift {
+                    elem,
+                    shift,
+                    margin_left,
+                    margin_right,
+                    wrapper_classes,
+                    wrapper_style,
+                } = child;
+
+                let elem_height = elem.height();
+                let elem_depth = elem.depth();
+                let diff = -shift - curr_pos - elem_depth;
+                let size = diff - (prev_height + prev_depth);
 
                 curr_pos += diff;
 
                 children.push(VListChild::Kern(VListKern { size }));
+                children.push(
+                    VListElem {
+                        elem,
+                        shift: Some(shift),
+                        margin_left,
+                        margin_right,
+                        wrapper_classes,
+                        wrapper_style,
+                    }
+                    .into(),
+                );
 
-                let elem = VListElem {
-                    elem: child.elem.clone(),
-                    shift: Some(child.shift),
-                    margin_left: child.margin_left.clone(),
-                    margin_right: child.margin_right.clone(),
-                    wrapper_classes: child.wrapper_classes.clone(),
-                    wrapper_style: child.wrapper_style.clone(),
-                };
-                children.push(elem.into());
+                prev_height = elem_height;
+                prev_depth = elem_depth;
             }
 
             Ok(VListChildrenAndDepth { children, depth })
@@ -554,7 +579,7 @@ pub fn lookup_symbol(
         value
             .chars()
             .next()
-            .ok_or_else(|| ParseError::new("Empty string passed to lookup_symbol"))?
+            .ok_or_else(|| ParseError::new(ParseErrorKind::EmptyLookupSymbolInput))?
     };
 
     let metrics = get_character_metrics(ctx, query, font_name, mode)?;
@@ -571,7 +596,7 @@ pub fn make_symbol(
     font_name: &str,
     mode: Mode,
     options: Option<&Options>,
-    classes: Option<&[String]>,
+    classes: Option<Vec<String>>,
 ) -> Result<SymbolNode, ParseError> {
     let (metrics, value) = lookup_symbol(ctx, value, font_name, mode)?.map_or_else(
         || (None, value.to_owned()),
@@ -588,7 +613,7 @@ pub fn make_symbol(
         (m.height, m.depth, italic, m.skew, m.width)
     });
 
-    let mut classes_vec = classes.unwrap_or(&[]).to_vec();
+    let mut classes_vec = classes.unwrap_or_default();
     let mut style = CssStyle::default();
 
     if let Some(options) = options {
@@ -623,13 +648,13 @@ pub fn mathsym(
     value: &str,
     mode: Mode,
     options: &Options,
-    classes: Option<&[String]>,
+    classes: Option<Vec<String>>,
 ) -> Result<SymbolNode, ParseError> {
     if options.font == "boldsymbol"
         && lookup_symbol(ctx, value, "Main-Bold", mode)?
             .is_some_and(|lookup| lookup.metrics.is_some())
     {
-        let mut combined_classes = classes.unwrap_or(&[]).to_vec();
+        let mut combined_classes = classes.unwrap_or_default();
         combined_classes.push("mathbf".to_owned());
         make_symbol(
             ctx,
@@ -637,7 +662,7 @@ pub fn mathsym(
             "Main-Bold",
             mode,
             Some(options),
-            Some(&combined_classes),
+            Some(combined_classes),
         )
     } else if value == "\\"
         || ctx
@@ -647,7 +672,7 @@ pub fn mathsym(
     {
         make_symbol(ctx, value, "Main-Regular", mode, Some(options), classes)
     } else {
-        let mut combined_classes = classes.unwrap_or(&[]).to_vec();
+        let mut combined_classes = classes.unwrap_or_default();
         combined_classes.push("amsrm".to_owned());
         make_symbol(
             ctx,
@@ -655,7 +680,7 @@ pub fn mathsym(
             "AMS-Regular",
             mode,
             Some(options),
-            Some(&combined_classes),
+            Some(combined_classes),
         )
     }
 }
@@ -685,96 +710,88 @@ pub fn retrieve_text_font_name(
     format!("{base_font_name}-{font_styles_name}")
 }
 
-/// Checks if two Symbol nodes can be combined
-fn can_combine(prev: &HtmlDomNode, next: &HtmlDomNode) -> bool {
-    // Extract Symbol data from both nodes
-    let (prev_skew, prev_max_font_size, prev_classes, prev_style) = match prev {
-        HtmlDomNode::Symbol(symbol_struct) => (
-            symbol_struct.skew,
-            symbol_struct.max_font_size,
-            &symbol_struct.classes,
-            &symbol_struct.style,
-        ),
-        _ => return false,
-    };
-
-    let (next_skew, next_max_font_size, next_classes, next_style) = match next {
-        HtmlDomNode::Symbol(symbol_struct) => (
-            symbol_struct.skew,
-            symbol_struct.max_font_size,
-            &symbol_struct.classes,
-            &symbol_struct.style,
-        ),
-        _ => return false,
-    };
-
-    // Check if classes are identical
-    if create_class(prev_classes) != create_class(next_classes) {
-        return false;
-    }
-
-    // Check skew equality
-    if prev_skew != next_skew {
-        return false;
-    }
-
-    // Check max_font_size equality
-    if prev_max_font_size != next_max_font_size {
-        return false;
-    }
-
-    // If prev and next both are just "mbin"s or "mord"s we don't combine them
-    // so that the proper spacing can be preserved.
-    if prev_classes.len() == 1 {
-        let cls = &prev_classes[0];
-        if cls == "mbin" || cls == "mord" {
-            return false;
+#[inline]
+fn both_single_same_mbin_or_mord(a: &[String], b: &[String]) -> bool {
+    if a.len() == 1 && b.len() == 1 {
+        match (a[0].as_str(), b[0].as_str()) {
+            ("mbin", "mbin") | ("mord", "mord") => return true,
+            _ => {}
         }
     }
-
-    // Check that all styles in prev are equal in next
-    next_style == prev_style
+    false
 }
 
-/// Combine consecutive Symbol nodes that meet the criteria
-pub fn try_combine_chars(chars: &mut Vec<HtmlDomNode>) {
-    if chars.is_empty() {
-        return;
+#[inline]
+fn can_combine_symbols(prev: &SymbolNode, next: &SymbolNode) -> bool {
+    if both_single_same_mbin_or_mord(&prev.classes, &next.classes) {
+        return false;
     }
-    let mut i = 0;
-    while i < chars.len() - 1 {
-        let prev = &chars[i];
-        let next = &chars[i + 1];
+    if prev.skew != next.skew || prev.max_font_size != next.max_font_size {
+        return false;
+    }
 
-        if can_combine(prev, next) {
-            // Extract data from next before modifying
-            let (next_text, next_height, next_depth, next_italic) = match next {
-                HtmlDomNode::Symbol(symbol_struct) => (
-                    symbol_struct.text.clone(),
-                    symbol_struct.height,
-                    symbol_struct.depth,
-                    symbol_struct.italic,
-                ),
-                _ => unreachable!(), // can_combine already checked this
-            };
-
-            // Modify prev
-            if let HtmlDomNode::Symbol(symbol_struct) = &mut chars[i] {
-                symbol_struct.text.push_str(&next_text);
-                symbol_struct.height = symbol_struct.height.max(next_height);
-                symbol_struct.depth = symbol_struct.depth.max(next_depth);
-                symbol_struct.italic = next_italic; // Use the last character's italic correction
-            }
-
-            // Remove the next element
-            chars.remove(i + 1);
-
-            // Decrement index to check the same position again
-            i = i.saturating_sub(1);
-        } else {
+    let (a, b) = (&prev.classes, &next.classes);
+    let (mut i, mut j) = (0, 0);
+    while i < a.len() || j < b.len() {
+        while i < a.len() && a[i].is_empty() {
             i += 1;
         }
+        while j < b.len() && b[j].is_empty() {
+            j += 1;
+        }
+        match (i < a.len(), j < b.len()) {
+            (false, false) => break,
+            (true, true) if a[i] == b[j] => {
+                i += 1;
+                j += 1;
+            }
+            _ => return false,
+        }
     }
+
+    prev.style == next.style
+}
+
+/// Try to combine adjacent character nodes in the given list
+pub fn try_combine_chars(chars: &mut Vec<HtmlDomNode>) {
+    let n = chars.len();
+    if n < 2 {
+        return;
+    }
+
+    let mut write = 1;
+
+    for read in 1..n {
+        let mut merged = false;
+
+        {
+            let (left, right) = chars.split_at_mut(read);
+            let prev = &mut left[write - 1];
+            let next = &mut right[0];
+
+            if let (HtmlDomNode::Symbol(prev_sym), HtmlDomNode::Symbol(next_sym)) = (prev, next)
+                && can_combine_symbols(prev_sym, next_sym)
+            {
+                let tail = mem::take(&mut next_sym.text);
+                prev_sym.text.push_str(&tail);
+
+                prev_sym.height = prev_sym.height.max(next_sym.height);
+                prev_sym.depth = prev_sym.depth.max(next_sym.depth);
+                prev_sym.italic = next_sym.italic;
+
+                merged = true;
+            }
+        }
+
+        if !merged {
+            if write != read {
+                chars.swap(write, read);
+            }
+            write += 1;
+        }
+    }
+
+    chars.truncate(write);
 }
 
 impl KatexContext {
@@ -813,9 +830,7 @@ pub fn make_ord(
         // Spacing use TextOrd type by default
         AnyParseNode::Spacing(spacing) => (spacing.mode, &spacing.text, Mode::Text),
         _ => {
-            return Err(ParseError::new(
-                "make_ord: expected MathOrd, TextOrd or Spacing node",
-            ));
+            return Err(ParseError::new(ParseErrorKind::MakeOrdExpectedNode));
         }
     };
 
@@ -852,7 +867,7 @@ pub fn make_ord(
             font_name,
             mode,
             Some(options),
-            Some(&combined_classes),
+            Some(combined_classes),
         )?
         .into());
     }
@@ -861,7 +876,7 @@ pub fn make_ord(
     if let Some(font_or_family) = font_or_family {
         let (font_name, font_classes) = if font_or_family == "boldsymbol" {
             // Special handling for boldsymbol
-            let font_data = bold_symbol(ctx, text, mode, options, &classes, ord_type)?;
+            let font_data = bold_symbol(ctx, text, mode, ord_type)?;
             (font_data.font_name, vec![font_data.font_class])
         } else if is_font {
             // Font command like \mathbf
@@ -894,7 +909,7 @@ pub fn make_ord(
                 &font_name,
                 mode,
                 Some(options),
-                Some(&combined_classes),
+                Some(combined_classes),
             )?
             .into());
         }
@@ -913,11 +928,11 @@ pub fn make_ord(
                     &font_name,
                     mode,
                     Some(options),
-                    Some(&base_classes),
+                    Some(base_classes.clone()),
                 )?;
                 parts.push(symbol.into());
             }
-            return Ok(make_fragment(&parts).into());
+            return Ok(make_fragment(parts).into());
         }
     }
 
@@ -932,7 +947,7 @@ pub fn make_ord(
                 "Math-Italic",
                 mode,
                 Some(options),
-                Some(&combined_classes),
+                Some(combined_classes),
             )?
             .into())
         }
@@ -957,7 +972,7 @@ pub fn make_ord(
                             &font_name,
                             mode,
                             Some(options),
-                            Some(&combined_classes),
+                            Some(combined_classes),
                         )?
                         .into())
                     }
@@ -976,7 +991,7 @@ pub fn make_ord(
                             &font_name,
                             mode,
                             Some(options),
-                            Some(&combined_classes),
+                            Some(combined_classes),
                         )?
                         .into())
                     }
@@ -995,7 +1010,7 @@ pub fn make_ord(
                             &font_name,
                             mode,
                             Some(options),
-                            Some(&combined_classes),
+                            Some(combined_classes),
                         )?
                         .into())
                     }
@@ -1013,7 +1028,7 @@ pub fn make_ord(
                     &font_name,
                     mode,
                     Some(options),
-                    Some(&combined_classes),
+                    Some(combined_classes),
                 )?
                 .into())
             }
@@ -1108,8 +1123,6 @@ fn bold_symbol(
     ctx: &KatexContext,
     text: &str,
     mode: Mode,
-    _options: &Options,
-    _classes: &[String],
     ord_type: Mode,
 ) -> Result<FontData, ParseError> {
     if ord_type != Mode::Text
@@ -1127,55 +1140,6 @@ fn bold_symbol(
             font_name: "Main-Bold".to_owned(),
             font_class: "mathbf".to_owned(),
         })
-    }
-}
-
-/// Trait for elements that have size properties (height, depth, maxFontSize)
-trait HasSizeProperties {
-    fn set_height(&mut self, height: f64);
-    fn set_depth(&mut self, depth: f64);
-    fn set_max_font_size(&mut self, max_font_size: f64);
-}
-
-impl HasSizeProperties for DomSpan {
-    fn set_height(&mut self, height: f64) {
-        self.height = height;
-    }
-
-    fn set_depth(&mut self, depth: f64) {
-        self.depth = depth;
-    }
-
-    fn set_max_font_size(&mut self, max_font_size: f64) {
-        self.max_font_size = max_font_size;
-    }
-}
-
-impl HasSizeProperties for Anchor {
-    fn set_height(&mut self, height: f64) {
-        self.height = height;
-    }
-
-    fn set_depth(&mut self, depth: f64) {
-        self.depth = depth;
-    }
-
-    fn set_max_font_size(&mut self, max_font_size: f64) {
-        self.max_font_size = max_font_size;
-    }
-}
-
-impl HasSizeProperties for DocumentFragment<HtmlDomNode> {
-    fn set_height(&mut self, height: f64) {
-        self.height = height;
-    }
-
-    fn set_depth(&mut self, depth: f64) {
-        self.depth = depth;
-    }
-
-    fn set_max_font_size(&mut self, max_font_size: f64) {
-        self.max_font_size = max_font_size;
     }
 }
 
@@ -1237,8 +1201,8 @@ pub fn make_line_span(class_name: &str, options: &Options, thickness: Option<f64
 #[must_use]
 pub fn make_anchor(
     href: &str,
-    classes: &[String],
-    children: &[HtmlDomNode],
+    classes: Vec<String>,
+    children: Vec<HtmlDomNode>,
     options: &Options,
 ) -> Anchor {
     // Create attributes map with href
@@ -1246,16 +1210,19 @@ pub fn make_anchor(
     attributes.insert("href".to_owned(), href.to_owned());
 
     let mut anchor = Anchor::builder()
-        .children(children.to_owned())
+        .children(children)
         .attributes(attributes)
-        .classes(classes.to_vec())
+        .classes(classes)
         .height(0.0)
         .depth(0.0)
         .max_font_size(options.size_multiplier)
         .build(Some(options));
 
     // Calculate size properties based on children
-    size_element_from_children(&mut anchor, children);
+    let (height, depth, max_font_size) = size_properties(&anchor.children);
+    anchor.height = height;
+    anchor.depth = depth;
+    anchor.max_font_size = max_font_size;
 
     anchor
 }
@@ -1275,11 +1242,14 @@ pub fn make_anchor(
 /// # Returns
 /// An HtmlDocumentFragment properly sized based on its children
 #[must_use]
-pub fn make_fragment(children: &[HtmlDomNode]) -> HtmlDomFragment {
-    let mut fragment = DocumentFragment::new(children.to_owned());
+pub fn make_fragment(children: Vec<HtmlDomNode>) -> HtmlDomFragment {
+    let mut fragment = DocumentFragment::new(children);
 
     // Calculate size properties based on children
-    size_element_from_children(&mut fragment, children);
+    let (height, depth, max_font_size) = size_properties(&fragment.children);
+    fragment.height = height;
+    fragment.depth = depth;
+    fragment.max_font_size = max_font_size;
 
     fragment
 }
@@ -1316,16 +1286,7 @@ pub fn wrap_fragment(group: HtmlDomNode, options: &Options) -> HtmlDomNode {
     }
 }
 
-/// Calculate the height, depth, and maxFontSize of an element based on its
-/// children
-///
-/// This helper function corresponds to the JavaScript `sizeElementFromChildren`
-/// function and updates the size properties of spans, anchors, and fragments
-/// based on their children.
-fn size_element_from_children<T>(elem: &mut T, children: &[HtmlDomNode])
-where
-    T: HasSizeProperties,
-{
+fn size_properties(children: &[HtmlDomNode]) -> (f64, f64, f64) {
     let mut height = 0.0;
     let mut depth = 0.0;
     let mut max_font_size = 0.0;
@@ -1342,7 +1303,5 @@ where
         }
     }
 
-    elem.set_height(height);
-    elem.set_depth(depth);
-    elem.set_max_font_size(max_font_size);
+    (height, depth, max_font_size)
 }

@@ -3,7 +3,6 @@
 //! and helper operations.
 
 use core::fmt;
-use core::ops::{Deref, DerefMut};
 
 /// Converts a camelCase string to hyphen-case.
 ///
@@ -45,43 +44,6 @@ pub fn hyphenate(s: &str) -> String {
     }
 
     out
-}
-
-/// Escapes HTML special characters in a string to prevent XSS attacks.
-///
-/// This function replaces dangerous characters with their HTML entity
-/// equivalents, essential for safely rendering user-provided content in
-/// web-based KaTeX output, such as mathematical expressions containing special
-/// characters.
-///
-/// # Parameters
-/// - `text`: The input string that may contain HTML special characters.
-///
-/// # Returns
-/// Returns a new `String` with special characters escaped.
-///
-/// # Examples
-/// ```
-/// use katex::utils::escape;
-///
-/// assert_eq!(escape("a & b"), "a &amp; b");
-/// assert_eq!(escape("a > b"), "a &gt; b");
-/// assert_eq!(escape("a < b"), "a &lt; b");
-/// assert_eq!(escape("a \" b"), "a &quot; b");
-/// assert_eq!(escape("a ' b"), "a &#x27; b");
-/// ```
-///
-/// # Escaped Characters
-/// - `&` → `&amp;`
-/// - `>` → `&gt;`
-/// - `<` → `&lt;`
-/// - `"` → `&quot;`
-/// - `'` → `&#x27;`
-#[must_use]
-pub fn escape(text: &str) -> String {
-    let mut escaped = String::new();
-    let _ = escape_into(&mut escaped, text);
-    escaped
 }
 
 /// Writes the escaped HTML representation of `text` into the provided writer.
@@ -243,38 +205,6 @@ pub fn push_and_get_mut<T>(vec: &mut Vec<T>, value: T) -> &mut T {
     &mut vec[idx]
 }
 
-/// A type that can either own a value or borrow a mutable reference to it.
-pub enum OwnedOrMut<'a, T> {
-    /// An owned value with its index in the original collection.
-    Owned {
-        /// The index of the owned value in the original collection.
-        idx: usize,
-        /// The owned value.
-        val: T,
-    },
-    /// A mutable reference to a value.
-    Borrowed(&'a mut T),
-}
-
-impl<T> Deref for OwnedOrMut<'_, T> {
-    type Target = T;
-    fn deref(&self) -> &Self::Target {
-        match self {
-            OwnedOrMut::Owned { val: arr, .. } => arr,
-            OwnedOrMut::Borrowed(r) => r,
-        }
-    }
-}
-
-impl<T> DerefMut for OwnedOrMut<'_, T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        match self {
-            OwnedOrMut::Owned { val: arr, .. } => arr,
-            OwnedOrMut::Borrowed(r) => r,
-        }
-    }
-}
-
 /// Sets a panic hook for better error messages in WebAssembly.
 #[allow(clippy::missing_const_for_fn)]
 pub fn set_panic_hook() {
@@ -296,15 +226,6 @@ mod tests {
     fn test_hyphenate() {
         assert_eq!(hyphenate("camelCase"), "camel-case");
         assert_eq!(hyphenate("XMLHttpRequest"), "x-m-l-http-request");
-    }
-
-    #[test]
-    fn test_escape() {
-        assert_eq!(escape("a & b"), "a &amp; b");
-        assert_eq!(escape("a > b"), "a &gt; b");
-        assert_eq!(escape("a < b"), "a &lt; b");
-        assert_eq!(escape("a \" b"), "a &quot; b");
-        assert_eq!(escape("a ' b"), "a &#x27; b");
     }
 
     #[test]

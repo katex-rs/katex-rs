@@ -15,18 +15,18 @@ use crate::types::{ParseError, Token};
 
 /// Context structure passed to function handlers during LaTeX function parsing
 /// and rendering.
-pub struct FunctionContext<'a, 'b> {
+pub struct FunctionContext<'name, 'parser, 'token> {
     /// Function name
-    pub func_name: String,
+    pub func_name: &'name str,
     /// Parser instance
-    pub parser: &'a mut Parser<'b>,
+    pub parser: &'parser mut Parser<'token>,
     /// Optional token
-    pub token: Option<&'a Token>,
+    pub token: Option<&'parser Token>,
     /// Optional break token
-    pub break_on_token_text: Option<&'a BreakToken>,
+    pub break_on_token_text: Option<&'parser BreakToken>,
 }
 
-impl FunctionContext<'_, '_> {
+impl FunctionContext<'_, '_, '_> {
     /// Get the SourceLocation of the current token, if available.
     #[must_use]
     pub fn loc(&self) -> Option<SourceLocation> {
@@ -37,8 +37,8 @@ impl FunctionContext<'_, '_> {
 
 /// Type alias for LaTeX function handlers that process mathematical
 /// expressions.
-pub type FunctionHandler = fn(
-    context: FunctionContext,
+pub type FunctionHandler = for<'name, 'parser, 'token> fn(
+    FunctionContext<'name, 'parser, 'token>,
     args: Vec<ParseNode>,
     opt_args: Vec<Option<ParseNode>>,
 ) -> Result<ParseNode, ParseError>;

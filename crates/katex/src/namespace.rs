@@ -9,7 +9,7 @@ use core::cell::RefMut;
 
 use rapidhash::{RapidHashMap, RapidHashSet};
 
-use crate::types::ParseError;
+use crate::types::{ParseError, ParseErrorKind};
 
 /// Make it easier to switch between different hash backends.
 pub type KeyMap<K, V> = RapidHashMap<K, V>;
@@ -79,12 +79,10 @@ impl<'a, V: Clone> Namespace<'a, V> {
 
     /// End current nested group, restoring values before the group began.
     pub fn end_group(&mut self) -> Result<(), ParseError> {
-        let undefs = self.undef_stack.pop().ok_or_else(|| {
-            ParseError::new(
-                "Unbalanced namespace destruction: attempt to pop global namespace; \
-                please report this as a bug",
-            )
-        })?;
+        let undefs = self
+            .undef_stack
+            .pop()
+            .ok_or_else(|| ParseError::new(ParseErrorKind::UnbalancedNamespaceDestruction))?;
         self.restore_changes(undefs);
         Ok(())
     }

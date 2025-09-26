@@ -4,12 +4,12 @@
 //! or vertical rules (lines) with specified width and height.
 
 use crate::context::KatexContext;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::{HtmlDomNode, Span};
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNode, ParseNodeRule};
-use crate::types::{ArgType, CssProperty, CssStyle, ParseError};
+use crate::types::{ArgType, CssProperty, CssStyle, ParseError, ParseErrorKind};
 use crate::units::make_em;
 
 /// Register the \rule function in the KaTeX context.
@@ -26,15 +26,19 @@ pub fn define_rule(ctx: &mut KatexContext) {
             ..Default::default()
         },
         handler: Some(
-            |context: FunctionContext, args: Vec<ParseNode>, opt_args: Vec<Option<ParseNode>>| {
+            |context, args: Vec<ParseNode>, opt_args: Vec<Option<ParseNode>>| {
                 // Extract the width argument
                 let AnyParseNode::Size(width_node) = &args[0] else {
-                    return Err(ParseError::new("Expected size argument for width"));
+                    return Err(ParseError::new(ParseErrorKind::ExpectedSizeArgumentFor {
+                        context: "width",
+                    }));
                 };
 
                 // Extract the height argument
                 let AnyParseNode::Size(height_node) = &args[1] else {
-                    return Err(ParseError::new("Expected size argument for height"));
+                    return Err(ParseError::new(ParseErrorKind::ExpectedSizeArgumentFor {
+                        context: "height",
+                    }));
                 };
 
                 // Extract optional shift argument
@@ -42,7 +46,9 @@ pub fn define_rule(ctx: &mut KatexContext) {
                     match shift_arg {
                         AnyParseNode::Size(s) => Some(s.value.clone()),
                         _ => {
-                            return Err(ParseError::new("Expected size argument for shift"));
+                            return Err(ParseError::new(ParseErrorKind::ExpectedSizeArgumentFor {
+                                context: "shift",
+                            }));
                         }
                     }
                 } else {
@@ -98,7 +104,9 @@ fn html_builder(
                 .build(Some(options)),
         ))
     } else {
-        Err(ParseError::new("Expected Rule node"))
+        Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Rule,
+        }))
     }
 }
 
@@ -147,6 +155,8 @@ fn mathml_builder(
 
         Ok(MathDomNode::Math(wrapper))
     } else {
-        Err(ParseError::new("Expected Rule node"))
+        Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Rule,
+        }))
     }
 }

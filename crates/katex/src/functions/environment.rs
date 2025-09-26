@@ -24,7 +24,7 @@ pub fn define_environment(ctx: &mut KatexContext) {
             ..Default::default()
         },
         handler: Some(|context, args, _opt_args| {
-            let func_name = &context.func_name;
+            let func_name = context.func_name;
             let parser = context.parser;
             let ParseNode::OrdGroup(name_group) = &args[0] else {
                 return Err(ParseError::new(ParseErrorKind::InvalidEnvironmentName {

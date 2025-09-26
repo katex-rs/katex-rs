@@ -421,7 +421,7 @@ impl PerfInvocation {
         PerfInvocationBuilder {
             working_dir: root.to_owned(),
             command,
-            frequency: 99,
+            frequency: 999,
             call_graph: CallGraph::Dwarf,
             perf_data: default_perf_data_path(root),
             output: default_output_path(root, &None, "flamegraph.svg"),

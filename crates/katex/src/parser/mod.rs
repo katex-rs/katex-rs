@@ -1,3 +1,4 @@
+use alloc::borrow::Cow;
 use core::iter;
 
 use crate::parser::parse_node::ParseNodeTextOrd;
@@ -539,26 +540,21 @@ impl<'a> Parser<'a> {
                 self.consume_spaces()?;
             }
 
-            // Copy current token text to avoid holding a borrow across calls
-            let lex_text = { self.fetch()?.text.to_owned_string() };
+            let should_break = {
+                let token_text = self.fetch()?.text.clone();
+                let lex_text = token_text.as_str();
 
-            // End conditions: end-of-expression tokens
-            if END_OF_EXPRESSION.contains(&lex_text) {
-                break;
-            }
+                END_OF_EXPRESSION.contains(lex_text)
+                    || break_on_token_text.is_some_and(|break_tok| lex_text == break_tok.as_ref())
+                    || (break_on_infix
+                        && self
+                            .ctx
+                            .functions
+                            .get(lex_text)
+                            .is_some_and(|func| func.infix))
+            };
 
-            // Stop at provided break token text (if any)
-            if let Some(break_tok) = break_on_token_text
-                && lex_text == break_tok.as_ref()
-            {
-                break;
-            }
-
-            // Stop if we encounter an infix function and the caller requested it
-            if break_on_infix
-                && let Some(func) = self.ctx.functions.get(&lex_text)
-                && func.infix
-            {
+            if should_break {
                 break;
             }
 
@@ -690,25 +686,37 @@ impl<'a> Parser<'a> {
                             base.limits = lex.text == "\\limits";
                         }
                     } else {
-                        return Err(ParseError::with_token("\\limits must follow a base", &lex));
+                        return Err(ParseError::with_token(
+                            ParseErrorKind::LimitsMustFollowBase,
+                            &lex,
+                        ));
                     }
                     self.consume();
                 }
                 "^" => {
                     if superscript.is_some() {
-                        return Err(ParseError::with_token("Double superscript", &lex));
+                        return Err(ParseError::with_token(
+                            ParseErrorKind::DoubleSuperscript,
+                            &lex,
+                        ));
                     }
                     superscript = Some(self.handle_sup_subscript("superscript")?);
                 }
                 "_" => {
                     if subscript.is_some() {
-                        return Err(ParseError::with_token("Double subscript", &lex));
+                        return Err(ParseError::with_token(
+                            ParseErrorKind::DoubleSubscript,
+                            &lex,
+                        ));
                     }
                     subscript = Some(self.handle_sup_subscript("subscript")?);
                 }
                 "'" => {
                     if superscript.is_some() {
-                        return Err(ParseError::with_token("Double superscript", &lex));
+                        return Err(ParseError::with_token(
+                            ParseErrorKind::DoubleSuperscript,
+                            &lex,
+                        ));
                     }
                     let mut n = 1;
                     self.consume();
@@ -740,15 +748,22 @@ impl<'a> Parser<'a> {
                         && let Some(&mapped) = U_SUBS_AND_SUPS.get(&ch)
                     {
                         let is_sub = is_unicode_subscript(ch);
-                        let mut subsup_tokens = vec![Token::new(mapped.to_owned(), None)];
+                        let mut subsup_tokens = vec![Token::new(mapped, None)];
                         self.consume();
                         loop {
-                            let token = self.fetch()?.text.to_owned_string();
-                            if let Some(c) = token.chars().next()
-                                && let Some(&mapped) = U_SUBS_AND_SUPS.get(&c)
+                            let token_text = {
+                                let token = self.fetch()?;
+                                token.text.as_str()
+                            };
+
+                            let Some(c) = token_text.chars().next() else {
+                                break;
+                            };
+
+                            if let Some(&mapped) = U_SUBS_AND_SUPS.get(&c)
                                 && is_sub == is_unicode_subscript(c)
                             {
-                                subsup_tokens.push(Token::new(mapped.to_owned(), None));
+                                subsup_tokens.push(Token::new(mapped, None));
                                 self.consume();
                             } else {
                                 break;
@@ -806,7 +821,7 @@ impl<'a> Parser<'a> {
             if let ParseNode::Infix(n) = node {
                 if infix_pos.is_some() {
                     return Err(ParseError::with_token(
-                        "only one infix operator per group",
+                        ParseErrorKind::MultipleInfixOperators,
                         &n.token,
                     ));
                 }
@@ -824,7 +839,7 @@ impl<'a> Parser<'a> {
         let mut numer_body = body;
         let Some(infix_node) = numer_body.pop() else {
             return Err(ParseError::with_token(
-                "infix operator at start of expression",
+                ParseErrorKind::InfixOperatorAtStart,
                 &self.fetch()?.clone(),
             ));
         };
@@ -902,13 +917,14 @@ impl<'a> Parser<'a> {
     /// Parse a group using a validation function, similar to Parser.js
     /// parseRegexGroup. This is a general version that takes a validation
     /// function instead of regex.
-    fn parse_regex_group<F>(
+    fn parse_regex_group<F, K>(
         &mut self,
-        mode_name: &str,
         mut validator: F,
+        build_error: K,
     ) -> Result<Token, ParseError>
     where
         F: FnMut(&str) -> bool,
+        K: Fn(String) -> ParseErrorKind,
     {
         let first_token = self.fetch()?.clone();
         let mut last_token = first_token.clone();
@@ -928,19 +944,14 @@ impl<'a> Parser<'a> {
         }
 
         if str.is_empty() {
-            return Err(ParseError::with_token(
-                ParseErrorKind::InvalidValue {
-                    context: mode_name.to_owned(),
-                    value: first_token.text.to_owned_string(),
-                },
-                &first_token,
-            ));
+            let value = first_token.text.to_owned_string();
+            return Err(ParseError::with_token(build_error(value), &first_token));
         }
 
         // Create a new token with the combined text
         first_token
             .range(last_token, str)
-            .ok_or_else(|| ParseError::new("Failed to create combined token"))
+            .ok_or_else(|| ParseError::new(ParseErrorKind::FailedToCreateCombinedToken))
     }
 
     /// Parse a string group from scan_argument; returns the concatenated token
@@ -984,10 +995,7 @@ impl<'a> Parser<'a> {
         let is_6hex = text.len() == 6 && text.chars().all(|c| c.is_ascii_hexdigit());
         if !(is_letters || is_hash3 || is_hash6 || is_6hex) {
             return Err(ParseError::with_token(
-                ParseErrorKind::InvalidValue {
-                    context: "color".to_owned(),
-                    value: text,
-                },
+                ParseErrorKind::InvalidColor { color: text },
                 &tok,
             ));
         }
@@ -1010,52 +1018,55 @@ impl<'a> Parser<'a> {
     ) -> Result<Option<ParseNodeSize>, ParseError> {
         self.gullet.consume_spaces()?;
         let res = if !optional && self.gullet.future_mut()?.text != "{" {
-            Some(self.parse_regex_group("size", |s| {
-                let t = s.trim();
-                let rest = if t.starts_with('+') || t.starts_with('-') {
-                    &t[1..]
-                } else {
-                    t
-                };
-                let rest = rest.trim_start();
-                if rest.is_empty() {
-                    return true;
-                }
-                // Try to match number: \d+ | \d+\.\d* | \.\d*
-                let bytes = rest.as_bytes();
-                let mut i = 0;
-                let mut saw_digit = false;
-                while i < bytes.len() && bytes[i].is_ascii_digit() {
-                    saw_digit = true;
-                    i += 1;
-                }
-                if i < bytes.len() && bytes[i] == b'.' {
-                    i += 1;
+            Some(self.parse_regex_group(
+                |s| {
+                    let t = s.trim();
+                    let rest = if t.starts_with('+') || t.starts_with('-') {
+                        &t[1..]
+                    } else {
+                        t
+                    };
+                    let rest = rest.trim_start();
+                    if rest.is_empty() {
+                        return true;
+                    }
+                    // Try to match number: \d+ | \d+\.\d* | \.\d*
+                    let bytes = rest.as_bytes();
+                    let mut i = 0;
+                    let mut saw_digit = false;
                     while i < bytes.len() && bytes[i].is_ascii_digit() {
+                        saw_digit = true;
                         i += 1;
                     }
-                } else if !saw_digit {
-                    if bytes[0] == b'.' {
-                        i = 1;
+                    if i < bytes.len() && bytes[i] == b'.' {
+                        i += 1;
                         while i < bytes.len() && bytes[i].is_ascii_digit() {
                             i += 1;
                         }
-                    } else {
-                        return false;
+                    } else if !saw_digit {
+                        if bytes[0] == b'.' {
+                            i = 1;
+                            while i < bytes.len() && bytes[i].is_ascii_digit() {
+                                i += 1;
+                            }
+                        } else {
+                            return false;
+                        }
                     }
-                }
-                let after_num = &rest[i..];
-                let after_num_trim = after_num.trim_start();
-                let mut j = 0;
-                while j < 2
-                    && j < after_num_trim.len()
-                    && after_num_trim.as_bytes()[j].is_ascii_lowercase()
-                {
-                    j += 1;
-                }
-                let remaining = &after_num_trim[j..];
-                remaining.trim().is_empty()
-            })?)
+                    let after_num = &rest[i..];
+                    let after_num_trim = after_num.trim_start();
+                    let mut j = 0;
+                    while j < 2
+                        && j < after_num_trim.len()
+                        && after_num_trim.as_bytes()[j].is_ascii_lowercase()
+                    {
+                        j += 1;
+                    }
+                    let remaining = &after_num_trim[j..];
+                    remaining.trim().is_empty()
+                },
+                |value| ParseErrorKind::InvalidSize { size: value },
+            )?)
         } else {
             self.parse_string_group("size", optional)?
         };
@@ -1198,7 +1209,9 @@ impl<'a> Parser<'a> {
             }
             Some(ArgType::Primitive) => {
                 if optional {
-                    return Err(ParseError::new("A primitive argument cannot be optional"));
+                    return Err(ParseError::new(
+                        ParseErrorKind::PrimitiveArgumentCannotBeOptional,
+                    ));
                 }
                 if let Some(group) = self.parse_group(name, None)? {
                     Ok(Some(group))
@@ -1223,7 +1236,7 @@ impl<'a> Parser<'a> {
         break_on_token_text: Option<&BreakToken>,
     ) -> Result<Option<ParseNode>, ParseError> {
         let first_token = self.fetch()?.clone();
-        let text = first_token.text.to_owned_string();
+        let text = first_token.text.as_str();
         if text == "{" || text == "\\begingroup" {
             self.consume();
             let break_token = if text == "{" {
@@ -1257,15 +1270,17 @@ impl<'a> Parser<'a> {
             if result.is_none()
                 && let Some(first_char) = text.chars().next()
                 && first_char == '\\'
-                && !IMPLICIT_COMMANDS.contains(&text)
+                && !IMPLICIT_COMMANDS.contains(text)
             {
                 if self.settings.throw_on_error {
                     return Err(ParseError::with_token(
-                        ParseErrorKind::UndefinedControlSequence { name: text.clone() },
+                        ParseErrorKind::UndefinedControlSequence {
+                            name: text.to_owned(),
+                        },
                         &first_token,
                     ));
                 }
-                result = Some(self.format_unsupported_cmd(&text).into());
+                result = Some(self.format_unsupported_cmd(text).into());
                 self.consume();
             }
 
@@ -1307,7 +1322,8 @@ impl<'a> Parser<'a> {
     ) -> Result<Option<ParseNode>, ParseError> {
         let token = self.fetch()?.clone();
         let func = &token.text;
-        let Some(func_data) = self.ctx.functions.get(func.as_str()) else {
+        let func_name = func.as_str();
+        let Some(func_data) = self.ctx.functions.get(func_name) else {
             return Ok(None);
         };
         self.consume();
@@ -1319,7 +1335,7 @@ impl<'a> Parser<'a> {
         {
             return Err(ParseError::with_token(
                 ParseErrorKind::FunctionMissingArguments {
-                    func: func.to_owned_string(),
+                    func: func_name.to_owned(),
                     context: name.to_owned(),
                 },
                 &token,
@@ -1327,7 +1343,7 @@ impl<'a> Parser<'a> {
         } else if self.mode == Mode::Text && !func_data.allowed_in_text {
             return Err(ParseError::with_token(
                 ParseErrorKind::FunctionDisallowedInMode {
-                    func: func.to_owned_string(),
+                    func: func_name.to_owned(),
                     mode: Mode::Text,
                 },
                 &token,
@@ -1335,31 +1351,26 @@ impl<'a> Parser<'a> {
         } else if self.mode == Mode::Math && !func_data.allowed_in_math {
             return Err(ParseError::with_token(
                 ParseErrorKind::FunctionDisallowedInMode {
-                    func: func.to_owned_string(),
+                    func: func_name.to_owned(),
                     mode: Mode::Math,
                 },
                 &token,
             ));
         }
 
-        let (args, opt_args) = self.parse_arguments(func.as_str(), func_data)?;
-        let node = self.call_function(
-            func.as_str(),
-            args,
-            opt_args,
-            Some(&token),
-            break_on_token_text,
-        )?;
+        let (args, opt_args) = self.parse_arguments(func_name, func_data)?;
+        let node =
+            self.call_function(func_name, args, opt_args, Some(&token), break_on_token_text)?;
         Ok(Some(node))
     }
 
     /// Parse symbol at current token
     fn parse_symbol(&mut self) -> Result<Option<ParseNode>, ParseError> {
         let nucleus = self.fetch()?.clone();
-        let mut text = nucleus.text.to_owned_string();
+        let mut text: Cow<'_, str> = Cow::Borrowed(nucleus.text.as_str());
 
         // Handle \verb commands
-        if let Some(arg) = text.strip_prefix("\\verb")
+        if let Some(arg) = text.as_ref().strip_prefix("\\verb")
             && arg.chars().next().is_some_and(|c| !c.is_ascii_alphabetic())
         {
             self.consume();
@@ -1369,7 +1380,7 @@ impl<'a> Parser<'a> {
             // Validate that body has matching delimiters
             if body.len() < 2 || body.chars().next() != body.chars().last() {
                 return Err(ParseError::with_token(
-                    "\\verb assertion failed -- please report what input caused this bug",
+                    ParseErrorKind::VerbAssertionFailed,
                     &nucleus,
                 ));
             }
@@ -1386,7 +1397,7 @@ impl<'a> Parser<'a> {
         }
 
         // Expand any accented base symbol according to unicodeSymbols.
-        if let Some(first_char) = text.chars().next()
+        if let Some(first_char) = text.as_ref().chars().next()
             && let Some(mapped) = UNICODE_SYMBOLS.get(&first_char)
             && self
                 .ctx
@@ -1405,21 +1416,24 @@ impl<'a> Parser<'a> {
                         .map(|loc| loc as &dyn ErrorLocationProvider),
                 )?;
             }
-            let rest: String = text.chars().skip(1).collect();
-            text = format!("{mapped}{rest}");
+            let rest: String = text.as_ref().chars().skip(1).collect();
+            text = Cow::Owned(format!("{mapped}{rest}"));
         }
 
         // Strip off any trailing combining characters from the working text
-        let matched = last_non_combining_mark_index(&text).map(|strip_index| {
-            let accents = text.split_off(strip_index);
+        let matched = last_non_combining_mark_index(text.as_ref()).map(|strip_index| {
+            let text_mut = text.to_mut();
+            let accents = text_mut.split_off(strip_index);
             // Handle dotless i/j
-            if text == "i" {
-                "\u{0131}".clone_into(&mut text);
-            } else if text == "j" {
-                "\u{0237}".clone_into(&mut text);
+            if text_mut == "i" {
+                "\u{0131}".clone_into(text_mut);
+            } else if text_mut == "j" {
+                "\u{0237}".clone_into(text_mut);
             }
             accents
         });
+
+        let text = text.into_owned();
 
         // Recognize base symbol via symbol table
         let mut symbol_node = if let Some(info) = self.ctx.symbols.get(self.mode, &text) {
@@ -1546,7 +1560,7 @@ impl<'a> Parser<'a> {
         let old_token = self.next_token.take();
 
         // Run the new job, terminating it with an excess '}'
-        self.gullet.push_token(Token::new("}".to_owned(), None));
+        self.gullet.push_token(Token::new("}", None));
         self.gullet.push_tokens(tokens);
         let parse = self.parse_expression(false, None)?;
         self.expect("}", true)?;
@@ -1602,7 +1616,7 @@ impl<'a> Parser<'a> {
             && let Some(handler) = func.handler
         {
             let context = FunctionContext {
-                func_name: name.to_owned(),
+                func_name: name,
                 parser: self,
                 token,
                 break_on_token_text,
@@ -1626,12 +1640,13 @@ impl<'a> Parser<'a> {
             return Ok((Vec::new(), Vec::new()));
         }
 
-        let mut args = Vec::new();
-        let mut opt_args = Vec::new();
+        let num_optional = func_data.num_optional_args();
+        let mut args = Vec::with_capacity(func_data.num_args());
+        let mut opt_args = Vec::with_capacity(num_optional);
 
         for i in 0..total_args {
             let arg_type = func_data.arg_types().and_then(|v| v.get(i));
-            let is_optional = i < func_data.num_optional_args();
+            let is_optional = i < num_optional;
 
             let arg_type = if (func_data.primitive() && arg_type.is_none()) ||
                 // \sqrt expands into primitive if optional argument doesn't exist
@@ -1653,9 +1668,7 @@ impl<'a> Parser<'a> {
             } else if let Some(a) = arg {
                 args.push(a);
             } else {
-                return Err(ParseError::new(
-                    "Null argument, please report this as a bug",
-                ));
+                return Err(ParseError::new(ParseErrorKind::NullArgument));
             }
         }
 

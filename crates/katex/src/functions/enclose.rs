@@ -4,7 +4,7 @@
 //! migrated from KaTeX's enclose.js.
 
 use crate::build_common::{VListElemAndShift, VListParam, make_span, make_v_list};
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::{HtmlDomNode, PathNode, SvgChildNode, SvgNode};
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
@@ -12,7 +12,7 @@ use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNode, ParseNodeEncl
 use crate::spacing_data::Measurement;
 use crate::stretchy::enclose_span;
 use crate::svg_geometry::phase_path;
-use crate::types::{ArgType, CssProperty, Mode, ParseError};
+use crate::types::{ArgType, CssProperty, Mode, ParseError, ParseErrorKind};
 use crate::units::make_em as units_make_em;
 use crate::{KatexContext, build_common};
 use crate::{build_html, build_mathml};
@@ -29,10 +29,14 @@ pub fn define_enclose(ctx: &mut KatexContext) {
             arg_types: Some(vec![ArgType::Color, ArgType::Mode(Mode::Text)]),
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let color = match &args[0] {
                 AnyParseNode::ColorToken(color_token) => color_token.color.clone(),
-                _ => return Err(ParseError::new("First argument must be a color token")),
+                _ => {
+                    return Err(ParseError::new(ParseErrorKind::ExpectedColorToken {
+                        argument: "first argument",
+                    }));
+                }
             };
 
             let body = args[1].clone();
@@ -40,7 +44,7 @@ pub fn define_enclose(ctx: &mut KatexContext) {
             Ok(ParseNode::Enclose(ParseNodeEnclose {
                 mode: context.parser.mode,
                 loc: context.loc(),
-                label: context.func_name,
+                label: context.func_name.to_owned(),
                 background_color: Some(color),
                 border_color: None,
                 body: Box::new(body),
@@ -64,15 +68,23 @@ pub fn define_enclose(ctx: &mut KatexContext) {
             ]),
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let border_color = match &args[0] {
                 AnyParseNode::ColorToken(color_token) => color_token.color.clone(),
-                _ => return Err(ParseError::new("First argument must be a color token")),
+                _ => {
+                    return Err(ParseError::new(ParseErrorKind::ExpectedColorToken {
+                        argument: "first argument",
+                    }));
+                }
             };
 
             let background_color = match &args[1] {
                 AnyParseNode::ColorToken(color_token) => color_token.color.clone(),
-                _ => return Err(ParseError::new("Second argument must be a color token")),
+                _ => {
+                    return Err(ParseError::new(ParseErrorKind::ExpectedColorToken {
+                        argument: "second argument",
+                    }));
+                }
             };
 
             let body = args[2].clone();
@@ -80,7 +92,7 @@ pub fn define_enclose(ctx: &mut KatexContext) {
             Ok(ParseNode::Enclose(ParseNodeEnclose {
                 mode: context.parser.mode,
                 loc: context.loc(),
-                label: context.func_name,
+                label: context.func_name.to_owned(),
                 background_color: Some(background_color),
                 border_color: Some(border_color),
                 body: Box::new(body),
@@ -100,13 +112,13 @@ pub fn define_enclose(ctx: &mut KatexContext) {
             allowed_in_text: true,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let body = args[0].clone();
 
             Ok(ParseNode::Enclose(ParseNodeEnclose {
                 mode: context.parser.mode,
                 loc: context.loc(),
-                label: context.func_name,
+                label: context.func_name.to_owned(),
                 background_color: None,
                 border_color: None,
                 body: Box::new(body),
@@ -124,10 +136,10 @@ pub fn define_enclose(ctx: &mut KatexContext) {
             num_args: 1,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             if args.len() != 1 {
                 return Err(ParseError::new(
-                    "Cancel functions require exactly 1 argument",
+                    ParseErrorKind::CancelFunctionSingleArgument,
                 ));
             }
 
@@ -136,7 +148,7 @@ pub fn define_enclose(ctx: &mut KatexContext) {
             Ok(ParseNode::Enclose(ParseNodeEnclose {
                 mode: context.parser.mode,
                 loc: context.loc(),
-                label: context.func_name,
+                label: context.func_name.to_owned(),
                 background_color: None,
                 border_color: None,
                 body: Box::new(body),
@@ -156,13 +168,13 @@ pub fn define_enclose(ctx: &mut KatexContext) {
             allowed_in_text: false,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let body = args[0].clone();
 
             Ok(ParseNode::Enclose(ParseNodeEnclose {
                 mode: context.parser.mode,
                 loc: context.loc(),
-                label: context.func_name,
+                label: context.func_name.to_owned(),
                 background_color: None,
                 border_color: None,
                 body: Box::new(body),
@@ -180,7 +192,9 @@ fn html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::Enclose(enclose_node) = node else {
-        return Err(ParseError::new("Expected Enclose node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Enclose,
+        }));
     };
 
     // Build the inner content
@@ -461,7 +475,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Enclose(enclose_node) = node else {
-        return Err(ParseError::new("Expected Enclose node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Enclose,
+        }));
     };
 
     let node_type = if enclose_node.label.contains("colorbox") {

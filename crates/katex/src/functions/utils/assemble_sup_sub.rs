@@ -57,7 +57,9 @@ pub fn assemble_sup_sub(
     base_shift: f64,
 ) -> Result<HtmlDomNode, ParseError> {
     // Wrap base in a span if it's not already
-    let base = make_span(vec![], vec![base], Some(options), None);
+    let base = HtmlDomNode::from(make_span(vec![], vec![base], Some(options), None));
+    let base_height = base.height();
+    let base_depth = base.depth();
 
     // Check if sub_group is a single character box
     let sub_is_single_character = sub_group
@@ -105,14 +107,27 @@ pub fn assemble_sup_sub(
     };
 
     // Create the final layout based on sup/sub combination
-    let final_group = match (&sup, &sub) {
-        (Some(sup), Some(sub)) => {
+    let has_sub = sub.is_some();
+
+    let final_group = match (sup, sub, base) {
+        (Some(sup), Some(sub), base) => {
             // Both superscript and subscript
+            let SupSubElem {
+                elem: super_elem,
+                kern: super_kern,
+            } = sup;
+            let SupSubElem {
+                elem: sub_elem,
+                kern: sub_kern,
+            } = sub;
+
+            let sub_height = sub_elem.height();
+            let sub_depth = sub_elem.depth();
             let bottom = options.font_metrics().big_op_spacing5
-                + sub.elem.height()
-                + sub.elem.depth()
-                + sub.kern
-                + base.depth
+                + sub_height
+                + sub_depth
+                + sub_kern
+                + base_depth
                 + base_shift;
 
             make_v_list(
@@ -123,25 +138,25 @@ pub fn assemble_sup_sub(
                             size: options.font_metrics().big_op_spacing5,
                         }),
                         VListChild::Elem(Box::new(VListElem {
-                            elem: sub.elem.clone(),
+                            elem: sub_elem,
                             shift: None,
                             margin_left: Some(make_em(-slant)),
                             margin_right: None,
                             wrapper_classes: None,
                             wrapper_style: None,
                         })),
-                        VListChild::Kern(VListKern { size: sub.kern }),
+                        VListChild::Kern(VListKern { size: sub_kern }),
                         VListChild::Elem(Box::new(VListElem {
-                            elem: base.into(),
+                            elem: base,
                             shift: None,
                             margin_left: None,
                             margin_right: None,
                             wrapper_classes: None,
                             wrapper_style: None,
                         })),
-                        VListChild::Kern(VListKern { size: sup.kern }),
+                        VListChild::Kern(VListKern { size: super_kern }),
                         VListChild::Elem(Box::new(VListElem {
-                            elem: sup.elem.clone(),
+                            elem: super_elem,
                             shift: None,
                             margin_left: Some(make_em(slant)),
                             margin_right: None,
@@ -156,9 +171,13 @@ pub fn assemble_sup_sub(
                 options,
             )?
         }
-        (None, Some(sub)) => {
+        (None, Some(sub), base) => {
             // Only subscript
-            let top = base.height - base_shift;
+            let SupSubElem {
+                elem: sub_elem,
+                kern: sub_kern,
+            } = sub;
+            let top = base_height - base_shift;
 
             make_v_list(
                 VListParam::Top {
@@ -168,16 +187,16 @@ pub fn assemble_sup_sub(
                             size: options.font_metrics().big_op_spacing5,
                         }),
                         VListChild::Elem(Box::new(VListElem {
-                            elem: sub.elem.clone(),
+                            elem: sub_elem,
                             shift: None,
                             margin_left: Some(make_em(-slant)),
                             margin_right: None,
                             wrapper_classes: None,
                             wrapper_style: None,
                         })),
-                        VListChild::Kern(VListKern { size: sub.kern }),
+                        VListChild::Kern(VListKern { size: sub_kern }),
                         VListChild::Elem(Box::new(VListElem {
-                            elem: base.into(),
+                            elem: base,
                             shift: None,
                             margin_left: None,
                             margin_right: None,
@@ -189,25 +208,29 @@ pub fn assemble_sup_sub(
                 options,
             )?
         }
-        (Some(sup), None) => {
+        (Some(sup), None, base) => {
             // Only superscript
-            let bottom = base.depth + base_shift;
+            let SupSubElem {
+                elem: sup_elem,
+                kern: sup_kern,
+            } = sup;
+            let bottom = base_depth + base_shift;
 
             make_v_list(
                 VListParam::Bottom {
                     position_data: bottom,
                     children: vec![
                         VListChild::Elem(Box::new(VListElem {
-                            elem: base.into(),
+                            elem: base,
                             shift: None,
                             margin_left: None,
                             margin_right: None,
                             wrapper_classes: None,
                             wrapper_style: None,
                         })),
-                        VListChild::Kern(VListKern { size: sup.kern }),
+                        VListChild::Kern(VListKern { size: sup_kern }),
                         VListChild::Elem(Box::new(VListElem {
-                            elem: sup.elem.clone(),
+                            elem: sup_elem,
                             shift: None,
                             margin_left: Some(make_em(slant)),
                             margin_right: None,
@@ -222,15 +245,15 @@ pub fn assemble_sup_sub(
                 options,
             )?
         }
-        (None, None) => {
+        (None, None, base) => {
             // No superscript or subscript - return base
-            return Ok(base.into());
+            return Ok(base);
         }
     };
 
     // Handle spacing adjustments for slant
     let mut parts = vec![final_group.into()];
-    if sub.is_some() && slant != 0.0 && !sub_is_single_character {
+    if has_sub && slant != 0.0 && !sub_is_single_character {
         // Add spacer to prevent overlap
         let mut spacer = make_span(vec!["mspace".to_owned()], vec![], Some(options), None);
         spacer

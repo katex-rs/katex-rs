@@ -11,7 +11,7 @@ use crate::types::{ErrorLocationProvider, SourceLocation};
 /// Tokens may either borrow slices from the input stream or own standalone
 /// strings that were generated during macro expansion. The enum keeps track of
 /// the data's lifetime and enables zero-copy lexing for most tokens.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq)]
 pub enum TokenText {
     /// Borrowed slice from an input string.
     Slice {
@@ -97,17 +97,16 @@ impl PartialEq for TokenText {
     }
 }
 
-impl Eq for TokenText {}
-
 impl From<String> for TokenText {
     fn from(value: String) -> Self {
         Self::Owned(Arc::from(value))
     }
 }
 
-impl From<&str> for TokenText {
-    fn from(value: &str) -> Self {
-        Self::Owned(Arc::from(value))
+impl From<&'static str> for TokenText {
+    #[inline]
+    fn from(value: &'static str) -> Self {
+        Self::Static(value)
     }
 }
 

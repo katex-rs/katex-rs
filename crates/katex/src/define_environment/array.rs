@@ -10,7 +10,7 @@ use crate::build_common::{
 };
 use crate::define_environment::cd::parse_cd;
 use crate::define_environment::{EnvContext, EnvDefSpec, EnvHandler, EnvProps};
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::HtmlDomNode;
 use crate::macros::{MacroContextInterface as _, MacroDefinition};
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
@@ -147,7 +147,7 @@ pub fn parse_array(
     let mut end_row = |parser: &mut Parser| -> Result<(), ParseError> {
         if let Some(ref mut tags) = tags {
             if parser.gullet.macros().get("\\df@tag").is_some() {
-                let node = parser.subparse(vec![Token::new("\\df@tag".to_owned(), None)])?;
+                let node = parser.subparse(vec![Token::new("\\df@tag", None)])?;
                 tags.push(node.into());
                 parser.gullet.macros_mut().set("\\df@tag", None, true);
             } else {
@@ -201,7 +201,7 @@ pub fn parse_array(
                 {
                     if config.single_row || config.col_separation_type.is_some() {
                         // {equation} or {split}
-                        return Err(ParseError::new("Too many tab characters: &"));
+                        return Err(ParseError::new(ParseErrorKind::TooManyTabCharacters));
                     }
                     // {array} environment
                     parser.settings.report_nonstrict(
@@ -311,7 +311,9 @@ fn html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::Array(array_node) = node else {
-        return Err(ParseError::new("Expected Array node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Array,
+        }));
     };
 
     let nr = array_node.body.len();
@@ -375,12 +377,12 @@ fn html_builder(
             nc = inrow.len();
         }
 
-        let mut outrow: Vec<VListElemAndShift> = Vec::with_capacity(inrow.len());
+        let mut row_elements: Vec<Option<HtmlDomNode>> = Vec::with_capacity(inrow.len());
         for group in inrow {
             let elt = build_html::build_group(ctx, group, options, None)?;
             depth = depth.max(elt.depth());
             height = height.max(elt.height());
-            outrow.push(VListElemAndShift::builder().elem(elt).shift(0.0).build());
+            row_elements.push(Some(elt));
         }
 
         let row_gap = array_node.row_gaps.get(r);
@@ -405,10 +407,8 @@ fn html_builder(
             depth += jot;
         }
 
-        let elements: Vec<HtmlDomNode> = outrow.iter().map(|e| e.elem.clone()).collect();
-
         body.push(Outrow {
-            elements,
+            elements: row_elements,
             height,
             depth,
             pos: total_height + height,
@@ -560,10 +560,12 @@ fn html_builder(
         }
 
         let mut col_elements = Vec::new();
-        for row in body.iter().take(nr) {
-            if let Some(elem) = row.elements.get(c) {
+        for row in body.iter_mut().take(nr) {
+            if let Some(slot) = row.elements.get_mut(c) {
+                let Some(mut elem) = slot.take() else {
+                    continue;
+                };
                 let shift = row.pos - offset;
-                let mut elem = elem.clone();
                 if let Some(height_mut) = elem.height_mut() {
                     *height_mut = row.height;
                 }
@@ -674,7 +676,7 @@ fn html_builder(
             Some(options),
             None,
         );
-        Ok(make_fragment(&[mtable.into(), tag_span.into()]).into())
+        Ok(make_fragment(vec![mtable.into(), tag_span.into()]).into())
     }
 }
 
@@ -682,7 +684,7 @@ fn html_builder(
 #[derive(Debug, Clone)]
 struct Outrow {
     // Equivalent to `[idx: number]: *` in Javascript
-    elements: Vec<HtmlDomNode>,
+    elements: Vec<Option<HtmlDomNode>>,
     height: f64,
     depth: f64,
     pos: f64,
@@ -717,7 +719,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Array(array_node) = node else {
-        return Err(ParseError::new("Expected Array node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Array,
+        }));
     };
 
     let mut tbl = Vec::new();
@@ -1032,7 +1036,7 @@ const ALIGNED_HANDLER: EnvHandler = |context, args, _opt_args| {
         }
         num_maths = num_str
             .parse::<usize>()
-            .map_err(|_| ParseError::new("Invalid number of columns"))?;
+            .map_err(|_| ParseError::new(ParseErrorKind::InvalidNumberOfColumns))?;
         num_cols = num_maths * 2;
     }
 
@@ -1115,14 +1119,18 @@ pub fn define_array(ctx: &mut KatexContext) {
             } else if let Some(ParseNode::OrdGroup(ord)) = args.first() {
                 ord.body.clone()
             } else {
-                return Err(ParseError::new("Expected ordgroup or symbol node"));
+                return Err(ParseError::new(
+                    ParseErrorKind::ExpectedOrdGroupOrSymbolNode,
+                ));
             };
 
             let cols = colalign
                 .into_iter()
                 .map(|nde| {
                     let Some(ca) = nde.text() else {
-                        return Err(ParseError::new("Expected column alignment character"));
+                        return Err(ParseError::new(
+                            ParseErrorKind::ExpectedColumnAlignmentCharacter,
+                        ));
                     };
 
                     if "lcr|".contains(ca) {
@@ -1223,7 +1231,7 @@ pub fn define_array(ctx: &mut KatexContext) {
                     context.parser.gullet.consume_spaces()?;
                     context.parser.fetch()?.text.clone_into(&mut col_align);
                     if !["l", "c", "r"].contains(&col_align.as_str()) {
-                        return Err(ParseError::new("Expected l or c or r"));
+                        return Err(ParseError::new(ParseErrorKind::ExpectedAlignmentSpecifier));
                     }
                     context.parser.consume();
                     context.parser.gullet.consume_spaces()?;
@@ -1313,14 +1321,18 @@ pub fn define_array(ctx: &mut KatexContext) {
             } else if let Some(ParseNode::OrdGroup(ord)) = args.first() {
                 ord.body.clone()
             } else {
-                return Err(ParseError::new("Expected ordgroup or symbol node"));
+                return Err(ParseError::new(
+                    ParseErrorKind::ExpectedOrdGroupOrSymbolNode,
+                ));
             };
 
             let cols = colalign
                 .into_iter()
                 .map(|nde| {
                     let Some(ca) = nde.text() else {
-                        return Err(ParseError::new("Expected column alignment character"));
+                        return Err(ParseError::new(
+                            ParseErrorKind::ExpectedColumnAlignmentCharacter,
+                        ));
                     };
                     // {subarray} only recognizes "l" & "c"
                     if "lc".contains(ca) {
@@ -1338,7 +1350,9 @@ pub fn define_array(ctx: &mut KatexContext) {
                 .collect::<Result<Vec<_>, _>>()?;
 
             if cols.len() > 1 {
-                return Err(ParseError::new("{subarray} can contain only one column"));
+                return Err(ParseError::new(ParseErrorKind::SubarrayTooManyColumns {
+                    subarray: "{subarray}",
+                }));
             }
 
             let res = parse_array(
@@ -1353,7 +1367,9 @@ pub fn define_array(ctx: &mut KatexContext) {
             )?;
 
             if !res.body.is_empty() && res.body[0].len() > 1 {
-                return Err(ParseError::new("{subarray} can contain only one column"));
+                return Err(ParseError::new(ParseErrorKind::SubarrayTooManyColumns {
+                    subarray: "{subarray}",
+                }));
             }
 
             Ok(ParseNode::Array(res))
@@ -1552,12 +1568,12 @@ pub fn define_array(ctx: &mut KatexContext) {
             ..Default::default()
         },
         handler: Some(
-            |context: FunctionContext,
+            |context,
              _args: Vec<ParseNode>,
              _opt_args: Vec<Option<ParseNode>>|
              -> Result<ParseNode, ParseError> {
                 Err(ParseError::new(ParseErrorKind::FunctionOnlyInArray {
-                    func: context.func_name,
+                    func: context.func_name.to_owned(),
                 }))
             },
         ),

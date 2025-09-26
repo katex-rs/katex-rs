@@ -6,7 +6,7 @@
 use crate::namespace::KeyMap;
 
 use crate::build_common::make_span;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec, ord_argument};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec, ord_argument};
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
@@ -14,7 +14,7 @@ use crate::parser::parse_node::{
     AnyParseNode, NodeType, ParseNode, ParseNodeMclass, ParseNodeOp, ParseNodeSupSub,
 };
 use crate::symbols::Atom;
-use crate::types::ParseError;
+use crate::types::{ParseError, ParseErrorKind};
 use crate::{KatexContext, build_html, build_mathml};
 
 /// Determines the math class for binrel spacing based on the argument node.
@@ -58,7 +58,9 @@ fn html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::Mclass(mclass_node) = node else {
-        return Err(ParseError::new("Expected Mclass node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Mclass,
+        }));
     };
 
     let elements = build_html::build_expression(
@@ -84,7 +86,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Mclass(mclass_node) = node else {
-        return Err(ParseError::new("Expected Mclass node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Mclass,
+        }));
     };
 
     let inner = build_mathml::build_expression(ctx, &mclass_node.body, options, None)?;
@@ -186,9 +190,9 @@ pub fn define_mclass(ctx: &mut crate::KatexContext) {
             num_args: 1,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let body = &args[0];
-            let func_name = context.func_name.as_str();
+            let func_name = context.func_name;
 
             // Extract mclass from function name: \mathord -> mord, etc.
             let mclass = if func_name == "\\mathord" {
@@ -230,7 +234,7 @@ pub fn define_mclass(ctx: &mut crate::KatexContext) {
             num_args: 2,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let mclass = binrel_class(&args[0]);
 
             Ok(ParseNode::Mclass(ParseNodeMclass {
@@ -255,10 +259,10 @@ pub fn define_mclass(ctx: &mut crate::KatexContext) {
             num_args: 2,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let base_arg = &args[1];
             let shifted_arg = &args[0];
-            let func_name = context.func_name.as_str();
+            let func_name = context.func_name;
 
             let mclass = if func_name == "\\stackrel" {
                 "mrel".to_owned() // for \stackrel

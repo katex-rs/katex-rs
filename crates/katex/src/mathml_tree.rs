@@ -13,10 +13,7 @@ use crate::units::make_em;
 use crate::utils::escape_into;
 #[cfg(feature = "wasm")]
 use crate::web_context::WebContext;
-use crate::{
-    namespace::KeyMap,
-    types::{CssStyle, ParseErrorKind},
-};
+use crate::{namespace::KeyMap, types::CssStyle};
 use bon::bon;
 use core::fmt::{self, Debug, Write as _};
 use strum::AsRefStr;
@@ -25,12 +22,8 @@ use wasm_bindgen::JsCast as _;
 #[cfg(feature = "wasm")]
 use web_sys;
 
-fn fmt_error() -> ParseError {
-    ParseError::new(ParseErrorKind::Message("failed to write markup"))
-}
-
 fn map_fmt(result: fmt::Result) -> Result<(), ParseError> {
-    result.map_err(|_| fmt_error())
+    result.map_err(ParseError::from)
 }
 
 /// MathML node types used in KaTeX

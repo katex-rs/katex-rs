@@ -5,13 +5,15 @@
 //! mathematical expressions.
 
 use crate::context::KatexContext;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::{HtmlDomNode, Span};
 use crate::mathml_tree::{MathDomNode, SpaceNode};
 use crate::options::Options;
 use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNode, ParseNodeKern};
 use crate::spacing_data::MeasurementStatic;
-use crate::types::{ArgType, CssProperty, CssStyle, ErrorLocationProvider, Mode, ParseError};
+use crate::types::{
+    ArgType, CssProperty, CssStyle, ErrorLocationProvider, Mode, ParseError, ParseErrorKind,
+};
 use crate::units::make_em;
 
 /// Register the kerning functions (\kern, \mkern, \hskip, \mskip)
@@ -27,13 +29,13 @@ pub fn define_kern(ctx: &mut KatexContext) {
             ..Default::default()
         },
         handler: Some(
-            |context: FunctionContext, args: Vec<ParseNode>, _opt_args: Vec<Option<ParseNode>>| {
+            |context, args: Vec<ParseNode>, _opt_args: Vec<Option<ParseNode>>| {
                 // Extract the size argument
                 let size_arg = args
                     .first()
-                    .ok_or_else(|| ParseError::new("Expected size argument"))?;
+                    .ok_or_else(|| ParseError::new(ParseErrorKind::ExpectedSizeArgument))?;
                 let AnyParseNode::Size(size_node) = size_arg else {
-                    return Err(ParseError::new("Expected size argument"));
+                    return Err(ParseError::new(ParseErrorKind::ExpectedSizeArgument));
                 };
 
                 // Strict mode validations
@@ -136,7 +138,9 @@ fn html_builder(
             Ok(ctx.make_glue(&dimension_static, options)?.into())
         }
     } else {
-        Err(ParseError::new("Expected Kern node"))
+        Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Kern,
+        }))
     }
 }
 
@@ -157,6 +161,8 @@ fn mathml_builder(
             character: None, // Use default space character
         }))
     } else {
-        Err(ParseError::new("Expected Kern node"))
+        Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Kern,
+        }))
     }
 }

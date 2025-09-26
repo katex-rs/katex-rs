@@ -35,7 +35,9 @@ fn html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::Spacing(spacing_node) = node else {
-        return Err(ParseError::new("Expected spacing node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Spacing,
+        }));
     };
     REGULAR_SPACE.get(spacing_node.text.as_str()).map_or_else(
         || {
@@ -61,7 +63,7 @@ fn html_builder(
                 if let Some(classes) = ord.classes_mut() {
                     classes.push(class_name);
                 } else {
-                    return Err(ParseError::new("Generated ord node should have classes"));
+                    return Err(ParseError::new(ParseErrorKind::GeneratedOrdMissingClasses));
                 }
                 Ok(ord)
             } else {
@@ -80,7 +82,9 @@ fn mathml_builder(
     _ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Spacing(spacing_node) = node else {
-        return Err(ParseError::new("Expected spacing node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Spacing,
+        }));
     };
 
     if REGULAR_SPACE.contains_key(&spacing_node.text) {

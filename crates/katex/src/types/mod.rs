@@ -4,6 +4,8 @@ mod source_location;
 use core::fmt;
 use core::option;
 
+use alloc::rc::Rc;
+
 use crate::define_environment::EnvSpec;
 use crate::define_function::FunctionSpec;
 use crate::parser::parse_node::NodeType;
@@ -113,7 +115,7 @@ pub enum CssProperty {
 /// - Related to [`FontVariant`] for font-specific styling.
 #[derive(Clone, PartialEq, Eq, Default)]
 pub struct CssStyle {
-    map: [Option<String>; CssProperty::COUNT],
+    map: [Option<Rc<str>>; CssProperty::COUNT],
 }
 
 impl fmt::Debug for CssStyle {
@@ -133,11 +135,11 @@ impl fmt::Debug for CssStyle {
 /// Iterator over CSS style properties
 pub struct CssStyleIter<'a> {
     index: usize,
-    data: &'a [Option<String>; CssProperty::COUNT],
+    data: &'a [Option<Rc<str>>; CssProperty::COUNT],
 }
 
 impl<'a> Iterator for CssStyleIter<'a> {
-    type Item = (CssProperty, &'a String);
+    type Item = (CssProperty, &'a str);
     fn next(&mut self) -> Option<Self::Item> {
         while self.index < CssProperty::COUNT {
             let idx = self.index;
@@ -145,7 +147,7 @@ impl<'a> Iterator for CssStyleIter<'a> {
             if let Some(v) = &self.data[idx]
                 && let Some(prop) = CssProperty::from_repr(idx as u8)
             {
-                return Some((prop, v));
+                return Some((prop, v.as_ref()));
             }
         }
         None
@@ -153,7 +155,7 @@ impl<'a> Iterator for CssStyleIter<'a> {
 }
 
 impl<'a> IntoIterator for &'a CssStyle {
-    type Item = (CssProperty, &'a String);
+    type Item = (CssProperty, &'a str);
     type IntoIter = CssStyleIter<'a>;
     fn into_iter(self) -> Self::IntoIter {
         CssStyleIter {
@@ -165,15 +167,19 @@ impl<'a> IntoIterator for &'a CssStyle {
 
 impl CssStyle {
     /// Inserts or updates a CSS property with the given value.
-    pub fn insert(&mut self, property: CssProperty, value: String) {
-        self.map[property as usize] = Some(value);
+    #[inline]
+    pub fn insert<T>(&mut self, property: CssProperty, value: T)
+    where
+        T: Into<Rc<str>>,
+    {
+        self.map[property as usize] = Some(value.into());
     }
 
     /// Extends the current style with properties from another `CssStyle`.
     pub fn extend(&mut self, other: &Self) {
         for (i, value) in other.map.iter().enumerate() {
             if let Some(value) = value {
-                self.map[i] = Some(value.clone());
+                self.map[i] = Some(Rc::clone(value));
             }
         }
     }

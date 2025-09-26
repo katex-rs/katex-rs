@@ -4,14 +4,14 @@
 //! migrated from KaTeX's styling.js.
 
 use crate::build_mathml;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::HtmlDomNode;
 use crate::functions::sizing::sizing_group;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeStyling};
 use crate::style::{DISPLAY, SCRIPT, SCRIPTSCRIPT, Style, TEXT};
-use crate::types::ParseError;
+use crate::types::{ParseError, ParseErrorKind};
 
 /// Style mapping from string names to Style references
 fn style_map(style_name: &str) -> &'static Style {
@@ -31,7 +31,9 @@ fn html_builder(
     ctx: &crate::KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::Styling(styling_node) = node else {
-        return Err(ParseError::new("Expected Styling node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Styling,
+        }));
     };
 
     // Style changes are handled in the TeXbook on pg. 442, Rule 3.
@@ -55,7 +57,9 @@ fn mathml_builder(
     ctx: &crate::KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Styling(styling_node) = node else {
-        return Err(ParseError::new("Expected Styling node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Styling,
+        }));
     };
 
     // Figure out what style we're changing to.
@@ -98,9 +102,9 @@ pub fn define_styling(ctx: &mut crate::KatexContext) {
             primitive: true,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             if !args.is_empty() {
-                return Err(ParseError::new("Styling functions take no arguments"));
+                return Err(ParseError::new(ParseErrorKind::StylingTakesNoArguments));
             }
 
             // Parse out the implicit body

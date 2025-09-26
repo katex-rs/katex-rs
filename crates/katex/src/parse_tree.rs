@@ -6,7 +6,7 @@ use crate::{
         Parser,
         parse_node::{ParseNode, ParseNodeTag},
     },
-    types::Token,
+    types::{ParseErrorKind, Token},
 };
 
 /// Parses an expression using a Parser, then returns the parsed result.
@@ -26,13 +26,13 @@ pub fn parse_tree(
     // In this case, we separately parse the tag and wrap the tree.
     if parser.gullet.macros().get("\\df@tag").is_some() {
         if !settings.display_mode {
-            return Err(ParseError::new("\\tag works only in display equations"));
+            return Err(ParseError::new(ParseErrorKind::TagNotAllowedInInlineMode));
         }
         let tree = vec![ParseNode::Tag(ParseNodeTag {
             mode: Mode::Text,
             loc: None,
             body: tree,
-            tag: parser.subparse(vec![Token::new("\\df@tag".to_owned(), None)])?,
+            tag: parser.subparse(vec![Token::new("\\df@tag", None)])?,
         })];
 
         return Ok(tree);

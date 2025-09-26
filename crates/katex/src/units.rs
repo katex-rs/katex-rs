@@ -11,39 +11,36 @@ use crate::KatexContext;
 use crate::options::Options;
 use crate::spacing_data::Measurement;
 use crate::types::{ParseError, ParseErrorKind};
+use phf::phf_set;
+
+const RELATIVE_UNITS: phf::Set<&'static str> = phf_set!("ex", "em", "mu");
 
 /// Return TeX points per unit for absolute TeX units.
 /// See KaTeX src/units.js `ptPerUnit` for reference values.
-fn pt_per_unit<T>(unit: &T) -> Option<f64>
-where
-    T: AsRef<str>,
-{
-    match unit.as_ref() {
-        // https://en.wikibooks.org/wiki/LaTeX/Lengths
-        // https://tex.stackexchange.com/a/8263
-        "pt" => Some(1.0),             // TeX point
-        "mm" => Some(7227.0 / 2540.0), // millimeter
-        "cm" => Some(7227.0 / 254.0),  // centimeter
-        "in" => Some(72.27),           // inch
-        // https://tex.stackexchange.com/a/41371
-        "bp" | "px" => Some(803.0 / 800.0), // big (PostScript) points
-        // \pdfpxdimen defaults to 1 bp in pdfTeX and LuaTeX
-        "pc" => Some(12.0),             // pica
-        "dd" => Some(1238.0 / 1157.0),  // didot
-        "cc" => Some(14856.0 / 1157.0), // cicero (12 didot)
-        "nd" => Some(685.0 / 642.0),    // new didot
-        "nc" => Some(1370.0 / 107.0),   // new cicero (12 new didot)
-        "sp" => Some(1.0 / 65536.0),    // scaled point (TeX's internal smallest unit)
-        _ => None,
-    }
-}
+const PT_PER_UNIT: phf::Map<&'static str, f64> = phf::phf_map! {
+    // https://en.wikibooks.org/wiki/LaTeX/Lengths
+    // https://tex.stackexchange.com/a/8263
+    "pt" => 1.0,             // TeX point
+    "mm" => 7227.0 / 2540.0, // millimeter
+    "cm" => 7227.0 / 254.0,  // centimeter
+    "in" => 72.27,           // inch
+    // https://tex.stackexchange.com/a/41371
+    "bp" | "px" => 803.0 / 800.0, // big (PostScript) points
+    // \pdfpxdimen defaults to 1 bp in pdfTeX and LuaTeX
+    "pc" => 12.0,             // pica
+    "dd" => 1238.0 / 1157.0,  // didot
+    "cc" => 14856.0 / 1157.0, // cicero (12 didot)
+    "nd" => 685.0 / 642.0,    // new didot
+    "nc" => 1370.0 / 107.0,   // new cicero (12 new didot)
+    "sp" => 1.0 / 65536.0,    // scaled point (TeX's internal smallest unit)
+};
 
 /// Check whether a unit string is a valid length unit understood by KaTeX.
 pub fn valid_unit_str<T>(unit: T) -> bool
 where
     T: AsRef<str>,
 {
-    pt_per_unit(&unit).is_some() || matches!(unit.as_ref(), "ex" | "em" | "mu")
+    PT_PER_UNIT.contains_key(unit.as_ref()) || RELATIVE_UNITS.contains(unit.as_ref())
 }
 
 /// Check whether a measurement has a valid unit.
@@ -70,7 +67,7 @@ impl KatexContext {
     {
         let mut scale: f64;
 
-        if let Some(pt) = pt_per_unit(&size.unit) {
+        if let Some(pt) = PT_PER_UNIT.get(size.unit.as_ref()) {
             // Absolute units. Convert unit -> pt -> em, then unscale absolute to current
             // size.
             let metrics = self.get_global_metrics(options.size as f64);
@@ -112,27 +109,91 @@ impl KatexContext {
 
 /// Round to 4 decimal places and append "em", dropping trailing zeros.
 #[must_use]
+fn finalize_em(mut value: String) -> String {
+    if value.contains('.') {
+        while value.ends_with('0') {
+            value.pop();
+        }
+        if value.ends_with('.') {
+            value.pop();
+        }
+    }
+
+    if value == "-0" {
+        value.clear();
+        value.push('0');
+    } else if value.is_empty() {
+        value.push('0');
+    }
+
+    value.push_str("em");
+    value
+}
+
+/// Format an `f64` as an `em` CSS unit, rounding to four decimal places.
+///
+/// The output mirrors JavaScript's `Number#toFixed(4)` formatting while
+/// trimming trailing zeros and avoiding the allocation-heavy float formatter.
+#[must_use]
 pub fn make_em(n: f64) -> String {
-    // Format with 4 decimals like JavaScript's `Number#toFixed(4)`
-    let mut s = format!("{n:.4}");
+    const PRECISION: i64 = 10_000;
 
-    if s.contains('.') {
-        while s.ends_with('0') {
-            s.pop();
+    if !n.is_finite() {
+        return finalize_em(n.to_string());
+    }
+
+    let max_safe = (i64::MAX as f64) / (PRECISION as f64);
+    if n.abs() >= max_safe {
+        return finalize_em(format!("{n:.4}"));
+    }
+
+    let scaled_float = n * PRECISION as f64;
+    let scaled_abs = scaled_float.abs();
+    let frac = scaled_abs - scaled_abs.floor();
+    if (frac - 0.5).abs() <= f64::EPSILON * scaled_abs.max(1.0) {
+        return finalize_em(format!("{n:.4}"));
+    }
+
+    let mut scaled_int = scaled_float.round() as i64;
+    if scaled_int == 0 {
+        return "0em".to_owned();
+    }
+
+    let mut result = String::with_capacity(16);
+    if scaled_int < 0 {
+        result.push('-');
+        scaled_int = -scaled_int;
+    }
+
+    let int_part = scaled_int / PRECISION;
+    let mut frac_part = scaled_int % PRECISION;
+
+    result.push_str(int_part.to_string().as_str());
+
+    if frac_part != 0 {
+        result.push('.');
+
+        let mut digits = 4;
+        while digits > 0 && frac_part % 10 == 0 {
+            frac_part /= 10;
+            digits -= 1;
         }
-        if s.ends_with('.') {
-            s.pop();
+
+        let mut buf = [b'0'; 4];
+        for idx in (0..digits).rev() {
+            buf[idx as usize] = b'0' + (frac_part % 10) as u8;
+            frac_part /= 10;
+        }
+        if let Ok(s) = str::from_utf8(&buf[..digits as usize]) {
+            result.push_str(s);
+        } else {
+            // Fallback in case of unexpected UTF-8 error
+            result.push_str(frac_part.to_string().as_str());
         }
     }
 
-    if s == "-0" {
-        "0".clone_into(&mut s);
-    } else if s.is_empty() {
-        s.push('0');
-    }
-
-    s.push_str("em");
-    s
+    result.push_str("em");
+    result
 }
 
 #[cfg(test)]
@@ -167,6 +228,36 @@ mod tests {
         assert_eq!(make_em(1.23456), "1.2346em");
         assert_eq!(make_em(0.00004), "0em");
         assert_eq!(make_em(0.00005), "0.0001em");
+        assert_eq!(make_em(-0.00005), "-0.0001em");
+        assert_eq!(make_em(-1.5), "-1.5em");
+    }
+
+    fn reference_make_em(n: f64) -> String {
+        finalize_em(format!("{n:.4}"))
+    }
+
+    #[test]
+    fn test_make_em_matches_reference() {
+        let cases = [
+            -1234.56789,
+            -0.00004,
+            -0.00005,
+            -0.125,
+            -1.0,
+            -0.5,
+            0.0,
+            0.00004,
+            0.00005,
+            0.125,
+            1.0,
+            1234.56789,
+            1.99995,
+            1000000.0,
+        ];
+
+        for &value in &cases {
+            assert_eq!(make_em(value), reference_make_em(value), "value: {value}");
+        }
     }
 
     #[test]

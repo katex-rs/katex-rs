@@ -1,9 +1,11 @@
+#[cfg(feature = "backtrace")]
+use std::backtrace::Backtrace;
 use std::{
-    backtrace::Backtrace,
     panic::{UnwindSafe, catch_unwind},
     sync::OnceLock,
 };
 
+#[cfg(feature = "backtrace")]
 use btparse::deserialize;
 
 use katex::{
@@ -16,6 +18,7 @@ use katex::{
     tree::HtmlDomNode,
     types::ParseErrorKind,
 };
+use thiserror::Error;
 
 static DEFAULT_CONTEXT: OnceLock<KatexContext> = OnceLock::new();
 pub fn default_ctx() -> &'static KatexContext {
@@ -29,6 +32,27 @@ pub struct TestExpr<'a> {
     pub line: u32,
     pub code: &'static str,
 }
+
+#[derive(Debug, Error)]
+pub enum TestError {
+    #[error(transparent)]
+    Parse(#[from] ParseError),
+    #[error("Expected parsing to fail for '{expression}'")]
+    ExpectedParseFailure { expression: String },
+    #[error("Expected building to fail for '{expression}'")]
+    ExpectedBuildFailure { expression: String },
+    #[error("DOM mismatch between '{left_expr}' and '{right_expr}':\n{left_dom}\n\n{right_dom}")]
+    DomMismatch {
+        left_expr: String,
+        right_expr: String,
+        left_dom: String,
+        right_dom: String,
+    },
+    #[error("Expected HTML rendering to fail for '{expression}', but it succeeded: {html}")]
+    ExpectedHtmlFailure { expression: String, html: String },
+}
+
+pub type TestResult<T> = Result<T, TestError>;
 
 /// Set all `loc` to None for easier comparison
 pub fn strip_positions(nodes: &mut [ParseNode]) {
@@ -296,20 +320,21 @@ fn strip_positions_single(node: &mut ParseNode) {
 }
 
 impl TestExpr<'_> {
-    pub fn to_parse(&self, settings: &Settings) -> Result<(), ParseError> {
-        parse(self.ctx, &self.expr, settings).map(|_| ())
+    pub fn to_parse(&self, settings: &Settings) -> TestResult<()> {
+        parse(self.ctx, &self.expr, settings)?;
+        Ok(())
     }
 
-    pub fn not_to_parse(self, settings: &Settings) -> Result<(), ParseError> {
+    pub fn not_to_parse(self, settings: &Settings) -> TestResult<()> {
         match parse(self.ctx, &self.expr, settings) {
-            Ok(_) => Err(ParseError::new(ParseErrorKind::ExpectedParseFailure {
-                expression: self.expr.clone(),
-            })),
+            Ok(_) => Err(TestError::ExpectedParseFailure {
+                expression: self.expr,
+            }),
             Err(_) => Ok(()),
         }
     }
 
-    pub fn to_parse_like(&self, other: &str, settings: &Settings) -> Result<(), ParseError> {
+    pub fn to_parse_like(&self, other: &str, settings: &Settings) -> TestResult<()> {
         // Compare parse trees for equivalence
         let mut tree1 = parse(self.ctx, &self.expr, settings)?;
         let mut tree2 = parse(self.ctx, other, settings)?;
@@ -325,20 +350,21 @@ impl TestExpr<'_> {
         Ok(())
     }
 
-    pub fn to_build(&self, settings: &Settings) -> Result<(), ParseError> {
-        render_to_dom_tree(self.ctx, &self.expr, settings).map(|_| ())
+    pub fn to_build(&self, settings: &Settings) -> TestResult<()> {
+        render_to_dom_tree(self.ctx, &self.expr, settings)?;
+        Ok(())
     }
 
-    pub fn not_to_build(self, settings: &Settings) -> Result<(), ParseError> {
+    pub fn not_to_build(self, settings: &Settings) -> TestResult<()> {
         match render_to_dom_tree(self.ctx, &self.expr, settings) {
-            Ok(_) => Err(ParseError::new(ParseErrorKind::ExpectedBuildFailure {
-                expression: self.expr.clone(),
-            })),
+            Ok(_) => Err(TestError::ExpectedBuildFailure {
+                expression: self.expr,
+            }),
             Err(_) => Ok(()),
         }
     }
 
-    pub fn to_build_like(&self, other: &str, settings: &Settings) -> Result<(), ParseError> {
+    pub fn to_build_like(&self, other: &str, settings: &Settings) -> TestResult<()> {
         // Compare rendered DOM trees for equivalence
         let dom1 = render_to_dom_tree(self.ctx, &self.expr, settings)?;
         let dom2 = render_to_dom_tree(self.ctx, other, settings)?;
@@ -349,21 +375,21 @@ impl TestExpr<'_> {
         if dom1_debug == dom2_debug {
             Ok(())
         } else {
-            Err(ParseError::new(ParseErrorKind::DomMismatch {
+            Err(TestError::DomMismatch {
                 left_expr: self.expr.clone(),
                 right_expr: other.to_owned(),
                 left_dom: dom1_debug,
                 right_dom: dom2_debug,
-            }))
+            })
         }
     }
 
-    pub fn not_to_html(self, settings: &Settings) -> Result<(), ParseError> {
+    pub fn not_to_html(self, settings: &Settings) -> TestResult<()> {
         match render_to_string(self.ctx, &self.expr, settings) {
-            Ok(html) => Err(ParseError::new(ParseErrorKind::ExpectedHtmlFailure {
-                expression: self.expr.clone(),
+            Ok(html) => Err(TestError::ExpectedHtmlFailure {
+                expression: self.expr,
                 html,
-            })),
+            }),
             Err(_) => Ok(()),
         }
     }
@@ -391,6 +417,7 @@ macro_rules! expect {
     };
 }
 
+#[cfg(feature = "backtrace")]
 fn format_backtrace(bt_serialized: &Backtrace) -> String {
     let mut traces = Vec::new();
     let backtrace = deserialize(bt_serialized).unwrap();
@@ -414,9 +441,30 @@ fn format_backtrace(bt_serialized: &Backtrace) -> String {
     traces.join("\n")
 }
 
+fn panic_with_error(desc: &str, error: TestError) -> ! {
+    match error {
+        TestError::Parse(parse_error) => panic_with_parse_error(desc, parse_error),
+        other => panic!("Test '{}' failed with Result::Err: {}", desc, other),
+    }
+}
+
+#[cfg(feature = "backtrace")]
+fn panic_with_parse_error(desc: &str, error: ParseError) -> ! {
+    let traces = format_backtrace(&error.backtrace);
+    panic!(
+        "Test '{}' failed with Result::Err: {}\nBacktrace:\n{}",
+        desc, error, traces
+    );
+}
+
+#[cfg(not(feature = "backtrace"))]
+fn panic_with_parse_error(desc: &str, error: ParseError) -> ! {
+    panic!("Test '{}' failed with Result::Err: {}", desc, error);
+}
+
 pub fn it<F>(desc: &str, test_fn: F)
 where
-    F: FnOnce() -> Result<(), ParseError> + UnwindSafe,
+    F: FnOnce() -> TestResult<()> + UnwindSafe,
 {
     let old_hook = std::panic::take_hook();
     //std::panic::set_hook(Box::new(|_| {}));
@@ -426,13 +474,7 @@ where
 
     match result {
         Ok(Ok(())) => {}
-        Ok(Err(e)) => {
-            let traces = format_backtrace(&e.backtrace);
-            panic!(
-                "Test '{}' failed with Result::Err: {}\nBacktrace:\n{}",
-                desc, e, traces
-            );
-        }
+        Ok(Err(e)) => panic_with_error(desc, e),
         Err(panic_payload) => {
             let msg = if let Some(s) = panic_payload.downcast_ref::<&str>() {
                 s.to_string()
@@ -485,38 +527,38 @@ pub fn non_display_settings() -> Settings {
     Settings::builder().display_mode(false).build()
 }
 
-pub fn get_parsed(expr: &str, settings: &Settings) -> Result<Vec<ParseNode>, ParseError> {
-    parse(default_ctx(), expr, settings)
+pub fn get_parsed(expr: &str, settings: &Settings) -> TestResult<Vec<ParseNode>> {
+    parse(default_ctx(), expr, settings).map_err(Into::into)
 }
 
-pub fn get_parsed_strict(expr: &str) -> Result<Vec<ParseNode>, ParseError> {
+pub fn get_parsed_strict(expr: &str) -> TestResult<Vec<ParseNode>> {
     let settings = strict_settings();
-    parse(default_ctx(), expr, &settings)
+    parse(default_ctx(), expr, &settings).map_err(Into::into)
 }
 
-pub fn get_parsed_trust(expr: &str) -> Result<Vec<ParseNode>, ParseError> {
+pub fn get_parsed_trust(expr: &str) -> TestResult<Vec<ParseNode>> {
     let settings = trust_settings();
-    parse(default_ctx(), expr, &settings)
+    parse(default_ctx(), expr, &settings).map_err(Into::into)
 }
 
-pub fn get_built(expr: &str, settings: &Settings) -> Result<Vec<HtmlDomNode>, ParseError> {
+pub fn get_built(expr: &str, settings: &Settings) -> TestResult<Vec<HtmlDomNode>> {
     let mut root_node = render_to_dom_tree(default_ctx(), expr, settings)?;
 
     if root_node.classes.contains(&"katex-display".to_string()) {
         if let Some(HtmlDomNode::DomSpan(first_child)) = root_node.children.get_mut(0) {
             root_node = first_child.clone();
         } else {
-            return Err(ParseError::new("Expected first child to be a DomSpan"));
+            return Err(ParseError::new(ParseErrorKind::ExpectedFirstChildDomSpan).into());
         }
     }
     let built_html = if let Some(HtmlDomNode::DomSpan(first_child)) = root_node.children.get_mut(1)
     {
         first_child
     } else {
-        return Err(ParseError::new("Expected second child to be a DomSpan"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedSecondChildDomSpan).into());
     };
     let mut children = Vec::new();
-    for child in &built_html.children {
+    for child in built_html.children.iter() {
         if let HtmlDomNode::DomSpan(span) = child {
             for grandchild in &span.children {
                 if !grandchild.classes().contains(&"strut".to_string()) {
@@ -529,7 +571,7 @@ pub fn get_built(expr: &str, settings: &Settings) -> Result<Vec<HtmlDomNode>, Pa
     Ok(children)
 }
 
-pub fn build_mathml(expr: &str) -> Result<Span<HtmlDomNode>, ParseError> {
+pub fn build_mathml(expr: &str) -> TestResult<Span<HtmlDomNode>> {
     let tree = get_parsed_strict(expr)?;
     katex::build_mathml::build_mathml(
         default_ctx(),
@@ -539,21 +581,22 @@ pub fn build_mathml(expr: &str) -> Result<Span<HtmlDomNode>, ParseError> {
         false,
         false,
     )
+    .map_err(Into::into)
 }
 
-pub fn render_to_string_strict(expr: &str) -> Result<String, ParseError> {
+pub fn render_to_string_strict(expr: &str) -> TestResult<String> {
     let settings = strict_settings();
-    render_to_string(default_ctx(), expr, &settings)
+    render_to_string(default_ctx(), expr, &settings).map_err(Into::into)
 }
 
-pub fn render_to_string_nonstrict(expr: &str) -> Result<String, ParseError> {
+pub fn render_to_string_nonstrict(expr: &str) -> TestResult<String> {
     let settings = nonstrict_settings();
-    render_to_string(default_ctx(), expr, &settings)
+    render_to_string(default_ctx(), expr, &settings).map_err(Into::into)
 }
 
-pub fn render_to_string_trust(expr: &str) -> Result<String, ParseError> {
+pub fn render_to_string_trust(expr: &str) -> TestResult<String> {
     let settings = trust_settings();
-    render_to_string(default_ctx(), expr, &settings)
+    render_to_string(default_ctx(), expr, &settings).map_err(Into::into)
 }
 
 #[macro_export]

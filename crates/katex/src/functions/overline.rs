@@ -8,12 +8,12 @@
 use crate::build_common::{
     VListChild, VListElem, VListKern, VListParam, make_line_span, make_span, make_v_list,
 };
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType, TextNode};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeOverline};
-use crate::types::ParseError;
+use crate::types::{ParseError, ParseErrorKind};
 use crate::{KatexContext, build_html, build_mathml};
 
 /// Registers the \overline function in the KaTeX context
@@ -25,7 +25,7 @@ pub fn define_overline(ctx: &mut KatexContext) {
             num_args: 1,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let body = args[0].clone();
 
             Ok(ParseNode::Overline(ParseNodeOverline {
@@ -46,7 +46,9 @@ fn html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::Overline(overline_node) = node else {
-        return Err(ParseError::new("Expected Overline node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Overline,
+        }));
     };
 
     // Build the inner group in the cramped style
@@ -94,7 +96,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Overline(overline_node) = node else {
-        return Err(ParseError::new("Expected Overline node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Overline,
+        }));
     };
 
     let mut operator = MathNode::builder()

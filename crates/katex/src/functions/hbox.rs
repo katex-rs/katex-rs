@@ -7,12 +7,12 @@
 //! This function by itself doesn't do anything but prevent a soft line break.
 
 use crate::build_common::make_fragment;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec, ord_argument};
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNodeHbox};
-use crate::types::{ArgType, Mode, ParseError};
+use crate::types::{ArgType, Mode, ParseError, ParseErrorKind};
 use crate::{KatexContext, build_html, build_mathml};
 
 /// Registers hbox function in the KaTeX context
@@ -27,13 +27,13 @@ pub fn define_hbox(ctx: &mut KatexContext) {
             primitive: true,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
-            let body = args[0].clone();
+        handler: Some(|context, args, _opt_args| {
+            let body = ord_argument(&args[0]);
 
             Ok(AnyParseNode::Hbox(ParseNodeHbox {
                 mode: context.parser.mode,
                 loc: context.loc(),
-                body: vec![body],
+                body,
             }))
         }),
         html_builder: Some(html_builder),
@@ -48,7 +48,9 @@ fn html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let AnyParseNode::Hbox(hbox_node) = node else {
-        return Err(ParseError::new("Expected Hbox node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Hbox,
+        }));
     };
 
     let elements = build_html::build_expression(
@@ -58,7 +60,7 @@ fn html_builder(
         build_html::GroupType::False,
         (None, None),
     )?;
-    Ok(make_fragment(&elements).into())
+    Ok(make_fragment(elements).into())
 }
 
 /// MathML builder for hbox nodes
@@ -68,7 +70,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let AnyParseNode::Hbox(hbox_node) = node else {
-        return Err(ParseError::new("Expected Hbox node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Hbox,
+        }));
     };
 
     let children = build_mathml::build_expression(ctx, &hbox_node.body, options, None)?;

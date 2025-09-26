@@ -7,7 +7,7 @@ license = "MIT"
 categories = ["mathematics", "wasm", "parsing"]
 keywords = ["latex", "math", "katex", "wasm", "parsing"]
 include = [
-    "LICENSE",
+    "../../LICENSE",
     "README.md",
     "build.rs",
     "data/**",

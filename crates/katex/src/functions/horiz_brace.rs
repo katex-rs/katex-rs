@@ -4,14 +4,14 @@
 //! mathematical expressions, migrated from KaTeX's horizBrace.js.
 
 use crate::build_common::{VListChild, VListElem, VListParam, make_span, make_v_list};
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeHorizBrace};
 use crate::stretchy::{math_ml_node, svg_span};
 use crate::style::DISPLAY;
-use crate::types::ParseError;
+use crate::types::{ParseError, ParseErrorKind};
 use crate::{KatexContext, build_html, build_mathml};
 
 /// Registers horizontal brace functions in the KaTeX context
@@ -23,14 +23,14 @@ pub fn define_horiz_brace(ctx: &mut KatexContext) {
             num_args: 1,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let base = args[0].clone();
             let is_over = context.func_name.starts_with("\\over");
 
             Ok(ParseNode::HorizBrace(ParseNodeHorizBrace {
                 mode: context.parser.mode,
                 loc: context.loc(),
-                label: context.func_name,
+                label: context.func_name.to_owned(),
                 is_over,
                 base: Box::new(base),
             }))
@@ -54,9 +54,9 @@ pub fn html_builder(
             let base = supsub
                 .base
                 .as_ref()
-                .ok_or_else(|| ParseError::new("Expected base in SupSub node"))?;
+                .ok_or_else(|| ParseError::new(ParseErrorKind::ExpectedBaseInSupSub))?;
             let ParseNode::HorizBrace(group) = base.as_ref() else {
-                return Err(ParseError::new("Expected HorizBrace node in SupSub base"));
+                return Err(ParseError::new(ParseErrorKind::ExpectedHorizBraceBase));
             };
 
             let style = options.style;
@@ -83,7 +83,9 @@ pub fn html_builder(
             (group, sup_group)
         }
         ParseNode::HorizBrace(hb) => (hb, None),
-        _ => return Err(ParseError::new("Expected HorizBrace node or SupSub node")),
+        _ => {
+            return Err(ParseError::new(ParseErrorKind::ExpectedHorizBraceOrSupSub));
+        }
     };
 
     // Build the base group
@@ -209,7 +211,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::HorizBrace(group) = node else {
-        return Err(ParseError::new("Expected HorizBrace node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::HorizBrace,
+        }));
     };
 
     let accent_node = math_ml_node(&group.label);

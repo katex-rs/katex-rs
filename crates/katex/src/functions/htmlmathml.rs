@@ -8,12 +8,12 @@ use crate::build_common::make_fragment;
 use crate::build_html;
 use crate::build_mathml;
 use crate::define_function::ord_argument;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::MathDomNode;
 use crate::options::Options;
 use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNodeHtmlMathMl};
-use crate::types::ParseError;
+use crate::types::{ParseError, ParseErrorKind};
 
 /// Registers the htmlmathml function in the KaTeX context
 pub fn define_htmlmathml(ctx: &mut crate::KatexContext) {
@@ -25,7 +25,7 @@ pub fn define_htmlmathml(ctx: &mut crate::KatexContext) {
             allowed_in_text: true,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             Ok(AnyParseNode::HtmlMathMl(ParseNodeHtmlMathMl {
                 mode: context.parser.mode,
                 loc: context.loc(),
@@ -45,7 +45,9 @@ fn html_builder(
     ctx: &crate::KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let AnyParseNode::HtmlMathMl(group) = node else {
-        return Err(ParseError::new("Expected HtmlMathMl node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::HtmlMathMl,
+        }));
     };
 
     let elements = build_html::build_expression(
@@ -56,7 +58,7 @@ fn html_builder(
         (None, None),
     )?;
 
-    Ok(make_fragment(&elements).into())
+    Ok(make_fragment(elements).into())
 }
 
 /// MathML builder for htmlmathml nodes
@@ -66,7 +68,9 @@ fn mathml_builder(
     ctx: &crate::KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let AnyParseNode::HtmlMathMl(group) = node else {
-        return Err(ParseError::new("Expected HtmlMathMl node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::HtmlMathMl,
+        }));
     };
 
     build_mathml::build_expression_row(ctx, &group.mathml, options, None)

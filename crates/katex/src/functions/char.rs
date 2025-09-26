@@ -5,7 +5,7 @@
 //! the \char macro to create symbols from code points.
 
 use crate::context::KatexContext;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNode, ParseNodeTextOrd};
 use crate::types::{ParseError, ParseErrorKind};
 
@@ -20,11 +20,11 @@ pub fn define_char(ctx: &mut KatexContext) {
             ..Default::default()
         },
         handler: Some(
-            |context: FunctionContext, args: Vec<ParseNode>, _opt_args: Vec<Option<ParseNode>>| {
+            |context, args: Vec<ParseNode>, _opt_args: Vec<Option<ParseNode>>| {
                 // Extract the first argument, which should be an ordgroup
                 let arg = &args[0];
                 let ParseNode::OrdGroup(ordgroup) = arg else {
-                    return Err(ParseError::new("\\@char argument must be an ordgroup"));
+                    return Err(ParseError::new(ParseErrorKind::CharArgumentMustBeOrdGroup));
                 };
 
                 // Concatenate all text from textord and mathord nodes in the group
@@ -39,7 +39,7 @@ pub fn define_char(ctx: &mut KatexContext) {
                         }
                         _ => {
                             return Err(ParseError::new(
-                                "\\@char ordgroup must contain only textord or mathord nodes",
+                                ParseErrorKind::CharOrdGroupContentInvalid,
                             ));
                         }
                     }

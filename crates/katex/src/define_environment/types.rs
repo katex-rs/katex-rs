@@ -6,7 +6,7 @@
 use crate::parser::Parser;
 use crate::parser::parse_node::AnyParseNode;
 use crate::parser::parse_node::NodeType;
-use crate::types::{ArgType, Mode, ParseError};
+use crate::types::{ArgType, Mode, ParseError, ParseErrorKind};
 
 /// Context information passed to environment handlers during LaTeX environment
 /// parsing.
@@ -285,7 +285,11 @@ impl Default for EnvSpec {
             arg_types: None,
             allowed_in_text: false,
             num_optional_args: 0,
-            handler: |_, _, _| Err(ParseError::new("Environment handler not implemented")),
+            handler: |_, _, _| {
+                Err(ParseError::new(
+                    ParseErrorKind::EnvironmentHandlerNotImplemented,
+                ))
+            },
         }
     }
 }

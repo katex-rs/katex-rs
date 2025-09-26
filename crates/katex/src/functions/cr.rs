@@ -10,12 +10,12 @@ use crate::namespace::KeyMap;
 use crate::ParseError;
 use crate::build_common::make_span;
 use crate::context::KatexContext;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeCr};
-use crate::types::CssProperty;
+use crate::types::{CssProperty, ParseErrorKind};
 use crate::units::make_em;
 
 /// Register the \\ (line break) function
@@ -29,7 +29,7 @@ pub fn define_cr(ctx: &mut KatexContext) {
             ..Default::default()
         },
         handler: Some(
-            |context: FunctionContext, _args: Vec<ParseNode>, _opt_args: Vec<Option<ParseNode>>| {
+            |context, _args: Vec<ParseNode>, _opt_args: Vec<Option<ParseNode>>| {
                 // Check if the next token is "[" to parse optional size
                 let size = if context.parser.gullet.future_mut()?.text == "[" {
                     context
@@ -81,7 +81,9 @@ fn html_builder(
         }
         Ok(span.into())
     } else {
-        Err(ParseError::new("Expected CR node"))
+        Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Cr,
+        }))
     }
 }
 
@@ -116,6 +118,8 @@ fn mathml_builder(
 
         Ok(MathDomNode::Math(math_node))
     } else {
-        Err(ParseError::new("Expected CR node"))
+        Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Cr,
+        }))
     }
 }

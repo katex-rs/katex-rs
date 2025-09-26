@@ -158,11 +158,13 @@ const ACCENT_STRETCHY_OVER: phf::Set<&'static str> = phf_set! {
 pub fn svg_span(group: &AnyParseNode, options: &Options) -> Result<HtmlDomNode, ParseError> {
     // Extract the label from the group
     let Some(label) = group.label() else {
-        return Err(ParseError::new("Unsupported group type for svg_span"));
+        return Err(ParseError::new(
+            ParseErrorKind::UnsupportedGroupTypeForSvgSpan,
+        ));
     };
 
     let Some(label) = label.strip_prefix('\\') else {
-        return Err(ParseError::new("Label must start with a backslash"));
+        return Err(ParseError::new(ParseErrorKind::LabelMissingBackslashPrefix));
     };
 
     if ACCENT_STRETCHY.contains(label) {
@@ -170,7 +172,9 @@ pub fn svg_span(group: &AnyParseNode, options: &Options) -> Result<HtmlDomNode, 
         let grp_base = match group {
             AnyParseNode::Accent(acc) => &acc.base,
             AnyParseNode::AccentUnder(acc_under) => &acc_under.base,
-            _ => return Err(ParseError::new("Invalid group type for accent")),
+            _ => {
+                return Err(ParseError::new(ParseErrorKind::InvalidGroupTypeForAccent));
+            }
         };
 
         let num_chars = group_length(grp_base) as f64;

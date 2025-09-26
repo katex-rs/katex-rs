@@ -4,12 +4,12 @@
 //! migrated from KaTeX's ordgroup.js.
 
 use crate::build_common::make_span;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::MathDomNode;
 use crate::options::Options;
 use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNodeOrdGroup};
-use crate::types::ParseError;
+use crate::types::{ParseError, ParseErrorKind};
 use crate::{KatexContext, build_html, build_mathml, make_fragment};
 
 /// Registers ordgroup functions in the KaTeX context
@@ -18,7 +18,7 @@ pub fn define_ordgroup(ctx: &mut KatexContext) {
         node_type: Some(NodeType::OrdGroup),
         names: &["ordgroup"],
         props: FunctionPropSpec::default(),
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let body = args[0].clone();
             let semisimple = context.func_name == "ordgroup"; // For now, assume ordgroup is semisimple
 
@@ -41,7 +41,9 @@ fn html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let AnyParseNode::OrdGroup(group) = node else {
-        return Err(ParseError::new("Expected OrdGroup node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::OrdGroup,
+        }));
     };
 
     if group.semisimple.unwrap_or(false) {
@@ -52,7 +54,7 @@ fn html_builder(
             build_html::GroupType::False,
             (None, None),
         )?;
-        Ok(make_fragment(&body).into())
+        Ok(make_fragment(body).into())
     } else {
         // Use makeSpan with "mord" class
         let body = build_html::build_expression(
@@ -74,7 +76,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let AnyParseNode::OrdGroup(group) = node else {
-        return Err(ParseError::new("Expected OrdGroup node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::OrdGroup,
+        }));
     };
 
     let body = build_mathml::build_expression_row(ctx, &group.body, options, Some(true))?;

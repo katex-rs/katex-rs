@@ -7,6 +7,7 @@
 use phf::phf_map;
 
 use crate::ParseError;
+use crate::types::ParseErrorKind;
 
 /// Padding above a sqrt vinculum to prevent image cropping
 const H_LINE_PAD: f64 = 80.0;
@@ -497,7 +498,7 @@ l0,-{}c-2,-159.3,-10,-310.7,-24,-454c-53.3,-528,-210,-949.7,
             mid_height + 9.0,
             mid_height + 144.0
         )),
-        _ => Err(ParseError::new("Unknown delimiter label")),
+        _ => Err(ParseError::new(ParseErrorKind::UnknownDelimiterLabel)),
     }
 }
 

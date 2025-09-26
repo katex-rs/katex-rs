@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>katex-rs screenshot test</title>
-  <!-- Fixed CSS (to be provided in a later step). Keep the link for compatibility. -->
+  <!-- Stylesheet resolved by the xtask static server to KaTeX/dist/katex.min.css. -->
   <link rel="stylesheet" href="./katex.min.css" />
   <style>
     /* Match KaTeX screenshotter page metrics */
@@ -41,8 +41,7 @@
     // ESM init: load WASM and shim, then render based on URL query.
     import initWasm, * as wasm from "./pkg/katex.js";
 
-    const search = window.location.search || "";
-    const searchParams = new URLSearchParams(search);
+    const searchParams = new URLSearchParams(window.location.search || "");
     const implMode = (searchParams.get("impl") || "wasm").toLowerCase();
 
     function setStatus(state, message, stack) {
@@ -63,115 +62,62 @@
 
     window.__status = setStatus("init", null);
 
-    function parseMacrosFromSearch(search) {
-      const params = new URLSearchParams(search);
-      const macros = {};
-      // Support repeated ?macro=\cmd=expansion entries (as KaTeX does in screenshotter)
-      for (const [k, v] of params.entries()) {
-        if (k === "macro") {
-          try {
-            const s = decodeURIComponent(v);
-            // Expect format: \cmd=expansion
-            const m = s.match(/^\\([A-Za-z@]+)\s*=(.*)$/);
-            if (m) {
-              const name = "\\" + m[1];
-              const expansion = m[2];
-              macros[name] = expansion;
-            }
-          } catch (e) {
-            // ignore bad macro input
+    function decodePayloadFromSearch(searchParams) {
+      const entries = Array.from(searchParams.entries());
+      if (entries.length === 0) {
+        return { payload: { tex: "" } };
+      }
+
+      const payloadParam = searchParams.get("payload");
+      if (payloadParam != null) {
+        try {
+          const parsed = JSON.parse(payloadParam);
+          if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+            return { error: "payload parameter must be a JSON object" };
           }
-        }
-      }
-      return macros;
-    }
-
-    function parseOptionsFromSearch(search) {
-      const params = new URLSearchParams(search);
-      const opts = {};
-
-      // displayMode/display
-      const displayMode = params.get("displayMode");
-      const display = params.get("display");
-      if (displayMode != null) opts.displayMode = (displayMode === "1" || displayMode === "true");
-      else if (display != null) opts.display = (display === "1" || display === "true");
-
-      // throwOnError/noThrow
-      const throwOnError = params.get("throwOnError");
-      const noThrow = params.get("noThrow");
-      if (throwOnError != null) opts.throwOnError = !(throwOnError === "0" || throwOnError === "false");
-      else if (noThrow != null) opts.noThrow = (noThrow === "1" || noThrow === "true");
-
-      // simple scalars
-      const errorColor = params.get("errorColor");
-      if (errorColor) opts.errorColor = errorColor;
-      const color = params.get("color");
-      if (color) opts.color = color;
-
-      // booleans
-      const leqno = params.get("leqno");
-      if (leqno != null) opts.leqno = (leqno === "1" || leqno === "true");
-      const fleqn = params.get("fleqn");
-      if (fleqn != null) opts.fleqn = (fleqn === "1" || fleqn === "true");
-      const colorIsTextColor = params.get("colorIsTextColor");
-      if (colorIsTextColor != null) opts.colorIsTextColor = (colorIsTextColor === "1" || colorIsTextColor === "true");
-      const globalGroup = params.get("globalGroup");
-      if (globalGroup != null) opts.globalGroup = (globalGroup === "1" || globalGroup === "true");
-
-      // numbers
-      const minRuleThickness = params.get("minRuleThickness");
-      if (minRuleThickness != null) opts.minRuleThickness = Number(minRuleThickness);
-      const maxExpand = params.get("maxExpand");
-      if (maxExpand != null) opts.maxExpand = Number(maxExpand);
-      const sizeMultiplier = params.get("sizeMultiplier");
-      if (sizeMultiplier != null) opts.sizeMultiplier = Number(sizeMultiplier);
-
-      // enums/strings
-      const strict = params.get("strict");
-      if (strict) {
-        // treat "true"/"false" as booleans; otherwise pass string ("warn"/"error"/"ignore")
-        opts.strict = (strict === "true" || strict === "false") ? (strict === "true") : strict;
-      }
-      const trust = params.get("trust");
-      if (trust != null) {
-        if (trust === "0" || trust === "false") {
-          opts.trust = false;
-        } else if (trust === "1" || trust === "true") {
-          opts.trust = true;
-        } else {
-          opts.trust = trust;
+          if (!Object.prototype.hasOwnProperty.call(parsed, "tex")) {
+            parsed.tex = "";
+          }
+          return { payload: parsed };
+        } catch (err) {
+          const message = err && err.message ? err.message : String(err);
+          return { error: `Failed to parse payload JSON: ${message}` };
         }
       }
 
-      const output = params.get("output");
-      if (output) opts.output = output;
-      else opts.output = "html"; // Default to HTML-only for screenshot compatibility
-
-      // macros
-      const macros = parseMacrosFromSearch(search);
-      if (Object.keys(macros).length) opts.macros = macros;
-
-      // Defaults to align with KaTeX screenshotter page behavior
-      if (!("strict" in opts)) opts.strict = false;
-      if (!("trust" in opts)) opts.trust = true;
-
-      return opts;
-    }
-
-    function setStylesFromSearch(search) {
-      const params = new URLSearchParams(search);
-      const styles = params.get("styles");
-      if (styles) {
-        document.getElementById("math").setAttribute("style", styles);
+      const payload = {};
+      const macros = {};
+      let hasMacros = false;
+      for (const [key, value] of entries) {
+        if (key === "payload") continue;
+        if (key === "macro") {
+          const idx = value.indexOf("=");
+          if (idx >= 0) {
+            const macroName = value.slice(0, idx);
+            const expansion = value.slice(idx + 1);
+            if (macroName) {
+              macros[macroName] = expansion;
+              hasMacros = true;
+            }
+          }
+          continue;
+        }
+        if (key.startsWith("\\")) {
+          macros[key] = value;
+          hasMacros = true;
+          continue;
+        }
+        payload[key] = value;
       }
-      const pre = params.get("pre");
-      if (pre) {
-        document.getElementById("pre").innerHTML = pre;
+
+      if (hasMacros) {
+        payload.macros = macros;
       }
-      const post = params.get("post");
-      if (post) {
-        document.getElementById("post").innerHTML = post;
+      if (!Object.prototype.hasOwnProperty.call(payload, "tex")) {
+        payload.tex = "";
       }
+
+      return { payload };
     }
 
     async function waitForImagesIn(el) {
@@ -213,22 +159,22 @@
 
       // Reset previous content
       mathNode.innerHTML = "";
-      preNode.innerHTML = (payload && payload.pre) || "";
-      postNode.innerHTML = (payload && payload.post) || "";
-      if (payload && payload.styles) {
-        mathNode.setAttribute("style", payload.styles);
+      const payloadObject =
+        payload && typeof payload === "object" && !Array.isArray(payload) ? payload : {};
+      const pre = payloadObject.pre;
+      const post = payloadObject.post;
+      preNode.innerHTML = pre == null ? "" : String(pre);
+      postNode.innerHTML = post == null ? "" : String(post);
+
+      const styles = payloadObject.styles;
+      if (typeof styles === "string" && styles.length > 0) {
+        mathNode.setAttribute("style", styles);
       } else {
         mathNode.removeAttribute("style");
       }
 
-      // Make font loads deterministic across cases
-      if (document.fonts && document.fonts.ready) {
-        try { await document.fonts.ready; } catch (_) {}
-      }
-      await ensureFonts();
-
       // Map options object to KaTeX options
-      const o = payload || {};
+      const o = payloadObject;
       const opts = {};
       if ("displayMode" in o) opts.displayMode = !!o.displayMode;
       else if ("display" in o) opts.display = !!o.display;
@@ -249,7 +195,10 @@
       if ("trust" in o) opts.trust = o.trust;
       if ("output" in o) opts.output = o.output;
       else opts.output = "html"; // Default to HTML-only for screenshot compatibility
-      if (o.macros) opts.macros = o.macros;
+      const macros = o.macros;
+      if (macros && typeof macros === "object" && !Array.isArray(macros)) {
+        opts.macros = macros;
+      }
 
       if (!("strict" in opts)) opts.strict = false;
       if (!("trust" in opts)) opts.trust = true;
@@ -257,7 +206,9 @@
       setStatus("pending", null, null);
       window.__ready = false;
       try {
-        window.katex.render(o.tex || "", mathNode, opts);
+        const texSource =
+          typeof o.tex === "string" ? o.tex : o.tex == null ? "" : String(o.tex);
+        window.katex.render(texSource, mathNode, opts);
       } catch (err) {
         const message = err && err.message ? err.message : String(err);
         const stack = err && err.stack ? String(err.stack) : null;
@@ -279,7 +230,7 @@
     async function main() {
       if (implMode === "js") {
         try {
-          const katexModule = await import("/KaTeX/dist/katex.mjs");
+          const katexModule = await import("/katex.mjs");
           window.katex = katexModule;
         } catch (err) {
           const message = err && err.message ? err.message : String(err);
@@ -310,39 +261,29 @@
         })();
       }
 
-      const tex = searchParams.get("tex") || "";
-
-      setStylesFromSearch(search);
-      const opts = parseOptionsFromSearch(search);
-
-      const mathNode = document.getElementById("math");
-
-      // Ensure fonts are ready before rendering to improve determinism
+      // Make font loads deterministic across cases
       if (document.fonts && document.fonts.ready) {
         try { await document.fonts.ready; } catch (_) {}
       }
-      // Explicitly trigger KaTeX font family loads to avoid fallback during first paint
       await ensureFonts();
- 
-      setStatus("pending", null, null);
-      window.__ready = false;
+
+      const { payload, error } = decodePayloadFromSearch(searchParams);
+      if (error) {
+        setStatus("error", error, null);
+        window.__ready = true;
+        return;
+      }
+
+      window.__initialPayload = payload;
+
       try {
-        window.katex.render(tex, mathNode, opts);
+        await window.runCase(payload);
       } catch (err) {
         const message = err && err.message ? err.message : String(err);
         const stack = err && err.stack ? String(err.stack) : null;
         setStatus("error", message, stack);
         window.__ready = true;
-        return;
       }
-
-      // Wait for any images produced by rendering (e.g., includegraphics)
-      await waitForImagesIn(document);
-
-      // Settle layout with two rAFs
-      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-      window.__ready = true;
-      setStatus("rendered", null, null);
     }
 
     main();

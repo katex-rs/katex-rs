@@ -318,39 +318,6 @@ pub fn is_ligature(s: &str) -> bool {
     LIGATURES.contains_key(s)
 }
 
-/// Retrieves the Unicode replacement character for a ligature sequence
-///
-/// Returns the single Unicode character that should replace the ligature
-/// sequence for proper mathematical typesetting.
-///
-/// # Parameters
-///
-/// * `s` - The ligature string to look up
-///
-/// # Returns
-///
-/// `Some(&str)` containing the Unicode replacement if the ligature is known,
-/// `None` if the string is not a recognized ligature.
-///
-/// # Examples
-///
-/// ```
-/// use katex::symbols::get_ligature_replacement;
-///
-/// assert_eq!(get_ligature_replacement("--"), Some("–"));
-/// assert_eq!(get_ligature_replacement("---"), Some("—"));
-/// assert_eq!(get_ligature_replacement("unknown"), None);
-/// ```
-///
-/// # See Also
-///
-/// - [`is_ligature`] for checking if a string is a ligature
-/// - [`LIGATURES`] for the mapping table
-#[must_use]
-pub fn get_ligature_replacement(s: &str) -> Option<&'static str> {
-    LIGATURES.get(s).copied()
-}
-
 /// Creates a wide Unicode character from UTF-16 surrogate pair
 ///
 /// Mathematical alphanumeric symbols in Unicode are often represented using
@@ -944,6 +911,10 @@ mod tests {
         // Test Unicode character mapping
         let equiv_info = symbols.get_math("\\equiv").unwrap();
         assert_eq!(equiv_info.replace, Some('\u{2261}'));
+    }
+
+    fn get_ligature_replacement(s: &str) -> Option<&'static str> {
+        LIGATURES.get(s).copied()
     }
 
     #[test]

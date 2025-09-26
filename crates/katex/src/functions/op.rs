@@ -8,14 +8,14 @@
 use crate::build_common::{
     VListElemAndShift, VListParam, make_span, make_symbol, make_v_list, mathsym, static_svg,
 };
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec, ord_argument};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec, ord_argument};
 use crate::dom_tree::HtmlDomNode;
 use crate::functions::utils::assemble_sup_sub;
 use crate::mathml_tree::{self, MathDomNode, MathNode, MathNodeType, TextNode};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeOp};
 use crate::style::DISPLAY;
-use crate::types::{CssProperty, Mode, ParseError};
+use crate::types::{CssProperty, Mode, ParseError, ParseErrorKind};
 use crate::units::make_em;
 use crate::{build_html, build_mathml};
 
@@ -38,11 +38,17 @@ pub fn html_builder(
             {
                 (op_node, super_group, sub_group, true)
             } else {
-                return Err(ParseError::new("Expected Op node in SupSub base"));
+                return Err(ParseError::new(ParseErrorKind::ExpectedSupSubBaseNode {
+                    node: NodeType::Op,
+                }));
             }
         }
         ParseNode::Op(op_node) => (op_node, None, None, false),
-        _ => return Err(ParseError::new("Expected Op or SupSub node")),
+        _ => {
+            return Err(ParseError::new(ParseErrorKind::ExpectedNodeOrSupSub {
+                node: NodeType::Op,
+            }));
+        }
     };
 
     let (symbol, name, body, suppress_base_shift, mode) = match op_node {
@@ -114,7 +120,7 @@ pub fn html_builder(
                 font_name,
                 Mode::Math,
                 Some(options),
-                Some(&base_classes),
+                Some(base_classes),
             )?;
 
             if let Some(stash) = stash {
@@ -221,7 +227,9 @@ fn mathml_builder(
     ctx: &crate::KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Op(op_node) = node else {
-        return Err(ParseError::new("Expected Op node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Op,
+        }));
     };
 
     let (symbol, name, body, parent_is_sup_sub) = match op_node {
@@ -339,8 +347,8 @@ pub fn define_op(ctx: &mut crate::KatexContext) {
             num_args: 0,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, _args, _opt_args| {
-            let mut f_name = context.func_name.clone();
+        handler: Some(|context, _args, _opt_args| {
+            let mut f_name = context.func_name.to_owned();
             if f_name.len() == 1 {
                 // Unicode character - map to LaTeX command
                 f_name = match f_name.as_str() {
@@ -385,7 +393,7 @@ pub fn define_op(ctx: &mut crate::KatexContext) {
             primitive: true,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let body = ord_argument(&args[0]);
 
             Ok(ParseNode::Op(ParseNodeOp::Body {
@@ -415,7 +423,7 @@ pub fn define_op(ctx: &mut crate::KatexContext) {
             num_args: 0,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, _args, _opt_args| {
+        handler: Some(|context, _args, _opt_args| {
             Ok(ParseNode::Op(ParseNodeOp::Symbol {
                 mode: context.parser.mode,
                 loc: context.loc(),
@@ -423,7 +431,7 @@ pub fn define_op(ctx: &mut crate::KatexContext) {
                 always_handle_sup_sub: None,
                 suppress_base_shift: None,
                 parent_is_sup_sub: false,
-                name: context.func_name,
+                name: context.func_name.to_owned(),
                 symbol: false,
             }))
         }),
@@ -440,7 +448,7 @@ pub fn define_op(ctx: &mut crate::KatexContext) {
             num_args: 0,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, _args, _opt_args| {
+        handler: Some(|context, _args, _opt_args| {
             Ok(ParseNode::Op(ParseNodeOp::Symbol {
                 mode: context.parser.mode,
                 loc: context.loc(),
@@ -448,7 +456,7 @@ pub fn define_op(ctx: &mut crate::KatexContext) {
                 always_handle_sup_sub: None,
                 suppress_base_shift: None,
                 parent_is_sup_sub: false,
-                name: context.func_name,
+                name: context.func_name.to_owned(),
                 symbol: false,
             }))
         }),
@@ -466,8 +474,8 @@ pub fn define_op(ctx: &mut crate::KatexContext) {
             num_args: 0,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, _args, _opt_args| {
-            let mut f_name = context.func_name.clone();
+        handler: Some(|context, _args, _opt_args| {
+            let mut f_name = context.func_name.to_owned();
             if f_name.len() == 1 {
                 f_name = match f_name.as_str() {
                     "\u{222b}" => "\\int",

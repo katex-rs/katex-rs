@@ -6,12 +6,12 @@
 
 use crate::build_common::make_fragment;
 use crate::build_html::GroupType;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec, ord_argument};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec, ord_argument};
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::MathDomNode;
 use crate::options::Options;
 use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNode, ParseNodeMathChoice};
-use crate::types::ParseError;
+use crate::types::{ParseError, ParseErrorKind};
 use crate::{build_html, build_mathml};
 
 /// Choose the appropriate math style based on the current style size
@@ -42,7 +42,7 @@ pub fn define_mathchoice(ctx: &mut crate::KatexContext) {
             primitive: true,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             Ok(ParseNode::MathChoice(ParseNodeMathChoice {
                 mode: context.parser.mode,
                 loc: context.loc(),
@@ -64,13 +64,15 @@ fn html_builder(
     ctx: &crate::KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::MathChoice(group) = node else {
-        return Err(ParseError::new("Expected MathChoice node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::MathChoice,
+        }));
     };
 
     let body = choose_math_style(group, options);
     let elements =
         build_html::build_expression(ctx, body, options, GroupType::False, (None, None))?;
-    Ok(make_fragment(&elements).into())
+    Ok(make_fragment(elements).into())
 }
 
 /// MathML builder for mathchoice nodes
@@ -80,7 +82,9 @@ fn mathml_builder(
     ctx: &crate::KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::MathChoice(group) = node else {
-        return Err(ParseError::new("Expected MathChoice node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::MathChoice,
+        }));
     };
 
     let body = choose_math_style(group, options);

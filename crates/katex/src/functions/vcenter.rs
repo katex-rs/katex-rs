@@ -6,12 +6,12 @@
 //! Migrated from KaTeX's vcenter.js.
 
 use crate::build_common::{VListChild, VListElem, VListParam, make_v_list};
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeVcenter};
-use crate::types::{ArgType, ParseError};
+use crate::types::{ArgType, ParseError, ParseErrorKind};
 use crate::{KatexContext, build_html, build_mathml};
 
 /// Registers the \vcenter function in the KaTeX context
@@ -25,7 +25,7 @@ pub fn define_vcenter(ctx: &mut KatexContext) {
             allowed_in_text: false,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let body = args[0].clone();
 
             Ok(ParseNode::Vcenter(ParseNodeVcenter {
@@ -46,7 +46,9 @@ fn html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::Vcenter(vcenter_node) = node else {
-        return Err(ParseError::new("Expected Vcenter node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Vcenter,
+        }));
     };
 
     // Build the body group
@@ -79,7 +81,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Vcenter(vcenter_node) = node else {
-        return Err(ParseError::new("Expected Vcenter node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Vcenter,
+        }));
     };
 
     // Build the base group

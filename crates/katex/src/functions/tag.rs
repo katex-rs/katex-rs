@@ -9,7 +9,7 @@ use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{AnyParseNode, NodeType};
-use crate::types::ParseError;
+use crate::types::{ParseError, ParseErrorKind};
 
 /// Registers tag functions in the KaTeX context
 pub fn define_tag(ctx: &mut KatexContext) {
@@ -30,7 +30,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let AnyParseNode::Tag(group) = node else {
-        return Err(ParseError::new("Expected Tag node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Tag,
+        }));
     };
 
     // Create padding cell

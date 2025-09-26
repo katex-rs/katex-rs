@@ -6,7 +6,7 @@
 //! Migrated from KaTeX's operatorname.js.
 
 use crate::build_common::make_span;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec, ord_argument};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec, ord_argument};
 use crate::dom_tree::HtmlDomNode;
 use crate::functions::utils::assemble_sup_sub;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType, TextNode, make_fragment};
@@ -14,8 +14,7 @@ use crate::options::Options;
 use crate::parser::parse_node::{
     AnyParseNode, NodeType, ParseNode, ParseNodeOperatorName, ParseNodeTextOrd,
 };
-use crate::types::ErrorLocationProvider as _;
-use crate::types::ParseError;
+use crate::types::{ErrorLocationProvider as _, ParseError, ParseErrorKind};
 use crate::{KatexContext, build_html, build_mathml};
 
 fn normalize_symbol_text(node: &mut HtmlDomNode) {
@@ -70,11 +69,17 @@ pub fn html_builder(
             {
                 (op_node, super_group, sub_group, true)
             } else {
-                return Err(ParseError::new("Expected OperatorName node in SupSub base"));
+                return Err(ParseError::new(ParseErrorKind::ExpectedSupSubBaseNode {
+                    node: NodeType::OperatorName,
+                }));
             }
         }
         ParseNode::OperatorName(op_node) => (op_node, None, None, false),
-        _ => return Err(ParseError::new("Expected OperatorName or SupSub node")),
+        _ => {
+            return Err(ParseError::new(ParseErrorKind::ExpectedNodeOrSupSub {
+                node: NodeType::OperatorName,
+            }));
+        }
     };
 
     let body: Vec<AnyParseNode> = operatorname_node
@@ -135,7 +140,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::OperatorName(operatorname_node) = node else {
-        return Err(ParseError::new("Expected OperatorName node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::OperatorName,
+        }));
     };
 
     let mut expression = build_mathml::build_expression(
@@ -231,7 +238,7 @@ pub fn define_operatorname(ctx: &mut KatexContext) {
             num_args: 1,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let body = ord_argument(&args[0]);
             let always_handle_sup_sub = context.func_name == "\\operatornamewithlimits";
 

@@ -6,14 +6,14 @@
 use crate::build_common::{VListChild, VListElem, VListKern, VListParam, make_span, make_v_list};
 use crate::build_html::build_group;
 use crate::build_mathml;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeAccentUnder};
 use crate::stretchy::{math_ml_node, svg_span};
 use crate::tree::MathDomNode;
-use crate::types::ParseError;
+use crate::types::{ParseError, ParseErrorKind};
 
 /// Under-accent commands
 const UNDER_ACCENTS: &[&str] = &[
@@ -34,13 +34,13 @@ pub fn define_accentunder(ctx: &mut crate::KatexContext) {
             num_args: 1,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let base = args[0].clone();
 
             Ok(ParseNode::AccentUnder(Box::new(ParseNodeAccentUnder {
                 mode: context.parser.mode,
                 loc: context.loc(),
-                label: context.func_name,
+                label: context.func_name.to_owned(),
                 is_stretchy: Some(true), // Under accents are typically stretchy
                 is_shifty: Some(false),  // Under accents don't shift
                 base: Box::new(base),
@@ -89,7 +89,9 @@ fn html_builder(
         )
         .into())
     } else {
-        Err(ParseError::new("Expected AccentUnder node"))
+        Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::AccentUnder,
+        }))
     }
 }
 
@@ -108,6 +110,8 @@ fn mathml_builder(
             .build();
         Ok(node.into())
     } else {
-        Err(ParseError::new("Expected AccentUnder node"))
+        Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::AccentUnder,
+        }))
     }
 }

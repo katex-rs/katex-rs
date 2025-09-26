@@ -4,7 +4,7 @@
 use crate::build_common::{VListElemAndShift, VListParam, make_span, make_v_list};
 use crate::build_html::make_null_delimiter;
 use crate::build_mathml::make_row;
-use crate::define_function::{FunctionContext, normalize_argument};
+use crate::define_function::normalize_argument;
 use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::delimiter::custom_sized_delim;
 use crate::dom_tree::HtmlDomNode;
@@ -80,11 +80,11 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
             allowed_in_argument: true,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let numer = args[0].clone();
             let denom = args[1].clone();
 
-            let (left_delim, right_delim, has_bar_line) = match context.func_name.as_str() {
+            let (left_delim, right_delim, has_bar_line) = match context.func_name {
                 "\\dfrac" | "\\frac" | "\\tfrac" => (None, None, true),
                 "\\dbinom" | "\\binom" | "\\tbinom" => {
                     (Some("(".to_owned()), Some(")".to_owned()), false)
@@ -95,13 +95,13 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
                 _ => {
                     return Err(ParseError::new(
                         ParseErrorKind::UnrecognizedGenfracCommand {
-                            command: context.func_name.clone(),
+                            command: context.func_name.to_owned(),
                         },
                     ));
                 }
             };
 
-            let size = match context.func_name.as_str() {
+            let size = match context.func_name {
                 "\\dfrac" | "\\dbinom" => Some(DISPLAY),
                 "\\tfrac" | "\\tbinom" => Some(TEXT),
                 _ => None,
@@ -131,7 +131,7 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
             num_args: 2,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let numer = args[0].clone();
             let denom = args[1].clone();
 
@@ -160,8 +160,8 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
             infix: true,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, _args, _opt_args| {
-            if let Some(replace_with) = INFIX_REPLACE_MAP.get(context.func_name.as_str()) {
+        handler: Some(|context, _args, _opt_args| {
+            if let Some(replace_with) = INFIX_REPLACE_MAP.get(context.func_name) {
                 Ok(ParseNode::Infix(ParseNodeInfix {
                     mode: context.parser.mode,
                     loc: context.loc(),
@@ -171,7 +171,7 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
                 }))
             } else {
                 let kind = ParseErrorKind::UnrecognizedInfixGenfracCommand {
-                    command: context.func_name.clone(),
+                    command: context.func_name.to_owned(),
                 };
                 if let Some(token) = context.token {
                     Err(ParseError::with_token(kind, token))
@@ -194,13 +194,13 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
             infix: true,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let size_node = &args[0];
             // Extract measurement from Size node
             let size_measurement = if let ParseNode::Size(size) = size_node {
                 Some(size.value.clone())
             } else {
-                return Err(ParseError::new("\\above argument must be a size"));
+                return Err(ParseError::new(ParseErrorKind::AboveArgumentMustBeSize));
             };
             Ok(ParseNode::Infix(ParseNodeInfix {
                 mode: context.parser.mode,
@@ -222,7 +222,7 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
             num_args: 3,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let numer = args[0].clone();
             let infix_node = &args[1];
             let denom = args[2].clone();
@@ -232,7 +232,7 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
                 infix.size.clone()
             } else {
                 return Err(ParseError::new(
-                    "\\\\abovefrac second argument must be an Infix node",
+                    ParseErrorKind::AbovefracSecondArgumentNotInfix,
                 ));
             };
 
@@ -273,7 +273,7 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
             ]),
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let numer = args[4].clone();
             let denom = args[5].clone();
 
@@ -360,7 +360,9 @@ fn html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::Genfrac(group) = node else {
-        return Err(ParseError::new("Expected Genfrac node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Genfrac,
+        }));
     };
 
     // Adjust style based on fraction size (like JavaScript version)
@@ -504,10 +506,10 @@ fn html_builder(
             true,
             &options.having_style(style),
             group.mode,
-            &[String::from("mopen")],
+            vec![String::from("mopen")],
         )?
     } else {
-        make_null_delimiter(options, &[String::from("mopen")])
+        make_null_delimiter(options, vec![String::from("mopen")])
     };
     let right_delim_span = if group.continued {
         make_span(vec![], vec![], None, None)
@@ -519,10 +521,10 @@ fn html_builder(
             true,
             &options.having_style(style),
             group.mode,
-            &[String::from("mclose")],
+            vec![String::from("mclose")],
         )?
     } else {
-        make_null_delimiter(options, &[String::from("mclose")])
+        make_null_delimiter(options, vec![String::from("mclose")])
     };
 
     let frac_span = make_span(vec![String::from("mfrac")], vec![frac.into()], None, None);
@@ -547,7 +549,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Genfrac(genfrac_node) = node else {
-        return Err(ParseError::new("Expected Genfrac node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Genfrac,
+        }));
     };
 
     // Adjust style based on fraction size (like JavaScript version)
@@ -624,7 +628,7 @@ fn mathml_builder(
             children.push(MathDomNode::Math(right_op_with_attr));
         }
 
-        Ok(make_row(&children))
+        Ok(make_row(children))
     } else {
         Ok(MathDomNode::Math(final_node))
     }

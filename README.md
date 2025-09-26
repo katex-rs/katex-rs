@@ -125,12 +125,66 @@ cargo nextest run --no-fail-fast
 
 ### Screenshot tests
 
-The script will automatically build the wasm and run the screenshot tests. Currently recommend to install Google Chrome for best compatibility.
+Use the `xtask` runner to build the WebAssembly package, host the static test
+assets, and drive browsers via WebDriver. By default the harness targets Safari
+(on macOS hosts), Firefox, and Google Chrome (chromedriver and friends are
+launched automatically when available). Install chromedriver and geckodriver as
+needed. Safari is supported on macOS hosts when `safaridriver` is available and
+WebDriver has been enabled (`safaridriver --enable`). You can also pass
+`--webdriver` to reuse an existing endpoint. Run:
 
 ```bash
-pushd ./tests/screenshotter && npm install && popd
-node tests/screenshotter/run.js
+cargo xtask screenshotter
 ```
+
+See `cargo xtask screenshotter --help` for additional flags such as filtering
+the dataset, skipping the Wasm rebuild, or changing browsers (for example,
+`--browser firefox` or `--browser chrome,firefox,safari`). Use `--safaridriver`
+to point to a custom binary path when needed. The diff tolerance can be tuned
+with `--tolerance strict|normal|tolerant`, `strict` enforces pixel-perfect matches, and `tolerant` allows minor rendering drift during broader refactors while still flagging
+significant mismatches and writing diff composites for the latter.
+
+The harness consumes stylesheets and fonts from the upstream KaTeX submodule.
+When the compiled assets are missing (or `--build always` is provided) the
+runner executes `yarn install --frozen-lockfile` and `yarn build` inside the
+submodule to produce `dist/katex.min.css` and its fonts, which are then served
+through the same `/tests/screenshotter/katex.min.css` route used by the legacy
+JavaScript harness. WebAssembly artifacts are loaded directly from
+`crates/katex/pkg` rather than being copied into the test directory; they are
+rebuilt automatically when `katex.js` is missing. Ensure Yarn is installed and
+fetch the submodule via `git submodule update --init --recursive` before running
+the screenshots. To speed up runs, the Rust harness only keeps artifacts for
+cases with differences or tolerance notes; perfect matches clear any prior files
+from `artifacts/screenshots/new` and `artifacts/screenshots/diff`.
+
+On Linux hosts without browser tooling installed, install the browsers,
+matching WebDrivers, and `wasm-pack` before running the harness:
+
+```bash
+# Google Chrome stable
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
+
+# ChromeDriver matching the installed build (replace CHROME_BUILD if needed)
+CHROME_BUILD="$(google-chrome --version | awk '{print $3}' | cut -d. -f1-4)"
+wget "https://storage.googleapis.com/chrome-for-testing-public/${CHROME_BUILD}/linux64/chromedriver-linux64.zip"
+unzip chromedriver-linux64.zip
+sudo install -m755 chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
+
+# Firefox and geckodriver (update versions as required)
+wget -O firefox.tar.xz "https://download.mozilla.org/?product=firefox-latest&os=linux64&lang=en-US"
+sudo tar -xf firefox.tar.xz -C /opt
+sudo ln -sf /opt/firefox/firefox /usr/local/bin/firefox
+
+wget https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz
+tar -xf geckodriver-v0.36.0-linux64.tar.gz
+sudo install -m755 geckodriver /usr/local/bin/geckodriver
+
+# wasm-pack (installs to ~/.cargo/bin)
+curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+```
+
+Adjust the download URLs when newer browser builds are released.
 
 ### Performance profiling
 

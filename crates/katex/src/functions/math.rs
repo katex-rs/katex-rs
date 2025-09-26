@@ -4,7 +4,7 @@
 //! using delimiters like \(, \), $, and for handling mismatched delimiters.
 
 use crate::context::KatexContext;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeStyling};
 use crate::style::TEXT;
 use crate::types::{BreakToken, Mode, ParseError, ParseErrorKind};
@@ -28,7 +28,7 @@ fn define_math_open(ctx: &mut KatexContext) {
             allowed_in_math: false,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, _args, _opt_args| {
+        handler: Some(|context, _args, _opt_args| {
             let outer_mode = context.parser.mode;
             context.parser.switch_mode(Mode::Math);
             let close_token = if context.func_name == "\\(" {
@@ -70,9 +70,9 @@ fn define_math_close(ctx: &mut KatexContext) {
             allowed_in_math: false,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, _args, _opt_args| {
+        handler: Some(|context, _args, _opt_args| {
             Err(ParseError::new(ParseErrorKind::Mismatched {
-                what: context.func_name,
+                what: context.func_name.to_owned(),
             }))
         }),
         html_builder: None,

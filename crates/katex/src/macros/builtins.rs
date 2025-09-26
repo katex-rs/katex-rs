@@ -201,9 +201,7 @@ fn new_command(
 ) -> Result<MacroExpansionResult, ParseError> {
     let arg = context.consume_arg(None)?.tokens;
     if arg.len() != 1 {
-        return Err(ParseError::new(
-            "\\newcommand's first argument must be a macro name",
-        ));
+        return Err(ParseError::new(ParseErrorKind::ExpectedControlSequence));
     }
 
     let name = &arg[0].text;
@@ -231,7 +229,7 @@ fn new_command(
         }
         num_args = arg_text
             .parse::<usize>()
-            .map_err(|_| ParseError::new("Invalid number of arguments in \\newcommand"))?;
+            .map_err(|_| ParseError::new(ParseErrorKind::InvalidNewcommandArgumentCount))?;
         arg = context.consume_arg(None)?.tokens;
     }
 
@@ -409,11 +407,17 @@ pub const BUILTIN_MACROS: phf::Map<&str, MacroDefinition> = phf_map! {
                 if token.text.as_str().starts_with('\\') {
                     code_at = 1;
                 } else if token.text.as_str() == "EOF" {
-                    return Err(ParseError::new("\\char` missing argument"));
+                    return Err(ParseError::new(ParseErrorKind::CharMissingArgument));
                 } else {
                     code_at = 0;
                 }
-                token.text.as_str().chars().nth(code_at).ok_or_else(|| ParseError::new("\\char` missing argument"))? as u32
+                token
+                    .text
+                    .as_str()
+                    .chars()
+                    .nth(code_at)
+                    .ok_or_else(|| ParseError::new(ParseErrorKind::CharMissingArgument))?
+                    as u32
             },
             _ => parse_number(&token.text, 10, context)?,
         };
@@ -682,7 +686,7 @@ pub const BUILTIN_MACROS: phf::Map<&str, MacroDefinition> = phf_map! {
     "\\tag@paren" => MacroDefinition::StaticStr("\\tag@literal{({#1})}"),
     "\\tag@literal" => MacroDefinition::StaticFunction(|context| {
         if context.macros().get("\\df@tag").is_some() {
-            return Err(ParseError::new("Multiple \\tag"));
+            return Err(ParseError::new(ParseErrorKind::MultipleTag));
         }
         Ok(MacroExpansionResult::String("\\gdef\\df@tag{\\text{#1}}".to_owned()))
     }),

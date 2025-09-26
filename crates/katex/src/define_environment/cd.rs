@@ -173,10 +173,12 @@ pub fn parse_cd(parser: &mut Parser) -> Result<AnyParseNode, ParseError> {
                 // Get arrow character
                 j += 1;
                 if j >= row_nodes.len() {
-                    return Err(ParseError::new("Missing arrow character after @"));
+                    return Err(ParseError::new(
+                        ParseErrorKind::MissingArrowCharacterAfterAt,
+                    ));
                 }
                 let Some(arrow_char) = row_nodes[j].text() else {
-                    return Err(ParseError::new("Invalid arrow character"));
+                    return Err(ParseError::new(ParseErrorKind::InvalidArrowCharacter));
                 };
 
                 // Create labels
@@ -329,9 +331,9 @@ pub fn define_cd(ctx: &mut crate::KatexContext) {
         }),
         html_builder: Some(|node, options, ctx| {
             let ParseNode::CdLabel(group) = node else {
-                return Err(ParseError::new(
-                    "Invalid node type for cdlabel_html_builder",
-                ));
+                return Err(ParseError::new(ParseErrorKind::InvalidNodeTypeForBuilder {
+                    builder: "cdlabel_html_builder",
+                }));
             };
             let new_options = options.having_style(options.style.sup());
             let mut label = wrap_fragment(
@@ -355,9 +357,9 @@ pub fn define_cd(ctx: &mut crate::KatexContext) {
         }),
         mathml_builder: Some(|node, options, ctx| {
             let ParseNode::CdLabel(group) = node else {
-                return Err(ParseError::new(
-                    "Invalid node type for cdlabel_mathml_builder",
-                ));
+                return Err(ParseError::new(ParseErrorKind::InvalidNodeTypeForBuilder {
+                    builder: "cdlabel_mathml_builder",
+                }));
             };
             let label = MathNode::builder()
                 .node_type(MathNodeType::Mrow)
@@ -398,9 +400,9 @@ pub fn define_cd(ctx: &mut crate::KatexContext) {
         }),
         html_builder: Some(|node, options, ctx| {
             let ParseNode::CdLabelParent(group) = node else {
-                return Err(ParseError::new(
-                    "Invalid node type for cdparent_html_builder",
-                ));
+                return Err(ParseError::new(ParseErrorKind::InvalidNodeTypeForBuilder {
+                    builder: "cdparent_html_builder",
+                }));
             };
             let mut parent =
                 wrap_fragment(build_group(ctx, &group.fragment, options, None)?, options);
@@ -411,9 +413,9 @@ pub fn define_cd(ctx: &mut crate::KatexContext) {
         }),
         mathml_builder: Some(|node, options, ctx| {
             let ParseNode::CdLabelParent(group) = node else {
-                return Err(ParseError::new(
-                    "Invalid node type for cdparent_html_builder",
-                ));
+                return Err(ParseError::new(ParseErrorKind::InvalidNodeTypeForBuilder {
+                    builder: "cdparent_html_builder",
+                }));
             };
             Ok(MathNode::builder()
                 .node_type(MathNodeType::Mrow)

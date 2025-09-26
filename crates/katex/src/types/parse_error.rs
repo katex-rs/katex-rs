@@ -49,7 +49,7 @@ pub struct ParseError {
 impl ParseError {
     /// Create a new ParseError with the given kind
     pub fn new<T: Into<ParseErrorKind>>(kind: T) -> Self {
-        Self::from_kind(kind.into(), ParseErrorContext::None, None, None)
+        Self::from(kind.into())
     }
 
     /// Create a new ParseError with context from a Token or ParseNode
@@ -93,12 +93,16 @@ impl From<strum::ParseError> for ParseError {
     }
 }
 
+impl From<ParseErrorKind> for ParseError {
+    fn from(kind: ParseErrorKind) -> Self {
+        Self::from_kind(kind, ParseErrorContext::None, None, None)
+    }
+}
+
 /// Describes the specific reason for a [`ParseError`].
 #[allow(missing_docs)]
 #[derive(Debug, Error)]
 pub enum ParseErrorKind {
-    #[error("{0}")]
-    Message(&'static str),
     #[error(r"Invalid \arraystretch: {stretch}")]
     InvalidArrayStretch { stretch: String },
     #[error("{{{env}}} can be used only in display mode.")]
@@ -147,18 +151,30 @@ pub enum ParseErrorKind {
     CharNonNumericArgument { value: String },
     #[error("Unsupported character: {character}")]
     UnsupportedWideCharacter { character: String },
+    #[error("Unsupported character: <empty>")]
+    EmptyWideCharacterInput,
     #[error("Unknown stretchy element: {label}")]
     UnknownStretchyElement { label: String },
+    #[error("Unsupported group type for svg_span")]
+    UnsupportedGroupTypeForSvgSpan,
+    #[error("Label must start with a backslash")]
+    LabelMissingBackslashPrefix,
+    #[error("Invalid group type for accent")]
+    InvalidGroupTypeForAccent,
     #[error("Unsupported number of paths: {count}")]
     UnsupportedStretchyPathCount { count: usize },
     #[error("Unsupported symbol '{symbol}' and font size '{font}'")]
     UnsupportedSymbolFont { symbol: String, font: String },
     #[error("Font metrics not found for font: {font_family}.")]
     FontMetricsNotFound { font_family: String },
+    #[error("Failed to write markup")]
+    MarkupWriteFailure,
     #[error(r"\newcommand{{{name}}} attempting to redefine {name}; use \renewcommand")]
     NewcommandRedefinition { name: String },
     #[error(r"\renewcommand{{{name}}} when {name} does not yet exist; use \newcommand")]
     RenewcommandNonexistent { name: String },
+    #[error("Invalid number of arguments in \\newcommand")]
+    InvalidNewcommandArgumentCount,
     #[error("Unknown type of space: {name}")]
     UnknownSpaceType { name: String },
     #[error("Expected '{expected}', got '{found}'")]
@@ -171,35 +187,56 @@ pub enum ParseErrorKind {
     InvalidMacroArgumentNumber { value: String },
     #[error("Expected #{expected} but found #{found}")]
     ExpectedMacroParameter { expected: usize, found: usize },
+    #[error("Use of the macro doesn't match its definition")]
+    MacroDefinitionMismatch,
+    #[error("The length of delimiters doesn't match the number of args!")]
+    MacroDelimiterLengthMismatch,
+    #[error("Too many expansions: infinite loop or need to increase maxExpand setting")]
+    MacroTooManyExpansions,
+    #[error("Incomplete placeholder at end of macro body")]
+    MacroIncompletePlaceholder,
+    #[error("Internal error: stack unexpectedly empty during token expansion")]
+    MacroStackUnexpectedlyEmpty,
+    #[error("Extra }}")]
+    ExtraCloseBrace,
+    #[error("Expected a control sequence")]
+    ExpectedControlSequence,
+    #[error("Expected a macro definition")]
+    ExpectedMacroDefinition,
     #[error("Got function '{func}' with no arguments as {context}")]
     FunctionMissingArguments { func: String, context: String },
     #[error("Can't use function {func} in {mode:?} mode")]
     FunctionDisallowedInMode { func: String, mode: Mode },
-    #[error("Expected parsing to fail for '{expression}'")]
-    ExpectedParseFailure { expression: String },
-    #[error("Expected building to fail for '{expression}'")]
-    ExpectedBuildFailure { expression: String },
-    #[error("DOM mismatch between '{left_expr}' and '{right_expr}':\n{left_dom}\n\n{right_dom}")]
-    DomMismatch {
-        left_expr: String,
-        right_expr: String,
-        left_dom: String,
-        right_dom: String,
-    },
-    #[error("Expected HTML rendering to fail for '{expression}', but it succeeded: {html}")]
-    ExpectedHtmlFailure { expression: String, html: String },
     #[error("Undefined control sequence: {name}")]
     UndefinedControlSequence { name: String },
     #[error("Unexpected end of input in a macro argument, expected '{expected}'")]
     UnexpectedEndOfMacroArgument { expected: String },
-    #[error("Invalid {context}: '{value}'")]
-    InvalidValue { context: String, value: String },
+    #[error("Invalid color: '{color}'")]
+    InvalidColor { color: String },
     #[error("Expected group as {context}")]
     ExpectedGroupAs { context: String },
+    #[error("\\limits must follow a base")]
+    LimitsMustFollowBase,
+    #[error("Double superscript")]
+    DoubleSuperscript,
+    #[error("Double subscript")]
+    DoubleSubscript,
+    #[error("make_ord: expected MathOrd, TextOrd or Spacing node")]
+    MakeOrdExpectedNode,
+    #[error("Only one infix operator per group")]
+    MultipleInfixOperators,
+    #[error("Infix operator at start of expression")]
+    InfixOperatorAtStart,
     #[error("Invalid delimiter '{delimiter}' after '{function}'")]
     InvalidDelimiterAfter { delimiter: String, function: String },
     #[error("Invalid delimiter type after '{function}'")]
     InvalidDelimiterTypeAfter { function: String },
+    #[error("Expected {node} node")]
+    ExpectedNode { node: NodeType },
+    #[error("Expected {node} node in SupSub base")]
+    ExpectedSupSubBaseNode { node: NodeType },
+    #[error("Expected {node} node or SupSub node")]
+    ExpectedNodeOrSupSub { node: NodeType },
     #[error("LaTeX-incompatible input and strict mode is set to 'error': {message} [{code}]")]
     StrictModeError { message: String, code: String },
     #[error("Unrecognized infix genfrac command: {command}")]
@@ -220,8 +257,104 @@ pub enum ParseErrorKind {
     NoFunctionHandler { name: String },
     #[error("Unknown column alignment: {alignment}")]
     UnknownColumnAlignment { alignment: String },
+    #[error("First argument must be raw string")]
+    ExpectedRawStringFirstArgument,
+    #[error("Error parsing key-value for \\htmlData")]
+    HtmlDataKeyValueParseError,
+    #[error("Unrecognized html command")]
+    UnrecognizedHtmlCommand,
+    #[error("Expected color-token for {argument}")]
+    ExpectedColorToken { argument: &'static str },
+    #[error("Expected size argument")]
+    ExpectedSizeArgument,
+    #[error("Expected size argument for {context}")]
+    ExpectedSizeArgumentFor { context: &'static str },
+    #[error("{position} argument must be a size")]
+    ArgumentMustBeSize { position: &'static str },
+    #[error("Expected function after prefix")]
+    ExpectedFunctionAfterPrefix,
+    #[error("Expected \\right after \\left")]
+    ExpectedRightAfterLeft,
+    #[error("\\middle without preceding \\left")]
+    MiddleWithoutPrecedingLeft,
+    #[error("Lap functions require exactly 1 argument")]
+    LapRequiresSingleArgument,
+    #[error("supsub must have either sup or sub.")]
+    SupSubMissingSupOrSub,
+    #[error("Expected base in SupSub node")]
+    ExpectedBaseInSupSub,
+    #[error("Expected HorizBrace node in SupSub base")]
+    ExpectedHorizBraceBase,
+    #[error("Expected HorizBrace node or SupSub node")]
+    ExpectedHorizBraceOrSupSub,
+    #[error("Cancel functions require exactly 1 argument")]
+    CancelFunctionSingleArgument,
+    #[error("\\above argument must be a size")]
+    AboveArgumentMustBeSize,
+    #[error("{context} must be a URL")]
+    ArgumentMustBeUrl { context: &'static str },
+    #[error("Command {name} not trusted")]
+    CommandNotTrusted { name: &'static str },
+    #[error("Delimiter character is empty")]
+    EmptyDelimiterCharacter,
+    #[error("Styling functions take no arguments")]
+    StylingTakesNoArguments,
+    #[error("Generated ord node should have classes")]
+    GeneratedOrdMissingClasses,
+    #[error("Sizing functions take no arguments")]
+    SizingTakesNoArguments,
+    #[error("Environment handler not implemented")]
+    EnvironmentHandlerNotImplemented,
+    #[error("\\@char argument must be an ordgroup")]
+    CharArgumentMustBeOrdGroup,
+    #[error("\\@char ordgroup must contain only textord or mathord nodes")]
+    CharOrdGroupContentInvalid,
+    #[error("Missing arrow character after @")]
+    MissingArrowCharacterAfterAt,
+    #[error("Invalid arrow character")]
+    InvalidArrowCharacter,
+    #[error("Too many tab characters: &")]
+    TooManyTabCharacters,
+    #[error("Expected column alignment character")]
+    ExpectedColumnAlignmentCharacter,
+    #[error("Expected ordgroup or symbol node")]
+    ExpectedOrdGroupOrSymbolNode,
+    #[error("Expected l or c or r")]
+    ExpectedAlignmentSpecifier,
+    #[error("{subarray} can contain only one column")]
+    SubarrayTooManyColumns { subarray: &'static str },
+    #[error("Invalid number of columns")]
+    InvalidNumberOfColumns,
+    #[error("Failed to create combined token")]
+    FailedToCreateCombinedToken,
+    #[error("A primitive argument cannot be optional")]
+    PrimitiveArgumentCannotBeOptional,
+    #[error("\\current@color set to non-string in \\right")]
+    CurrentColorMustBeString,
+    #[error("Expected first child to be a DomSpan")]
+    ExpectedFirstChildDomSpan,
+    #[error("Expected second child to be a DomSpan")]
+    ExpectedSecondChildDomSpan,
+    #[error("Macro expander stack is empty")]
+    EmptyMacroExpanderStack,
+    #[error("\\char` missing argument")]
+    CharMissingArgument,
+    #[error("Multiple \\tag")]
+    MultipleTag,
+    #[error("\\tag works only in display equations")]
+    TagNotAllowedInInlineMode,
+    #[error("Empty string passed to lookup_symbol")]
+    EmptyLookupSymbolInput,
+    #[error("Optional smash argument must be an ordgroup")]
+    OptionalSmashArgumentMustBeOrdGroup,
+    #[error("\\\\abovefrac second argument must be an Infix node")]
+    AbovefracSecondArgumentNotInfix,
     #[error("Failed to append child node: {details}")]
     FailedToAppendChild { details: String },
+    #[error(
+        "Unbalanced namespace destruction: attempt to pop global namespace; please report this as a bug"
+    )]
+    UnbalancedNamespaceDestruction,
     #[error("Document is not available in the current environment")]
     MissingDocument,
     #[error("Unknown delimiter label")]
@@ -230,20 +363,28 @@ pub enum ParseErrorKind {
     UnknownAccent { accent: String },
     #[error("Accent {accent} unsupported in {mode:?} mode")]
     UnsupportedAccentInMode { accent: String, mode: Mode },
+    #[error("Expected Symbol node for {context}")]
+    ExpectedSymbolNode { context: &'static str },
     #[error("Expected group after '{symbol}'")]
     ExpectedGroupAfterSymbol { symbol: String },
+    #[error("Null argument, please report this as a bug")]
+    NullArgument,
+    #[error("\\verb assertion failed -- please report what input caused this bug")]
+    VerbAssertionFailed,
+    #[error("\\verb ended by end of line instead of matching delimiter")]
+    VerbMissingDelimiter,
+    #[error("Expected URL argument for \\includegraphics")]
+    IncludeGraphicsExpectedUrl,
+    #[error("Invalid node type for {builder}")]
+    InvalidNodeTypeForBuilder { builder: &'static str },
     #[error(r"\@char with invalid code point {code}")]
     InvalidCharCodePoint { code: String },
+    #[error("newline node should be the last pushed element")]
+    NewlineNodeNotFound,
     #[error("Enum parse error: {0}")]
     EnumParse(strum::ParseError),
     #[error(transparent)]
     ParseNode(#[from] ParseNodeError),
-}
-
-impl From<&'static str> for ParseErrorKind {
-    fn from(message: &'static str) -> Self {
-        Self::Message(message)
-    }
 }
 
 #[derive(Debug)]
@@ -424,7 +565,13 @@ impl ErrorLocationProvider for Option<AnyParseNode> {
 /// Convert ParseNodeError to ParseError
 impl From<ParseNodeError> for ParseError {
     fn from(err: ParseNodeError) -> Self {
-        Self::new(ParseErrorKind::from(err))
+        ParseErrorKind::from(err).into()
+    }
+}
+
+impl From<fmt::Error> for ParseError {
+    fn from(_: fmt::Error) -> Self {
+        ParseErrorKind::MarkupWriteFailure.into()
     }
 }
 
@@ -436,15 +583,15 @@ mod tests {
 
     #[test]
     fn test_parse_error_creation() {
-        let error = ParseError::new("Invalid syntax");
+        let error = ParseError::new(ParseErrorKind::MacroTooManyExpansions);
         assert!(matches!(
             error.kind.as_ref(),
-            ParseErrorKind::Message("Invalid syntax")
+            ParseErrorKind::MacroTooManyExpansions
         ));
         assert!(
             error
                 .to_string()
-                .contains("KaTeX parse error: Invalid syntax")
+                .contains("KaTeX parse error: Too many expansions")
         );
         assert_eq!(error.position, None);
         assert_eq!(error.length, None);
@@ -454,15 +601,15 @@ mod tests {
     fn test_parse_error_with_token_context() {
         let input = Arc::from("This is a test expression with invalid syntax");
         let loc = SourceLocation::new(Arc::clone(&input), 10, 14); // "test"
-        let token = Token::new("test".to_owned(), Some(loc));
+        let token = Token::new("test", Some(loc));
 
-        let error = ParseError::with_token("Invalid syntax", &token);
+        let error = ParseError::with_token(ParseErrorKind::DoubleSubscript, &token);
         assert!(matches!(
             error.kind.as_ref(),
-            ParseErrorKind::Message("Invalid syntax")
+            ParseErrorKind::DoubleSubscript
         ));
         let rendered = error.to_string();
-        assert!(rendered.contains("KaTeX parse error: Invalid syntax"));
+        assert!(rendered.contains("KaTeX parse error: Double subscript"));
         assert!(rendered.contains("at position 11"));
         assert_eq!(error.position, Some(10));
         assert_eq!(error.length, Some(4));

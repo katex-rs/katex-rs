@@ -5,9 +5,7 @@
 
 use phf::phf_map;
 
-use crate::define_function::{
-    FunctionContext, FunctionDefSpec, FunctionPropSpec, normalize_argument,
-};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec, normalize_argument};
 use crate::dom_tree::HtmlDomNode;
 use crate::functions::mclass::binrel_class;
 use crate::mathml_tree::MathDomNode;
@@ -15,7 +13,7 @@ use crate::options::Options;
 use crate::parser::parse_node::{
     AnyParseNode, NodeType, ParseNode, ParseNodeFont, ParseNodeMclass, ParseNodeOrdGroup,
 };
-use crate::types::ParseError;
+use crate::types::{ParseError, ParseErrorKind};
 use crate::{KatexContext, build_html, build_mathml};
 
 /// HTML builder for font nodes
@@ -25,7 +23,9 @@ fn html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::Font(font_node) = node else {
-        return Err(ParseError::new("Expected Font node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Font,
+        }));
     };
 
     let new_options = options.with_font(font_node.font.clone());
@@ -39,7 +39,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Font(font_node) = node else {
-        return Err(ParseError::new("Expected Font node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Font,
+        }));
     };
 
     let new_options = options.with_font(font_node.font.clone());
@@ -87,7 +89,7 @@ pub fn define_font(ctx: &mut KatexContext) {
         },
         handler: Some(|context, args, _opt_args| {
             let body = normalize_argument(&args[0]);
-            let mut func = context.func_name.clone();
+            let mut func = context.func_name.to_owned();
 
             // Apply aliases
             if let Some(replacement) = FONT_ALIASES_MAP.get(func.as_str()) {
@@ -116,7 +118,7 @@ pub fn define_font(ctx: &mut KatexContext) {
             num_args: 1,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, _opt_args| {
+        handler: Some(|context, args, _opt_args| {
             let body = &args[0];
             let is_character_box = body.is_character_box()?;
 
@@ -148,8 +150,8 @@ pub fn define_font(ctx: &mut KatexContext) {
             allowed_in_text: true,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, _args, _opt_args| {
-            let func_name = context.func_name.as_str();
+        handler: Some(|context, _args, _opt_args| {
+            let func_name = context.func_name;
             let body = context
                 .parser
                 .parse_expression(true, context.break_on_token_text)?;

@@ -11,12 +11,12 @@ use crate::KatexContext;
 use crate::build_common::{VListElem, VListParam, make_span, make_v_list};
 use crate::build_html;
 use crate::build_mathml;
-use crate::define_function::{FunctionContext, FunctionDefSpec, FunctionPropSpec};
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNode, ParseNodeSmash};
-use crate::types::ParseError;
+use crate::types::{ParseError, ParseErrorKind};
 
 /// Registers the `\smash` function in the KaTeX context.
 ///
@@ -57,7 +57,7 @@ pub fn define_smash(ctx: &mut KatexContext) {
             allowed_in_text: true,
             ..Default::default()
         },
-        handler: Some(|context: FunctionContext, args, opt_args| {
+        handler: Some(|context, args, opt_args| {
             let mut smash_height = false;
             let mut smash_depth = false;
 
@@ -78,7 +78,7 @@ pub fn define_smash(ctx: &mut KatexContext) {
                     }
                 } else {
                     return Err(ParseError::new(
-                        "Optional smash argument must be an ordgroup",
+                        ParseErrorKind::OptionalSmashArgumentMustBeOrdGroup,
                     ));
                 }
             } else {
@@ -109,7 +109,9 @@ fn html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     let ParseNode::Smash(smash_node) = node else {
-        return Err(ParseError::new("Expected Smash node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Smash,
+        }));
     };
 
     // Build the base group
@@ -172,7 +174,9 @@ fn mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Smash(smash_node) = node else {
-        return Err(ParseError::new("Expected Smash node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Smash,
+        }));
     };
 
     // Build the base group

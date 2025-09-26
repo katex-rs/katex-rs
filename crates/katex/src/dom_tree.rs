@@ -99,6 +99,34 @@ impl<T> Span<T> {
 
         span
     }
+
+    /// Fast path constructor for callers that already have the common pieces
+    /// available and would otherwise go through the builder for every node.
+    pub(crate) fn from_parts(
+        children: Vec<T>,
+        classes: Vec<String>,
+        style: Option<CssStyle>,
+        options: Option<&Options>,
+    ) -> Self {
+        let mut span = Self {
+            children,
+            attributes: KeyMap::default(),
+            classes,
+            height: 0.0,
+            depth: 0.0,
+            width: None,
+            max_font_size: 0.0,
+            style: style.unwrap_or_default(),
+            is_middle: None,
+            italic: None,
+        };
+
+        if let Some(options) = options {
+            init_node(&mut span.classes, &mut span.style, options);
+        }
+
+        span
+    }
 }
 
 /// Anchor element with hyperlink
@@ -421,13 +449,24 @@ impl SvgNode {
 
 /// Create an HTML className based on a list of classes. In addition to joining
 /// with spaces, we also remove empty classes.
+#[must_use]
 pub fn create_class(classes: &[String]) -> String {
-    classes
-        .iter()
-        .filter(|cls| !cls.is_empty())
-        .map(String::as_str)
-        .collect::<Vec<&str>>()
-        .join(" ")
+    let mut result = String::new();
+    let mut first = true;
+
+    for class in classes {
+        if class.is_empty() {
+            continue;
+        }
+        if first {
+            first = false;
+        } else {
+            result.push(' ');
+        }
+        result.push_str(class);
+    }
+
+    result
 }
 
 /// Initialize a DOM node with common properties according to KaTeX.js initNode
@@ -454,22 +493,23 @@ pub fn to_markup(node: &HtmlDomNode) -> Result<String, ParseError> {
     node.to_markup()
 }
 
-fn fmt_error() -> ParseError {
-    ParseError::new(ParseErrorKind::Message("failed to write markup"))
-}
-
 fn map_fmt(result: fmt::Result) -> Result<(), ParseError> {
-    result.map_err(|_| fmt_error())
+    result.map_err(ParseError::from)
 }
 
 fn write_node_class<W: fmt::Write>(writer: &mut W, classes: &[String]) -> fmt::Result {
-    if classes.is_empty() {
-        return Ok(());
+    let mut iter = classes.iter().filter(|cls| !cls.is_empty());
+    if let Some(first) = iter.next() {
+        writer.write_str(" class=\"")?;
+        escape_into(writer, first)?;
+        for class in iter {
+            writer.write_char(' ')?;
+            escape_into(writer, class)?;
+        }
+        writer.write_char('"')?;
     }
 
-    writer.write_str(" class=\"")?;
-    escape_into(writer, &create_class(classes))?;
-    writer.write_char('"')
+    Ok(())
 }
 
 fn write_node_style<W: fmt::Write>(writer: &mut W, style: &CssStyle) -> fmt::Result {
@@ -646,7 +686,6 @@ fn write_symbol_style<W: fmt::Write>(writer: &mut W, italic: f64, style: &CssSty
 
 #[cfg(feature = "wasm")]
 fn symbol_node_style_str(italic: f64, style: &CssStyle) -> String {
-    use crate::utils::escape;
     let mut styles = String::new();
     if italic > 0.0 {
         let _ = write!(styles, "margin-right:{};", make_em(italic));
@@ -654,7 +693,10 @@ fn symbol_node_style_str(italic: f64, style: &CssStyle) -> String {
     for (key, value) in style {
         let _ = write!(styles, "{key}:{value};");
     }
-    escape(&styles)
+
+    let mut escaped = String::with_capacity(styles.len() * 9 / 8);
+    let _ = escape_into(&mut escaped, &styles);
+    escaped
 }
 
 /// Implement VirtualNode for Symbol
@@ -1059,9 +1101,7 @@ fn node_attributes_to_markup<W: fmt::Write>(
             if attr.contains(|c: char| {
                 c.is_whitespace() || "\"'>/=".contains(c) || ('\x00'..='\x1f').contains(&c)
             }) {
-                return Err(ParseError::new(ParseErrorKind::InvalidAttributeName {
-                    attr: attr.clone(),
-                }));
+                return Err(ParseErrorKind::InvalidAttributeName { attr: attr.clone() }.into());
             }
             map_fmt(write!(writer, " {attr}=\""))?;
             map_fmt(escape_into(writer, value))?;

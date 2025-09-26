@@ -6,8 +6,4 @@ Cargo.lock
 bin/
 pkg/
 wasm-pack.log
-/tests/screenshotter/new
-/tests/screenshotter/diff
-/tests/screenshotter/report
-tests/screenshotter/package-lock.json
-tests/perf/package-lock.json
+/artifacts/

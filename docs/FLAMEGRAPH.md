@@ -42,7 +42,7 @@ cargo xtask flamegraph js
 
 Each subcommand accepts a common set of options:
 
-- `--frequency <HZ>` to tweak the sampling rate (`perf -F`, defaults to 99Hz)
+- `--frequency <HZ>` to tweak the sampling rate (`perf -F`, defaults to 999Hz)
 - `--call-graph <dwarf|fp|lbr>` to configure call stack unwinding
 - `--output <svg>` and `--perf-data <file>` to customise artefact locations
 - `--title <text>` to override the SVG heading
@@ -61,27 +61,6 @@ Target-specific switches are also available:
 - `js`
   - `--node-arg` / `--script-arg` mirror the wasm options
   - `--skip-npm` avoids re-installing KaTeX’s dependencies
-
-## Native baseline (profiling profile, sample-size = 10)
-
-Running `cargo bench --profile profiling --bench perf -- --sample-size 10`
-produced the following timings:
-
-| Case            | Median time |
-|-----------------|-------------|
-| AccentsText     | 5.43 ms |
-| ArrayMode       | 7.47 ms |
-| GroupMacros     | 98.0 µs |
-| MathBb          | 724 µs |
-| SqrtRoot        | 4.12 ms |
-| StretchyAccent  | 5.82 ms |
-| Units           | 2.27 ms |
-
-These numbers highlight `ArrayMode`, `StretchyAccent`, and `AccentsText` as the
-most expensive native code paths and therefore good initial candidates for
-flamegraph inspection. Group-oriented renderers (`GroupMacros`, `MathBb`) are
-currently two orders of magnitude faster, so they can serve as a control group
-when comparing stack shapes.
 
 ## Outstanding environment gaps
 

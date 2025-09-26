@@ -11,7 +11,7 @@ use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{AnyParseNode, NodeType};
-use crate::types::Mode;
+use crate::types::{Mode, ParseErrorKind};
 use phf::phf_map;
 
 /// Default variant mapping for MathML elements
@@ -55,7 +55,9 @@ fn mathord_mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let AnyParseNode::MathOrd(group) = node else {
-        return Err(ParseError::new("Expected MathOrd node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::MathOrd,
+        }));
     };
     let mut mi_node = MathNode::builder()
         .node_type(MathNodeType::Mi)
@@ -82,7 +84,9 @@ fn textord_mathml_builder(
     ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let AnyParseNode::TextOrd(group) = node else {
-        return Err(ParseError::new("Expected TextOrd node"));
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::TextOrd,
+        }));
     };
 
     let text = make_text(&group.text, group.mode, Some(options), &ctx.symbols);
