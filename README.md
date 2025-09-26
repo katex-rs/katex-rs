@@ -92,7 +92,7 @@ cargo install wasm-pack
 
 ### Const Data Extraction
 
-The `./data` directory contains the JSON files extracted with scripts from the original KaTeX repository. Those files are tracked with Git LFS. They are kept here to simplify crate compilation. You can regenerate them with the scripts in `./utils` if needed.
+The `./data` directory contains the JSON files extracted with scripts from the original KaTeX repository. They are kept here to simplify crate compilation. You can regenerate them with the scripts in `./utils` if needed.
 
 ```bash
 node utils/extract_font_metric.cjs

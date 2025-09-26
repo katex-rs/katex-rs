@@ -1,0 +1,4858 @@
+[
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2261",
+    "name": "\\\\equiv",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u227a",
+    "name": "\\\\prec",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u227b",
+    "name": "\\\\succ",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u223c",
+    "name": "\\\\sim",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u22a5",
+    "name": "\\\\perp",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2aaf",
+    "name": "\\\\preceq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2ab0",
+    "name": "\\\\succeq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2243",
+    "name": "\\\\simeq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2223",
+    "name": "\\\\mid",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u226a",
+    "name": "\\\\ll",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u226b",
+    "name": "\\\\gg",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u224d",
+    "name": "\\\\asymp",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2225",
+    "name": "\\\\parallel",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u22c8",
+    "name": "\\\\bowtie",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2323",
+    "name": "\\\\smile",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2291",
+    "name": "\\\\sqsubseteq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2292",
+    "name": "\\\\sqsupseteq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2250",
+    "name": "\\\\doteq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2322",
+    "name": "\\\\frown",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u220b",
+    "name": "\\\\ni",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u221d",
+    "name": "\\\\propto",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u22a2",
+    "name": "\\\\vdash",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u22a3",
+    "name": "\\\\dashv",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u220b",
+    "name": "\\\\owns",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "punct",
+    "replace": "\\u002e",
+    "name": "\\\\ldotp",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "punct",
+    "replace": "\\u22c5",
+    "name": "\\\\cdotp",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u0023",
+    "name": "\\\\#",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u0023",
+    "name": "\\\\#",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u0026",
+    "name": "\\\\&",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u0026",
+    "name": "\\\\&",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2135",
+    "name": "\\\\aleph",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2200",
+    "name": "\\\\forall",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u210f",
+    "name": "\\\\hbar",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2203",
+    "name": "\\\\exists",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2207",
+    "name": "\\\\nabla",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u266d",
+    "name": "\\\\flat",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2113",
+    "name": "\\\\ell",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u266e",
+    "name": "\\\\natural",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2663",
+    "name": "\\\\clubsuit",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2118",
+    "name": "\\\\wp",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u266f",
+    "name": "\\\\sharp",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2662",
+    "name": "\\\\diamondsuit",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u211c",
+    "name": "\\\\Re",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2661",
+    "name": "\\\\heartsuit",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2111",
+    "name": "\\\\Im",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2660",
+    "name": "\\\\spadesuit",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00a7",
+    "name": "\\\\S",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00a7",
+    "name": "\\\\S",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00b6",
+    "name": "\\\\P",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00b6",
+    "name": "\\\\P",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2020",
+    "name": "\\\\dag",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2020",
+    "name": "\\\\dag",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2020",
+    "name": "\\\\textdagger",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2021",
+    "name": "\\\\ddag",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2021",
+    "name": "\\\\ddag",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2021",
+    "name": "\\\\textdaggerdbl",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "close",
+    "replace": "\\u23b1",
+    "name": "\\\\rmoustache",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "open",
+    "replace": "\\u23b0",
+    "name": "\\\\lmoustache",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "close",
+    "replace": "\\u27ef",
+    "name": "\\\\rgroup",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "open",
+    "replace": "\\u27ee",
+    "name": "\\\\lgroup",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2213",
+    "name": "\\\\mp",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2296",
+    "name": "\\\\ominus",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u228e",
+    "name": "\\\\uplus",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2293",
+    "name": "\\\\sqcap",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2217",
+    "name": "\\\\ast",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2294",
+    "name": "\\\\sqcup",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u25ef",
+    "name": "\\\\bigcirc",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2219",
+    "name": "\\\\bullet",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2021",
+    "name": "\\\\ddagger",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2240",
+    "name": "\\\\wr",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2a3f",
+    "name": "\\\\amalg",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u0026",
+    "name": "\\\\And",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u27f5",
+    "name": "\\\\longleftarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u21d0",
+    "name": "\\\\Leftarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u27f8",
+    "name": "\\\\Longleftarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u27f6",
+    "name": "\\\\longrightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u21d2",
+    "name": "\\\\Rightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u27f9",
+    "name": "\\\\Longrightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2194",
+    "name": "\\\\leftrightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u27f7",
+    "name": "\\\\longleftrightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u21d4",
+    "name": "\\\\Leftrightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u27fa",
+    "name": "\\\\Longleftrightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u21a6",
+    "name": "\\\\mapsto",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u27fc",
+    "name": "\\\\longmapsto",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2197",
+    "name": "\\\\nearrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u21a9",
+    "name": "\\\\hookleftarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u21aa",
+    "name": "\\\\hookrightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2198",
+    "name": "\\\\searrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u21bc",
+    "name": "\\\\leftharpoonup",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u21c0",
+    "name": "\\\\rightharpoonup",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2199",
+    "name": "\\\\swarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u21bd",
+    "name": "\\\\leftharpoondown",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u21c1",
+    "name": "\\\\rightharpoondown",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2196",
+    "name": "\\\\nwarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u21cc",
+    "name": "\\\\rightleftharpoons",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u226e",
+    "name": "\\\\nless",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\ue010",
+    "name": "\\\\@nleqslant",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\ue011",
+    "name": "\\\\@nleqq",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2a87",
+    "name": "\\\\lneq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2268",
+    "name": "\\\\lneqq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\ue00c",
+    "name": "\\\\@lvertneqq",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22e6",
+    "name": "\\\\lnsim",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2a89",
+    "name": "\\\\lnapprox",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2280",
+    "name": "\\\\nprec",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22e0",
+    "name": "\\\\npreceq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22e8",
+    "name": "\\\\precnsim",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2ab9",
+    "name": "\\\\precnapprox",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2241",
+    "name": "\\\\nsim",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\ue006",
+    "name": "\\\\@nshortmid",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2224",
+    "name": "\\\\nmid",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22ac",
+    "name": "\\\\nvdash",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22ad",
+    "name": "\\\\nvDash",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22ea",
+    "name": "\\\\ntriangleleft",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22ec",
+    "name": "\\\\ntrianglelefteq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u228a",
+    "name": "\\\\subsetneq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\ue01a",
+    "name": "\\\\@varsubsetneq",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2acb",
+    "name": "\\\\subsetneqq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\ue017",
+    "name": "\\\\@varsubsetneqq",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u226f",
+    "name": "\\\\ngtr",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\ue00f",
+    "name": "\\\\@ngeqslant",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\ue00e",
+    "name": "\\\\@ngeqq",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2a88",
+    "name": "\\\\gneq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2269",
+    "name": "\\\\gneqq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\ue00d",
+    "name": "\\\\@gvertneqq",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22e7",
+    "name": "\\\\gnsim",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2a8a",
+    "name": "\\\\gnapprox",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2281",
+    "name": "\\\\nsucc",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22e1",
+    "name": "\\\\nsucceq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22e9",
+    "name": "\\\\succnsim",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2aba",
+    "name": "\\\\succnapprox",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2246",
+    "name": "\\\\ncong",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\ue007",
+    "name": "\\\\@nshortparallel",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2226",
+    "name": "\\\\nparallel",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22af",
+    "name": "\\\\nVDash",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22eb",
+    "name": "\\\\ntriangleright",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22ed",
+    "name": "\\\\ntrianglerighteq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\ue018",
+    "name": "\\\\@nsupseteqq",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u228b",
+    "name": "\\\\supsetneq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\ue01b",
+    "name": "\\\\@varsupsetneq",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2acc",
+    "name": "\\\\supsetneqq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\ue019",
+    "name": "\\\\@varsupsetneqq",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22ae",
+    "name": "\\\\nVdash",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2ab5",
+    "name": "\\\\precneqq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2ab6",
+    "name": "\\\\succneqq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\ue016",
+    "name": "\\\\@nsubseteqq",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22b4",
+    "name": "\\\\unlhd",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22b5",
+    "name": "\\\\unrhd",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u219a",
+    "name": "\\\\nleftarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u219b",
+    "name": "\\\\nrightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21cd",
+    "name": "\\\\nLeftarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21cf",
+    "name": "\\\\nRightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21ae",
+    "name": "\\\\nleftrightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21ce",
+    "name": "\\\\nLeftrightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u25b3",
+    "name": "\\\\vartriangle",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u210f",
+    "name": "\\\\hslash",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u25bd",
+    "name": "\\\\triangledown",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u25ca",
+    "name": "\\\\lozenge",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u24c8",
+    "name": "\\\\circledS",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u00ae",
+    "name": "\\\\circledR",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u00ae",
+    "name": "\\\\circledR",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2221",
+    "name": "\\\\measuredangle",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2204",
+    "name": "\\\\nexists",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2127",
+    "name": "\\\\mho",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2132",
+    "name": "\\\\Finv",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2141",
+    "name": "\\\\Game",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2035",
+    "name": "\\\\backprime",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u25b2",
+    "name": "\\\\blacktriangle",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u25bc",
+    "name": "\\\\blacktriangledown",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u25a0",
+    "name": "\\\\blacksquare",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u29eb",
+    "name": "\\\\blacklozenge",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2605",
+    "name": "\\\\bigstar",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2222",
+    "name": "\\\\sphericalangle",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2201",
+    "name": "\\\\complement",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u00f0",
+    "name": "\\\\eth",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00f0",
+    "name": "\\u00f0",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2571",
+    "name": "\\\\diagup",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2572",
+    "name": "\\\\diagdown",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u25a1",
+    "name": "\\\\square",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u25a1",
+    "name": "\\\\Box",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u25ca",
+    "name": "\\\\Diamond",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u00a5",
+    "name": "\\\\yen",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u00a5",
+    "name": "\\\\yen",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2713",
+    "name": "\\\\checkmark",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2713",
+    "name": "\\\\checkmark",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2136",
+    "name": "\\\\beth",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2138",
+    "name": "\\\\daleth",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2137",
+    "name": "\\\\gimel",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u03dd",
+    "name": "\\\\digamma",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u03f0",
+    "name": "\\\\varkappa",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "open",
+    "replace": "\\u250c",
+    "name": "\\\\@ulcorner",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "close",
+    "replace": "\\u2510",
+    "name": "\\\\@urcorner",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "open",
+    "replace": "\\u2514",
+    "name": "\\\\@llcorner",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "close",
+    "replace": "\\u2518",
+    "name": "\\\\@lrcorner",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2266",
+    "name": "\\\\leqq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2a7d",
+    "name": "\\\\leqslant",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2a95",
+    "name": "\\\\eqslantless",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2272",
+    "name": "\\\\lesssim",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2a85",
+    "name": "\\\\lessapprox",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u224a",
+    "name": "\\\\approxeq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22d6",
+    "name": "\\\\lessdot",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22d8",
+    "name": "\\\\lll",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2276",
+    "name": "\\\\lessgtr",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22da",
+    "name": "\\\\lesseqgtr",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2a8b",
+    "name": "\\\\lesseqqgtr",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2251",
+    "name": "\\\\doteqdot",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2253",
+    "name": "\\\\risingdotseq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2252",
+    "name": "\\\\fallingdotseq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u223d",
+    "name": "\\\\backsim",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22cd",
+    "name": "\\\\backsimeq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2ac5",
+    "name": "\\\\subseteqq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22d0",
+    "name": "\\\\Subset",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u228f",
+    "name": "\\\\sqsubset",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u227c",
+    "name": "\\\\preccurlyeq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22de",
+    "name": "\\\\curlyeqprec",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u227e",
+    "name": "\\\\precsim",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2ab7",
+    "name": "\\\\precapprox",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22b2",
+    "name": "\\\\vartriangleleft",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22b4",
+    "name": "\\\\trianglelefteq",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22a8",
+    "name": "\\\\vDash",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22aa",
+    "name": "\\\\Vvdash",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2323",
+    "name": "\\\\smallsmile",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2322",
+    "name": "\\\\smallfrown",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u224f",
+    "name": "\\\\bumpeq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u224e",
+    "name": "\\\\Bumpeq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2267",
+    "name": "\\\\geqq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2a7e",
+    "name": "\\\\geqslant",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2a96",
+    "name": "\\\\eqslantgtr",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2273",
+    "name": "\\\\gtrsim",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2a86",
+    "name": "\\\\gtrapprox",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22d7",
+    "name": "\\\\gtrdot",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22d9",
+    "name": "\\\\ggg",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2277",
+    "name": "\\\\gtrless",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22db",
+    "name": "\\\\gtreqless",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2a8c",
+    "name": "\\\\gtreqqless",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2256",
+    "name": "\\\\eqcirc",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2257",
+    "name": "\\\\circeq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u225c",
+    "name": "\\\\triangleq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u223c",
+    "name": "\\\\thicksim",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2248",
+    "name": "\\\\thickapprox",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2ac6",
+    "name": "\\\\supseteqq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22d1",
+    "name": "\\\\Supset",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2290",
+    "name": "\\\\sqsupset",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u227d",
+    "name": "\\\\succcurlyeq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22df",
+    "name": "\\\\curlyeqsucc",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u227f",
+    "name": "\\\\succsim",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2ab8",
+    "name": "\\\\succapprox",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22b3",
+    "name": "\\\\vartriangleright",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22b5",
+    "name": "\\\\trianglerighteq",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22a9",
+    "name": "\\\\Vdash",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2223",
+    "name": "\\\\shortmid",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2225",
+    "name": "\\\\shortparallel",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u226c",
+    "name": "\\\\between",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22d4",
+    "name": "\\\\pitchfork",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u221d",
+    "name": "\\\\varpropto",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u25c0",
+    "name": "\\\\blacktriangleleft",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2234",
+    "name": "\\\\therefore",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u220d",
+    "name": "\\\\backepsilon",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u25b6",
+    "name": "\\\\blacktriangleright",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2235",
+    "name": "\\\\because",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22d8",
+    "name": "\\\\llless",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22d9",
+    "name": "\\\\gggtr",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22b2",
+    "name": "\\\\lhd",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22b3",
+    "name": "\\\\rhd",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2242",
+    "name": "\\\\eqsim",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u22c8",
+    "name": "\\\\Join",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2251",
+    "name": "\\\\Doteq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u2214",
+    "name": "\\\\dotplus",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u2216",
+    "name": "\\\\smallsetminus",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22d2",
+    "name": "\\\\Cap",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22d3",
+    "name": "\\\\Cup",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u2a5e",
+    "name": "\\\\doublebarwedge",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u229f",
+    "name": "\\\\boxminus",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u229e",
+    "name": "\\\\boxplus",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22c7",
+    "name": "\\\\divideontimes",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22c9",
+    "name": "\\\\ltimes",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22ca",
+    "name": "\\\\rtimes",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22cb",
+    "name": "\\\\leftthreetimes",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22cc",
+    "name": "\\\\rightthreetimes",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22cf",
+    "name": "\\\\curlywedge",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22ce",
+    "name": "\\\\curlyvee",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u229d",
+    "name": "\\\\circleddash",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u229b",
+    "name": "\\\\circledast",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22c5",
+    "name": "\\\\centerdot",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22ba",
+    "name": "\\\\intercal",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22d2",
+    "name": "\\\\doublecap",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22d3",
+    "name": "\\\\doublecup",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22a0",
+    "name": "\\\\boxtimes",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21e2",
+    "name": "\\\\dashrightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21e0",
+    "name": "\\\\dashleftarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21c7",
+    "name": "\\\\leftleftarrows",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21c6",
+    "name": "\\\\leftrightarrows",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21da",
+    "name": "\\\\Lleftarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u219e",
+    "name": "\\\\twoheadleftarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21a2",
+    "name": "\\\\leftarrowtail",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21ab",
+    "name": "\\\\looparrowleft",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21cb",
+    "name": "\\\\leftrightharpoons",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21b6",
+    "name": "\\\\curvearrowleft",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21ba",
+    "name": "\\\\circlearrowleft",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21b0",
+    "name": "\\\\Lsh",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21c8",
+    "name": "\\\\upuparrows",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21bf",
+    "name": "\\\\upharpoonleft",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21c3",
+    "name": "\\\\downharpoonleft",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u22b6",
+    "name": "\\\\origof",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u22b7",
+    "name": "\\\\imageof",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u22b8",
+    "name": "\\\\multimap",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21ad",
+    "name": "\\\\leftrightsquigarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21c9",
+    "name": "\\\\rightrightarrows",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21c4",
+    "name": "\\\\rightleftarrows",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21a0",
+    "name": "\\\\twoheadrightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21a3",
+    "name": "\\\\rightarrowtail",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21ac",
+    "name": "\\\\looparrowright",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21b7",
+    "name": "\\\\curvearrowright",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21bb",
+    "name": "\\\\circlearrowright",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21b1",
+    "name": "\\\\Rsh",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21ca",
+    "name": "\\\\downdownarrows",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21be",
+    "name": "\\\\upharpoonright",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21c2",
+    "name": "\\\\downharpoonright",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21dd",
+    "name": "\\\\rightsquigarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21dd",
+    "name": "\\\\leadsto",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21db",
+    "name": "\\\\Rrightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u21be",
+    "name": "\\\\restriction",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2018",
+    "name": "`",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "$",
+    "name": "\\\\$",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "$",
+    "name": "\\\\$",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "$",
+    "name": "\\\\textdollar",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "%",
+    "name": "\\\\%",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "%",
+    "name": "\\\\%",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "_",
+    "name": "\\\\_",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "_",
+    "name": "\\\\_",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "_",
+    "name": "\\\\textunderscore",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2220",
+    "name": "\\\\angle",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u221e",
+    "name": "\\\\infty",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2032",
+    "name": "\\\\prime",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u25b3",
+    "name": "\\\\triangle",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u0393",
+    "name": "\\\\Gamma",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u0394",
+    "name": "\\\\Delta",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u0398",
+    "name": "\\\\Theta",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u039b",
+    "name": "\\\\Lambda",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u039e",
+    "name": "\\\\Xi",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u03a0",
+    "name": "\\\\Pi",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u03a3",
+    "name": "\\\\Sigma",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u03a5",
+    "name": "\\\\Upsilon",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u03a6",
+    "name": "\\\\Phi",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u03a8",
+    "name": "\\\\Psi",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u03a9",
+    "name": "\\\\Omega",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "A",
+    "name": "\\u0391",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "B",
+    "name": "\\u0392",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "E",
+    "name": "\\u0395",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "Z",
+    "name": "\\u0396",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "H",
+    "name": "\\u0397",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "I",
+    "name": "\\u0399",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "K",
+    "name": "\\u039A",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "M",
+    "name": "\\u039C",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "N",
+    "name": "\\u039D",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "O",
+    "name": "\\u039F",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "P",
+    "name": "\\u03A1",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "T",
+    "name": "\\u03A4",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "X",
+    "name": "\\u03A7",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00ac",
+    "name": "\\\\neg",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00ac",
+    "name": "\\\\lnot",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u22a4",
+    "name": "\\\\top",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u22a5",
+    "name": "\\\\bot",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2205",
+    "name": "\\\\emptyset",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2205",
+    "name": "\\\\varnothing",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03b1",
+    "name": "\\\\alpha",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03b2",
+    "name": "\\\\beta",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03b3",
+    "name": "\\\\gamma",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03b4",
+    "name": "\\\\delta",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03f5",
+    "name": "\\\\epsilon",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03b6",
+    "name": "\\\\zeta",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03b7",
+    "name": "\\\\eta",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03b8",
+    "name": "\\\\theta",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03b9",
+    "name": "\\\\iota",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03ba",
+    "name": "\\\\kappa",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03bb",
+    "name": "\\\\lambda",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03bc",
+    "name": "\\\\mu",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03bd",
+    "name": "\\\\nu",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03be",
+    "name": "\\\\xi",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03bf",
+    "name": "\\\\omicron",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03c0",
+    "name": "\\\\pi",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03c1",
+    "name": "\\\\rho",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03c3",
+    "name": "\\\\sigma",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03c4",
+    "name": "\\\\tau",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03c5",
+    "name": "\\\\upsilon",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03d5",
+    "name": "\\\\phi",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03c7",
+    "name": "\\\\chi",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03c8",
+    "name": "\\\\psi",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03c9",
+    "name": "\\\\omega",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03b5",
+    "name": "\\\\varepsilon",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03d1",
+    "name": "\\\\vartheta",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03d6",
+    "name": "\\\\varpi",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03f1",
+    "name": "\\\\varrho",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03c2",
+    "name": "\\\\varsigma",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\u03c6",
+    "name": "\\\\varphi",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2217",
+    "name": "*",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "+",
+    "name": "+",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2212",
+    "name": "-",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u22c5",
+    "name": "\\\\cdot",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2218",
+    "name": "\\\\circ",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u00f7",
+    "name": "\\\\div",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u00b1",
+    "name": "\\\\pm",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u00d7",
+    "name": "\\\\times",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2229",
+    "name": "\\\\cap",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u222a",
+    "name": "\\\\cup",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2216",
+    "name": "\\\\setminus",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2227",
+    "name": "\\\\land",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2228",
+    "name": "\\\\lor",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2227",
+    "name": "\\\\wedge",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2228",
+    "name": "\\\\vee",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u221a",
+    "name": "\\\\surd",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "open",
+    "replace": "\\u27e8",
+    "name": "\\\\langle",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "open",
+    "replace": "\\u2223",
+    "name": "\\\\lvert",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "open",
+    "replace": "\\u2225",
+    "name": "\\\\lVert",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "close",
+    "replace": "?",
+    "name": "?",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "close",
+    "replace": "!",
+    "name": "!",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "close",
+    "replace": "\\u27e9",
+    "name": "\\\\rangle",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "close",
+    "replace": "\\u2223",
+    "name": "\\\\rvert",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "close",
+    "replace": "\\u2225",
+    "name": "\\\\rVert",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "=",
+    "name": "=",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": ":",
+    "name": ":",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2248",
+    "name": "\\\\approx",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2245",
+    "name": "\\\\cong",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2265",
+    "name": "\\\\ge",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2265",
+    "name": "\\\\geq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2190",
+    "name": "\\\\gets",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": ">",
+    "name": "\\\\gt",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2208",
+    "name": "\\\\in",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\ue020",
+    "name": "\\\\@not",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2282",
+    "name": "\\\\subset",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2283",
+    "name": "\\\\supset",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2286",
+    "name": "\\\\subseteq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2287",
+    "name": "\\\\supseteq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2288",
+    "name": "\\\\nsubseteq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2289",
+    "name": "\\\\nsupseteq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u22a8",
+    "name": "\\\\models",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2190",
+    "name": "\\\\leftarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2264",
+    "name": "\\\\le",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2264",
+    "name": "\\\\leq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "<",
+    "name": "\\\\lt",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2192",
+    "name": "\\\\rightarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2192",
+    "name": "\\\\to",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2271",
+    "name": "\\\\ngeq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "rel",
+    "replace": "\\u2270",
+    "name": "\\\\nleq",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "spacing",
+    "replace": "\\u00a0",
+    "name": "\\\\ ",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "spacing",
+    "replace": "\\u00a0",
+    "name": "\\\\space",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "spacing",
+    "replace": "\\u00a0",
+    "name": "\\\\nobreakspace",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "spacing",
+    "replace": "\\u00a0",
+    "name": "\\\\ ",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "spacing",
+    "replace": "\\u00a0",
+    "name": " ",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "spacing",
+    "replace": "\\u00a0",
+    "name": "\\\\space",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "spacing",
+    "replace": "\\u00a0",
+    "name": "\\\\nobreakspace",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "spacing",
+    "replace": null,
+    "name": "\\\\nobreak",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "spacing",
+    "replace": null,
+    "name": "\\\\allowbreak",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "punct",
+    "replace": ",",
+    "name": ",",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "punct",
+    "replace": ";",
+    "name": ";",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22bc",
+    "name": "\\\\barwedge",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22bb",
+    "name": "\\\\veebar",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2299",
+    "name": "\\\\odot",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2295",
+    "name": "\\\\oplus",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2297",
+    "name": "\\\\otimes",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2202",
+    "name": "\\\\partial",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2298",
+    "name": "\\\\oslash",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u229a",
+    "name": "\\\\circledcirc",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "bin",
+    "replace": "\\u22a1",
+    "name": "\\\\boxdot",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u25b3",
+    "name": "\\\\bigtriangleup",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u25bd",
+    "name": "\\\\bigtriangledown",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u2020",
+    "name": "\\\\dagger",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u22c4",
+    "name": "\\\\diamond",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u22c6",
+    "name": "\\\\star",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u25c3",
+    "name": "\\\\triangleleft",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "bin",
+    "replace": "\\u25b9",
+    "name": "\\\\triangleright",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "open",
+    "replace": "{",
+    "name": "\\\\{",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "{",
+    "name": "\\\\{",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "{",
+    "name": "\\\\textbraceleft",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "close",
+    "replace": "}",
+    "name": "\\\\}",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "}",
+    "name": "\\\\}",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "}",
+    "name": "\\\\textbraceright",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "open",
+    "replace": "{",
+    "name": "\\\\lbrace",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "close",
+    "replace": "}",
+    "name": "\\\\rbrace",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "open",
+    "replace": "[",
+    "name": "\\\\lbrack",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "[",
+    "name": "\\\\lbrack",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "close",
+    "replace": "]",
+    "name": "\\\\rbrack",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "]",
+    "name": "\\\\rbrack",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "open",
+    "replace": "(",
+    "name": "\\\\lparen",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "close",
+    "replace": ")",
+    "name": "\\\\rparen",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "<",
+    "name": "\\\\textless",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": ">",
+    "name": "\\\\textgreater",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "open",
+    "replace": "\\u230a",
+    "name": "\\\\lfloor",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "close",
+    "replace": "\\u230b",
+    "name": "\\\\rfloor",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "open",
+    "replace": "\\u2308",
+    "name": "\\\\lceil",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "close",
+    "replace": "\\u2309",
+    "name": "\\\\rceil",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\\\",
+    "name": "\\\\backslash",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2223",
+    "name": "|",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2223",
+    "name": "\\\\vert",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "|",
+    "name": "\\\\textbar",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2225",
+    "name": "\\\\|",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2225",
+    "name": "\\\\Vert",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2225",
+    "name": "\\\\textbardbl",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "~",
+    "name": "\\\\textasciitilde",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\\\",
+    "name": "\\\\textbackslash",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "^",
+    "name": "\\\\textasciicircum",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2191",
+    "name": "\\\\uparrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u21d1",
+    "name": "\\\\Uparrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2193",
+    "name": "\\\\downarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u21d3",
+    "name": "\\\\Downarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u2195",
+    "name": "\\\\updownarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "rel",
+    "replace": "\\u21d5",
+    "name": "\\\\Updownarrow",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u2210",
+    "name": "\\\\coprod",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u22c1",
+    "name": "\\\\bigvee",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u22c0",
+    "name": "\\\\bigwedge",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u2a04",
+    "name": "\\\\biguplus",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u22c2",
+    "name": "\\\\bigcap",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u22c3",
+    "name": "\\\\bigcup",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u222b",
+    "name": "\\\\int",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u222b",
+    "name": "\\\\intop",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u222c",
+    "name": "\\\\iint",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u222d",
+    "name": "\\\\iiint",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u220f",
+    "name": "\\\\prod",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u2211",
+    "name": "\\\\sum",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u2a02",
+    "name": "\\\\bigotimes",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u2a01",
+    "name": "\\\\bigoplus",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u2a00",
+    "name": "\\\\bigodot",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u222e",
+    "name": "\\\\oint",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u222f",
+    "name": "\\\\oiint",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u2230",
+    "name": "\\\\oiiint",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u2a06",
+    "name": "\\\\bigsqcup",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "op",
+    "replace": "\\u222b",
+    "name": "\\\\smallint",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "inner",
+    "replace": "\\u2026",
+    "name": "\\\\textellipsis",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "inner",
+    "replace": "\\u2026",
+    "name": "\\\\mathellipsis",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "inner",
+    "replace": "\\u2026",
+    "name": "\\\\ldots",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "inner",
+    "replace": "\\u2026",
+    "name": "\\\\ldots",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "inner",
+    "replace": "\\u22ef",
+    "name": "\\\\@cdots",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "inner",
+    "replace": "\\u22f1",
+    "name": "\\\\ddots",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u22ee",
+    "name": "\\\\varvdots",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u22ee",
+    "name": "\\\\varvdots",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02ca",
+    "name": "\\\\acute",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02cb",
+    "name": "\\\\grave",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u00a8",
+    "name": "\\\\ddot",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u007e",
+    "name": "\\\\tilde",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02c9",
+    "name": "\\\\bar",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02d8",
+    "name": "\\\\breve",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02c7",
+    "name": "\\\\check",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u005e",
+    "name": "\\\\hat",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u20d7",
+    "name": "\\\\vec",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02d9",
+    "name": "\\\\dot",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02da",
+    "name": "\\\\mathring",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\ue131",
+    "name": "\\\\@imath",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "\\ue237",
+    "name": "\\\\@jmath",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u0131",
+    "name": "\\u0131",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u0237",
+    "name": "\\u0237",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u0131",
+    "name": "\\\\i",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u0237",
+    "name": "\\\\j",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00df",
+    "name": "\\\\ss",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00e6",
+    "name": "\\\\ae",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u0153",
+    "name": "\\\\oe",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00f8",
+    "name": "\\\\o",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00c6",
+    "name": "\\\\AE",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u0152",
+    "name": "\\\\OE",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00d8",
+    "name": "\\\\O",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02ca",
+    "name": "\\\\'",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02cb",
+    "name": "\\\\`",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02c6",
+    "name": "\\\\^",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02dc",
+    "name": "\\\\~",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02c9",
+    "name": "\\\\=",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02d8",
+    "name": "\\\\u",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02d9",
+    "name": "\\\\.",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u00b8",
+    "name": "\\\\c",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02da",
+    "name": "\\\\r",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02c7",
+    "name": "\\\\v",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u02dd",
+    "name": "\\\\H",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "accent",
+    "replace": "\\u25ef",
+    "name": "\\\\textcircled",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2013",
+    "name": "--",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2013",
+    "name": "\\\\textendash",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2014",
+    "name": "---",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2014",
+    "name": "\\\\textemdash",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2018",
+    "name": "`",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2018",
+    "name": "\\\\textquoteleft",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2019",
+    "name": "'",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u2019",
+    "name": "\\\\textquoteright",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u201c",
+    "name": "``",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u201c",
+    "name": "\\\\textquotedblleft",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u201d",
+    "name": "''",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u201d",
+    "name": "\\\\textquotedblright",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00b0",
+    "name": "\\\\degree",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00b0",
+    "name": "\\\\degree",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00b0",
+    "name": "\\\\textdegree",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00a3",
+    "name": "\\\\pounds",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00a3",
+    "name": "\\\\mathsterling",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00a3",
+    "name": "\\\\pounds",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u00a3",
+    "name": "\\\\textsterling",
+    "acceptUnicodeChar": true
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2720",
+    "name": "\\\\maltese",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "ams",
+    "group": "textord",
+    "replace": "\\u2720",
+    "name": "\\\\maltese",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "C",
+    "name": "\\u2102",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "ams",
+    "group": "textord",
+    "replace": "C",
+    "name": "\\u2102",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "H",
+    "name": "\\u210D",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "ams",
+    "group": "textord",
+    "replace": "H",
+    "name": "\\u210D",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "N",
+    "name": "\\u2115",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "ams",
+    "group": "textord",
+    "replace": "N",
+    "name": "\\u2115",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "P",
+    "name": "\\u2119",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "ams",
+    "group": "textord",
+    "replace": "P",
+    "name": "\\u2119",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "Q",
+    "name": "\\u211A",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "ams",
+    "group": "textord",
+    "replace": "Q",
+    "name": "\\u211A",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "R",
+    "name": "\\u211D",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "ams",
+    "group": "textord",
+    "replace": "R",
+    "name": "\\u211D",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "ams",
+    "group": "textord",
+    "replace": "Z",
+    "name": "\\u2124",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "ams",
+    "group": "textord",
+    "replace": "Z",
+    "name": "\\u2124",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
+    "group": "mathord",
+    "replace": "h",
+    "name": "\\u210E",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "mathord",
+    "replace": "h",
+    "name": "\\u210E",
+    "acceptUnicodeChar": false
+  }
+]
