@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/katex"]
+members = ["crates/katex", "xtask"]
 default-members = ["crates/katex"]
 resolver = "3"
 
@@ -12,3 +12,8 @@ repository = "https://github.com/katex-rs/katex-rs"
 [profile.release]
 opt-level = "z"
 lto = "fat"
+
+[profile.profiling]
+inherits = "release"
+debug = true
+lto = false

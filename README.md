@@ -132,6 +132,12 @@ pushd ./tests/screenshotter && npm install && popd
 node tests/screenshotter/run.js
 ```
 
+### Performance profiling
+
+Use the `xtask` helper to capture flamegraphs for the native, wasm, and
+JavaScript harnesses. Detailed instructions and baseline measurements live in
+[`docs/FLAMEGRAPH.md`](docs/FLAMEGRAPH.md).
+
 ## Compatibility
 
 - **Rust**: 1.70+ (Testing and Linting needs nightly)

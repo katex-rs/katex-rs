@@ -18,9 +18,67 @@ const TESTS_TO_RUN = [
   'Units',
 ];
 
-function loadDataset() {
+function parseArgs(argv) {
+  const options = {
+    cases: [],
+    list: false,
+    help: false,
+  };
+
+  for (let index = 2; index < argv.length; index += 1) {
+    const arg = argv[index];
+    switch (arg) {
+      case '--case':
+      case '--cases': {
+        const value = argv[index + 1];
+        if (!value) {
+          throw new Error('Missing value for --case.');
+        }
+        options.cases.push(value);
+        index += 1;
+        break;
+      }
+      case '--list':
+        options.list = true;
+        break;
+      case '--help':
+      case '-h':
+        options.help = true;
+        break;
+      default:
+        throw new Error(`Unknown argument "${arg}". Use --help for usage.`);
+    }
+  }
+
+  return options;
+}
+
+function printHelp() {
+  console.log(`KaTeX wasm rendering benchmark\n\
+Usage: node wasm-perf.js [options]\n\
+\nOptions:\n\
+  --case <NAME>    Run a single test case (can be repeated).\n\
+  --list           Print the available case names and exit.\n\
+  -h, --help       Show this message.`);
+}
+
+function resolveCases(requested) {
+  if (requested.length === 0) {
+    return TESTS_TO_RUN;
+  }
+
+  return requested.map((name) => {
+    const match = TESTS_TO_RUN.find((candidate) => candidate.toLowerCase() === name.toLowerCase());
+    if (!match) {
+      throw new Error(`Unknown test case "${name}". Known cases: ${TESTS_TO_RUN.join(', ')}`);
+    }
+    return match;
+  });
+}
+
+function loadDataset(selected) {
   const raw = yaml.load(fs.readFileSync(DATA_FILE, 'utf8'));
-  return TESTS_TO_RUN.map((name) => {
+  return selected.map((name) => {
     const value = raw[name];
     if (!value) {
       throw new Error(`Missing test case "${name}" in ss_data.yaml`);
@@ -73,6 +131,16 @@ function runCase(renderToString, test) {
 }
 
 function main() {
+  const options = parseArgs(process.argv);
+  if (options.help) {
+    printHelp();
+    return;
+  }
+  if (options.list) {
+    console.log(TESTS_TO_RUN.join('\n'));
+    return;
+  }
+
   if (!fs.existsSync(WASM_PKG)) {
     console.error('Missing wasm bindings. Run `wasm-pack build --release --target nodejs --features wasm`.');
     process.exit(1);
@@ -83,7 +151,8 @@ function main() {
     throw new Error('Invalid wasm bindings: renderToString export not found.');
   }
 
-  const cases = loadDataset();
+  const selected = resolveCases(options.cases);
+  const cases = loadDataset(selected);
   runBenchmark(renderToString, cases);
 }
 

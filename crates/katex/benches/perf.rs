@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
@@ -84,7 +85,15 @@ struct PreparedCase {
 }
 
 fn load_cases() -> Result<Vec<PreparedCase>, Box<dyn Error>> {
-    let file = File::open("KaTeX/test/screenshotter/ss_data.yaml")?;
+    let data_path = dataset_path();
+    if !data_path.exists() {
+        return Err(Box::new(io_error(format!(
+            "missing dataset at {}. Run `git submodule update --init --recursive` to fetch the KaTeX fixtures.",
+            data_path.display()
+        ))));
+    }
+
+    let file = File::open(data_path)?;
     let reader = BufReader::new(file);
     let mut raw_cases: HashMap<String, RawTestCase> = serde_yaml::from_reader(reader)?;
 
@@ -121,6 +130,14 @@ fn build_settings(display_mode: bool, macros: &HashMap<String, String>) -> Setti
 
 fn io_error(message: String) -> std::io::Error {
     std::io::Error::other(message)
+}
+
+fn dataset_path() -> PathBuf {
+    let manifest_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+    manifest_dir
+        .join("../../KaTeX/test/screenshotter/ss_data.yaml")
+        .canonicalize()
+        .unwrap_or_else(|_| manifest_dir.join("../../KaTeX/test/screenshotter/ss_data.yaml"))
 }
 
 fn bench_rendering(c: &mut Criterion) {

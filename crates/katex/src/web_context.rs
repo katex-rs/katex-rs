@@ -16,7 +16,7 @@ impl WebContext {
     /// Creates a new [`WebContext`] wrapping the provided
     /// [`web_sys::Document`].
     #[must_use]
-    pub fn new(document: web_sys::Document) -> Self {
+    pub const fn new(document: web_sys::Document) -> Self {
         Self { document }
     }
 
