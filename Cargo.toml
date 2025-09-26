@@ -1,75 +1,13 @@
-[package]
-name = "katex-rs"
-version = "0.1.1"
+[workspace]
+members = ["crates/katex"]
+default-members = ["crates/katex"]
+resolver = "3"
+
+[workspace.package]
 edition = "2024"
-description = "A Rust implementation of KaTeX - Fast math typesetting for anywhere, more than just the web."
-repository = "https://github.com/KaTeX/KaTeX"
-license = "MIT"
-categories = ["mathematics", "wasm", "parsing"]
-keywords = ["latex", "math", "katex", "wasm", "parsing"]
-include = [
-    "/LICENSE",
-    "/README.md",
-    "/build.rs",
-    "/data/**",
-    "/src/**/*.rs",
-]
 
-[lib]
-name = "katex"
-crate-type = ["cdylib", "rlib"]
-
-[dependencies]
-# Core dependencies
-thiserror = "2.0.16"
-phf = { version = "0.13.1", features = ["macros"] }
-
-strum_macros = "0.27.2"
-strum = { version = "0.27.2", features = ["derive"] }
-bon = "3.7.2"
-rapidhash = "4.1.0"
-
-# WebAssembly support
-wasm-bindgen = { version = "0.2", optional = true }
-js-sys = { version = "0.3", optional = true }
-web-sys = { version = "0.3.77", features = ["Document", "DocumentFragment", "Node", "Element", "Window", "Text"], optional = true }
-console_error_panic_hook = { version = "0.1.7", optional = true }
-
-[features]
-default = ["backtrace"]
-backtrace = []
-wasm = ["dep:wasm-bindgen", "dep:js-sys", "dep:web-sys", "dep:console_error_panic_hook"]
-
-[[bench]]
-name = "perf"
-harness = false
-
-[target.'cfg(any(target_arch = "wasm32", target_arch = "wasm64"))'.dependencies]
-wasm-bindgen = { version = "0.2" }
-js-sys = { version = "0.3" }
-web-sys = { version = "0.3.77", features = ["Document", "DocumentFragment", "Node", "Element", "Window", "Text"] }
-console_error_panic_hook = { version = "0.1.7" }
-
-[build-dependencies]
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-unicode-normalization = "0.1"
-phf = { version = "0.13.1", features = ["macros"] }
-phf_codegen = "0.13.1"
-
-[dev-dependencies]
-btparse = "0.2.0"
-wasm-bindgen-test = "0.3.34"
-criterion = { version = "0.5", default-features = false }
-serde = { version = "1.0", features = ["derive"] }
-serde_yaml = { version = "0.9" }
-
-[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
-gag = "1.0.0"
-
-
-[lints.clippy]
-approx_constant = "allow"
+[workspace.metadata]
+repository = "https://github.com/katex-rs/katex-rs"
 
 [profile.release]
 opt-level = "z"

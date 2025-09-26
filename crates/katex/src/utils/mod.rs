@@ -87,8 +87,7 @@ pub fn escape(text: &str) -> String {
 /// Writes the escaped HTML representation of `text` into the provided writer.
 ///
 /// This helper avoids intermediate string allocations by emitting directly
-/// into any `fmt::Write` implementor. It mirrors [`escape`] but is optimized
-/// for streaming renderers where the output is already buffered elsewhere.
+/// into any `fmt::Write` implementor.
 #[inline]
 pub fn escape_into<W: fmt::Write>(writer: &mut W, text: &str) -> fmt::Result {
     let mut last = 0;

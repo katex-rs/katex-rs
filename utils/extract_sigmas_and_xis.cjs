@@ -89,10 +89,11 @@ const jsonData = {
 const jsonString = JSON.stringify(jsonData, null, 2);
 
 // Write to JSON file
-if (!fs.existsSync(path.join(__dirname, '../data'))) {
-    fs.mkdirSync(path.join(__dirname, '../data'));
+const outputDir = path.join(__dirname, '../crates', 'katex', 'data');
+if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
 }
-const jsonPath = path.join(__dirname, '../data', 'sigmas_and_xis.json');
+const jsonPath = path.join(outputDir, 'sigmas_and_xis.json');
 fs.writeFileSync(jsonPath, jsonString, 'utf8');
 
 console.log(`Successfully converted to JSON: ${jsonPath}`);

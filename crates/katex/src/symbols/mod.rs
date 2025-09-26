@@ -312,7 +312,6 @@ impl Symbols {
 ///
 /// # See Also
 ///
-/// - [`get_ligature_replacement`] for getting the replacement character
 /// - [`LIGATURES`] for the complete list of supported ligatures
 #[must_use]
 pub fn is_ligature(s: &str) -> bool {
@@ -411,7 +410,6 @@ const fn create_wide_char(high: u16, low: u16) -> char {
 /// # See Also
 ///
 /// - [`is_ligature`] for checking if a string is a ligature
-/// - [`get_ligature_replacement`] for safe lookup
 pub const LIGATURES: phf::Map<&str, &str> = phf_map!(
     "--" => "\u{2013}",
     "---" => "\u{2014}",

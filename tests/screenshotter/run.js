@@ -124,6 +124,7 @@ const logCase  = logger.child("case");
 
 // ---------- Paths ----------
 const ROOT = process.cwd();
+const CRATE_DIR = path.join(ROOT, "crates", "katex");
 const TESTS_DIR = path.join(ROOT, "tests", "screenshotter");
 const PAGE_PATH = "/tests/screenshotter/test.html";
 const BASELINE_DIR = path.join(ROOT, "KaTeX", "test", "screenshotter", "images");
@@ -154,9 +155,9 @@ function ensureWasmBuiltSync(force = false) {
   logBuild.info(`Building WASM artifacts into ${outDir} ...`);
   try {
     runCmd("wasm-pack", ["--version"], { stdio: "ignore" });
-    runCmd("wasm-pack", ["build", "--target", "web", "--no-opt", "--dev"]);
+    runCmd("wasm-pack", ["build", "--target", "web", "--no-opt", "--dev"], { cwd: CRATE_DIR });
     logBuild.success("wasm-pack build done");
-    fs.cpSync(path.join(process.cwd(),"pkg"), path.join(__dirname,"pkg"), { recursive: true, force: true });
+    fs.cpSync(path.join(CRATE_DIR, "pkg"), path.join(__dirname, "pkg"), { recursive: true, force: true });
     return;
   } catch (e) {
     logBuild.error(`wasm-pack unavailable or failed: ${e && e.message ? e.message : e}`);

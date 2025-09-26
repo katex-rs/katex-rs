@@ -62,7 +62,8 @@ function extractSymbols() {
         }
 
         // Output path
-        const outputPath = path.join(__dirname, '..', 'data', 'symbols.json');
+        const outputDir = path.join(__dirname, '../crates', 'katex', 'data');
+        const outputPath = path.join(outputDir, 'symbols.json');
 
         // Write to file
         fs.writeFileSync(outputPath, JSON.stringify(symbols, null, 2), 'utf8');

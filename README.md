@@ -19,6 +19,10 @@ This project is based on KaTeX's commit [9fb63136e680715ad83c119366f6f697105d2c5
 - [x] Compatible with `no-std` and `wasm` target
 - [ ] Fully consistent with KaTeX result
 
+## Workspace Layout
+
+This repository is organised as a Cargo workspace. The core crate lives in [`crates/katex`](crates/katex), while supporting assets such as the screenshot tests remain at the repository root.
+
 ## How to Use
 
 Add `katex-rs` to your `Cargo.toml`:
@@ -92,7 +96,7 @@ cargo install wasm-pack
 
 ### Const Data Extraction
 
-The `./data` directory contains the JSON files extracted with scripts from the original KaTeX repository. They are kept here to simplify crate compilation. You can regenerate them with the scripts in `./utils` if needed.
+The `crates/katex/data` directory contains the JSON files extracted with scripts from the original KaTeX repository. They are kept here to simplify crate compilation. You can regenerate them with the scripts in `./utils` if needed.
 
 ```bash
 node utils/extract_font_metric.cjs

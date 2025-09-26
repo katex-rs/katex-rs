@@ -901,8 +901,8 @@ pub fn make_ord(
 
         // Handle ligature decomposition for monospace fonts
         if font_name.starts_with("Typewriter") && is_ligature(text) {
-            let mut base_classes = classes.clone();
-            base_classes.extend(font_classes.clone());
+            let mut base_classes = classes;
+            base_classes.extend(font_classes);
 
             let mut parts = Vec::new();
             for ch in text.chars() {

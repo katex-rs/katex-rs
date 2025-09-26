@@ -19,11 +19,13 @@ const fontMetricsData = eval('(' + objectMatch[1] + ')');
 // Convert to JSON with proper formatting
 const jsonData = JSON.stringify(fontMetricsData, null, 2);
 
+const outputDir = path.join(__dirname, '../crates', 'katex', 'data');
+
 // Write to JSON file
-if (!fs.existsSync(path.join(__dirname, '../data'))) {
-    fs.mkdirSync(path.join(__dirname, '../data'));
+if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
 }
-const jsonPath = path.join(__dirname, '../data', 'font_metrics_data.json');
+const jsonPath = path.join(outputDir, 'font_metrics_data.json');
 fs.writeFileSync(jsonPath, jsonData, 'utf8');
 
 console.log(`Successfully converted to JSON: ${jsonPath}`);

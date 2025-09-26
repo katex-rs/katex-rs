@@ -5,7 +5,7 @@ const path = require('node:path');
 const { performance } = require('node:perf_hooks');
 const yaml = require('js-yaml');
 
-const DATA_FILE = path.resolve(__dirname, '../../KaTeX/test/screenshotter/ss_data.yaml');
+const DATA_FILE = path.resolve(__dirname, '../../../../KaTeX/test/screenshotter/ss_data.yaml');
 const WASM_PKG = path.resolve(__dirname, '../../pkg/katex.js');
 
 const TESTS_TO_RUN = [
