@@ -6,7 +6,7 @@
 use alloc::borrow::Cow;
 
 use crate::ClassList;
-use crate::build_common::{make_span, make_symbol, try_combine_chars};
+use crate::build_common::{make_span, make_symbol, push_combine_chars};
 use crate::context::KatexContext;
 use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::HtmlDomNode;
@@ -68,10 +68,8 @@ fn html_builder(
                 Some(&new_options),
                 ClassList::Const(&["mord", "texttt"]),
             )?;
-            body.push(symbol.into());
+            push_combine_chars(&mut body, symbol.into());
         }
-
-        try_combine_chars(&mut body);
 
         let mut classes = vec![Cow::Borrowed("mord"), Cow::Borrowed("text")];
         classes.extend(new_options.sizing_classes(options));

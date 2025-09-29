@@ -372,7 +372,7 @@ fn leftright_html_builder(
         let mut right_options = options;
         let maybe_option;
         if let Some(color) = &group.right_color {
-            maybe_option = options.with_color(color.clone());
+            maybe_option = options.with_color(color);
             right_options = &maybe_option;
         }
         left_right_delim(

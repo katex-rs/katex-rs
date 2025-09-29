@@ -16,7 +16,6 @@ use crate::{
     types::{ArgType, BreakToken, ErrorLocationProvider, Mode, ParseErrorKind, Spec, Token},
     unicode::{UNICODE_SYMBOLS, get_accent_mapping, supported_codepoint},
 };
-use phf::phf_set;
 
 pub mod parse_node;
 use crate::spacing_data::MeasurementOwned;
@@ -84,14 +83,6 @@ pub struct Parser<'a> {
     /// Shared context containing functions and symbols
     pub ctx: &'a KatexContext,
 }
-
-const END_OF_EXPRESSION: phf::Set<&'static str> = phf_set! {
-    "}",
-    "\\endgroup",
-    "\\end",
-    "\\right",
-    "&",
-};
 
 #[inline]
 fn wrap_ordgroup(mut nodes: Vec<ParseNode>, mode: Mode) -> ParseNode {
@@ -540,18 +531,36 @@ impl<'a> Parser<'a> {
                 self.consume_spaces()?;
             }
 
-            let should_break = {
-                let token_text = self.fetch()?.text.clone();
-                let lex_text = token_text.as_str();
+            let (should_break, infix_candidate) = {
+                let token = self.fetch()?;
+                let lex_text = token.text.as_str();
+                let end_of_expression =
+                    matches!(lex_text, "}" | "\\endgroup" | "\\end" | "\\right" | "&");
+                let explicit_break = match break_on_token_text {
+                    Some(BreakToken::RightBrace) => lex_text == "}",
+                    Some(BreakToken::EndGroup) => lex_text == "\\endgroup",
+                    Some(BreakToken::End) => lex_text == "\\end",
+                    Some(BreakToken::RightBracket) => lex_text == "]",
+                    Some(BreakToken::RightParen) => lex_text == "\\)",
+                    Some(BreakToken::DoubleBackslash) => lex_text == "\\\\",
+                    Some(BreakToken::Dollar) => lex_text == "$",
+                    Some(BreakToken::Eof) => lex_text == "EOF",
+                    None => false,
+                };
+                let should_stop = end_of_expression || explicit_break;
+                let candidate = (!should_stop && break_on_infix).then(|| token.text.clone());
+                (should_stop, candidate)
+            };
 
-                END_OF_EXPRESSION.contains(lex_text)
-                    || break_on_token_text.is_some_and(|break_tok| lex_text == break_tok.as_ref())
-                    || (break_on_infix
-                        && self
-                            .ctx
-                            .functions
-                            .get(lex_text)
-                            .is_some_and(|func| func.infix))
+            let should_break = if should_break {
+                true
+            } else if let Some(token_text) = infix_candidate {
+                self.ctx
+                    .functions
+                    .get(token_text.as_str())
+                    .is_some_and(|func| func.infix)
+            } else {
+                false
             };
 
             if should_break {
@@ -673,22 +682,22 @@ impl<'a> Parser<'a> {
         // In text mode, raw ^/_ should error (like KaTeX); we implement minimal check.
         loop {
             self.consume_spaces()?; // math mode ignores spaces, but safe in both
-            let lex = { self.fetch()?.clone() };
-            match lex.text.as_str() {
-                "\\limits" | "\\nolimits" => {
+            let token = self.fetch()?;
+            match token.text.as_str() {
+                text if matches!(text, "\\limits" | "\\nolimits") => {
                     // Handle \limits and \nolimits
-                    let limits = lex.text == "\\limits";
+                    let limits = text == "\\limits";
                     if let Some(ParseNode::Op(base)) = &mut base_opt {
                         *base.limits_mut() = limits;
                         *base.always_handle_sup_sub_mut() = Some(true);
                     } else if let Some(ParseNode::OperatorName(base)) = &mut base_opt {
                         if base.always_handle_sup_sub {
-                            base.limits = lex.text == "\\limits";
+                            base.limits = limits;
                         }
                     } else {
                         return Err(ParseError::with_token(
                             ParseErrorKind::LimitsMustFollowBase,
-                            &lex,
+                            token,
                         ));
                     }
                     self.consume();
@@ -697,7 +706,7 @@ impl<'a> Parser<'a> {
                     if superscript.is_some() {
                         return Err(ParseError::with_token(
                             ParseErrorKind::DoubleSuperscript,
-                            &lex,
+                            token,
                         ));
                     }
                     superscript = Some(self.handle_sup_subscript("superscript")?);
@@ -706,7 +715,7 @@ impl<'a> Parser<'a> {
                     if subscript.is_some() {
                         return Err(ParseError::with_token(
                             ParseErrorKind::DoubleSubscript,
-                            &lex,
+                            token,
                         ));
                     }
                     subscript = Some(self.handle_sup_subscript("subscript")?);
@@ -715,7 +724,7 @@ impl<'a> Parser<'a> {
                     if superscript.is_some() {
                         return Err(ParseError::with_token(
                             ParseErrorKind::DoubleSuperscript,
-                            &lex,
+                            token,
                         ));
                     }
                     let mut n = 1;
@@ -751,12 +760,7 @@ impl<'a> Parser<'a> {
                         let mut subsup_tokens = vec![Token::new(mapped, None)];
                         self.consume();
                         loop {
-                            let token_text = {
-                                let token = self.fetch()?;
-                                token.text.as_str()
-                            };
-
-                            let Some(c) = token_text.chars().next() else {
+                            let Some(c) = self.fetch()?.text.as_str().chars().next() else {
                                 break;
                             };
 
@@ -1247,13 +1251,13 @@ impl<'a> Parser<'a> {
 
             self.gullet.begin_group();
             let expression = self.parse_expression(false, Some(&break_token))?;
-            let last_token = self.fetch()?.clone();
+            let last_loc = self.fetch()?.loc().cloned();
             self.expect(break_token.as_ref(), true)?;
             self.gullet.end_group()?;
 
             Ok(Some(ParseNode::OrdGroup(parse_node::ParseNodeOrdGroup {
                 mode: self.mode,
-                loc: first_token.loc().range_ref(last_token.loc()),
+                loc: first_token.loc().range_ref(last_loc.as_ref()),
                 body: expression,
                 // A group formed by \begingroup...\endgroup is a semi-simple group
                 // which doesn't affect spacing in math mode, i.e., is transparent.
@@ -1644,24 +1648,23 @@ impl<'a> Parser<'a> {
         let mut args = Vec::with_capacity(func_data.num_args());
         let mut opt_args = Vec::with_capacity(num_optional);
 
+        let arg_context = format!("argument to '{func}'");
+        let is_sqrt = func_data.node_type() == Some(&NodeType::Sqrt);
+
         for i in 0..total_args {
             let arg_type = func_data.arg_types().and_then(|v| v.get(i));
             let is_optional = i < num_optional;
 
             let arg_type = if (func_data.primitive() && arg_type.is_none()) ||
                 // \sqrt expands into primitive if optional argument doesn't exist
-                (func_data.node_type() == Some(&NodeType::Sqrt) && i == 1 && opt_args.first().is_none_or(|opt: &Option<ParseNode>| opt.is_none()))
+                (is_sqrt && i == 1 && opt_args.first().is_none_or(|opt: &Option<ParseNode>| opt.is_none()))
             {
                 Some(ArgType::Primitive)
             } else {
                 arg_type.copied()
             };
 
-            let arg = self.parse_group_of_type(
-                &format!("argument to '{func}'"),
-                arg_type.as_ref(),
-                is_optional,
-            )?;
+            let arg = self.parse_group_of_type(&arg_context, arg_type.as_ref(), is_optional)?;
 
             if is_optional {
                 opt_args.push(arg);

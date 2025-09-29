@@ -3,7 +3,7 @@
 //! This module provides functions for building HTML DOM nodes from parse trees,
 //! migrated from the JavaScript buildHTML.js file.
 
-use crate::build_common::{make_span, try_combine_chars};
+use crate::build_common::{make_span, push_combine_chars};
 use crate::dom_tree::{DomSpan, HtmlDomNode};
 use crate::options::Options;
 use crate::parser::parse_node::AnyParseNode;
@@ -707,21 +707,23 @@ pub fn build_expression(
     surrounding: (Option<DomType>, Option<DomType>),
 ) -> Result<Vec<HtmlDomNode>, ParseError> {
     // Parse expressions into groups
-    let mut groups: Vec<HtmlDomNode> = Vec::new();
+    // Reserve space for the initial pass so we avoid repeated growth while
+    // walking the expression. This mirrors the parser optimizations and keeps
+    // the hot HTML building path lightweight.
+    let mut groups: Vec<HtmlDomNode> = Vec::with_capacity(expression.len());
 
     for node in expression {
         let output = build_group(ctx, node, options, None)?;
         // Handle DocumentFragment flattening - match JS behavior
         if let HtmlDomNode::Fragment(fragment) = output {
-            // Flatten DocumentFragment children into groups
-            groups.extend(fragment.children);
+            // Flatten DocumentFragment children into groups while merging adjacent symbols
+            for child in fragment.children {
+                push_combine_chars(&mut groups, child);
+            }
         } else {
-            groups.push(output);
+            push_combine_chars(&mut groups, output);
         }
     }
-
-    // Combine consecutive domTree.symbolNodes into a single symbolNode.
-    try_combine_chars(&mut groups);
 
     // If `expression` is a partial group, let the parent handle spacings
     // to avoid processing groups multiple times.

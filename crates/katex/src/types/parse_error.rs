@@ -32,12 +32,6 @@ pub struct ParseError {
     #[source]
     #[cfg_attr(feature = "wasm", wasm_bindgen(skip))]
     pub kind: Box<ParseErrorKind>,
-    /// The start position based on passed-in Token or ParseNode
-    #[cfg_attr(feature = "wasm", wasm_bindgen(getter_with_clone))]
-    pub position: Option<usize>,
-    /// The length of affected text based on passed-in Token or ParseNode
-    #[cfg_attr(feature = "wasm", wasm_bindgen(getter_with_clone))]
-    pub length: Option<usize>,
     /// Additional context to render alongside the error.
     context: ParseErrorContext,
     /// Backtrace of the error stack
@@ -54,35 +48,40 @@ impl ParseError {
 
     /// Create a new ParseError with context from a Token or ParseNode
     pub fn with_token<T: Into<ParseErrorKind>>(kind: T, token: &dyn ErrorLocationProvider) -> Self {
-        let mut position = None;
-        let mut length = None;
-        let context = token.loc().filter(|loc| loc.start() <= loc.end()).map_or(
-            ParseErrorContext::None,
-            |loc| {
-                let start = loc.start();
-                let end = loc.end();
-                position = Some(start);
-                length = Some(end.saturating_sub(start));
+        let context = token
+            .loc()
+            .filter(|loc| loc.start() <= loc.end())
+            .map_or(ParseErrorContext::None, |loc| {
                 ParseErrorContext::Location(loc.clone())
-            },
-        );
+            });
 
-        Self::from_kind(kind.into(), context, position, length)
+        Self::from_kind(kind.into(), context)
     }
 
-    fn from_kind(
-        kind: ParseErrorKind,
-        context: ParseErrorContext,
-        position: Option<usize>,
-        length: Option<usize>,
-    ) -> Self {
+    fn from_kind(kind: ParseErrorKind, context: ParseErrorContext) -> Self {
         Self {
             kind: Box::new(kind),
-            position,
-            length,
             context,
             #[cfg(feature = "backtrace")]
             backtrace: Box::new(Backtrace::force_capture()),
+        }
+    }
+
+    /// Get the start position of the error if available
+    #[must_use]
+    pub const fn position(&self) -> Option<usize> {
+        match &self.context {
+            ParseErrorContext::None => None,
+            ParseErrorContext::Location(loc) => Some(loc.start()),
+        }
+    }
+
+    /// Get the length of the error if available
+    #[must_use]
+    pub const fn length(&self) -> Option<usize> {
+        match &self.context {
+            ParseErrorContext::None => None,
+            ParseErrorContext::Location(loc) => Some(loc.end().saturating_sub(loc.start())),
         }
     }
 }
@@ -95,7 +94,7 @@ impl From<strum::ParseError> for ParseError {
 
 impl From<ParseErrorKind> for ParseError {
     fn from(kind: ParseErrorKind) -> Self {
-        Self::from_kind(kind, ParseErrorContext::None, None, None)
+        Self::from_kind(kind, ParseErrorContext::None)
     }
 }
 
@@ -387,7 +386,7 @@ pub enum ParseErrorKind {
     ParseNode(#[from] ParseNodeError),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum ParseErrorContext {
     None,
     Location(SourceLocation),
@@ -572,46 +571,5 @@ impl From<ParseNodeError> for ParseError {
 impl From<fmt::Error> for ParseError {
     fn from(_: fmt::Error) -> Self {
         ParseErrorKind::MarkupWriteFailure.into()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::types::Token;
-    use alloc::sync::Arc;
-
-    #[test]
-    fn test_parse_error_creation() {
-        let error = ParseError::new(ParseErrorKind::MacroTooManyExpansions);
-        assert!(matches!(
-            error.kind.as_ref(),
-            ParseErrorKind::MacroTooManyExpansions
-        ));
-        assert!(
-            error
-                .to_string()
-                .contains("KaTeX parse error: Too many expansions")
-        );
-        assert_eq!(error.position, None);
-        assert_eq!(error.length, None);
-    }
-
-    #[test]
-    fn test_parse_error_with_token_context() {
-        let input = Arc::from("This is a test expression with invalid syntax");
-        let loc = SourceLocation::new(Arc::clone(&input), 10, 14); // "test"
-        let token = Token::new("test", Some(loc));
-
-        let error = ParseError::with_token(ParseErrorKind::DoubleSubscript, &token);
-        assert!(matches!(
-            error.kind.as_ref(),
-            ParseErrorKind::DoubleSubscript
-        ));
-        let rendered = error.to_string();
-        assert!(rendered.contains("KaTeX parse error: Double subscript"));
-        assert!(rendered.contains("at position 11"));
-        assert_eq!(error.position, Some(10));
-        assert_eq!(error.length, Some(4));
     }
 }

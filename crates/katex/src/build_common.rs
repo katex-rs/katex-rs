@@ -21,7 +21,6 @@ use crate::units::make_em;
 use crate::wide_character::get_wide_character_font;
 use alloc::borrow::Cow;
 use bon::bon;
-use core::mem;
 use phf::phf_map;
 
 /// Font mapping for TeX font commands to font names and variants
@@ -711,60 +710,32 @@ fn can_combine_symbols(prev: &SymbolNode, next: &SymbolNode) -> bool {
         return false;
     }
 
-    let mut a_iter = prev.classes.into_iter();
-    let mut b_iter = next.classes.into_iter();
-
-    loop {
-        match (a_iter.next(), b_iter.next()) {
-            (None, None) => break,
-            (Some(a_cls), Some(b_cls)) if a_cls == b_cls => {}
-            _ => return false,
-        }
+    if prev.classes != next.classes {
+        return false;
     }
 
     prev.style == next.style
 }
 
-/// Try to combine adjacent character nodes in the given list
-pub fn try_combine_chars(chars: &mut Vec<HtmlDomNode>) {
-    let n = chars.len();
-    if n < 2 {
-        return;
-    }
-
-    let mut write = 1;
-
-    for read in 1..n {
-        let mut merged = false;
-
-        {
-            let (left, right) = chars.split_at_mut(read);
-            let prev = &mut left[write - 1];
-            let next = &mut right[0];
-
-            if let (HtmlDomNode::Symbol(prev_sym), HtmlDomNode::Symbol(next_sym)) = (prev, next)
-                && can_combine_symbols(prev_sym, next_sym)
+/// Push a node into the vector, merging it into the previous symbol when
+/// possible.
+#[inline]
+pub fn push_combine_chars(chars: &mut Vec<HtmlDomNode>, node: HtmlDomNode) {
+    match node {
+        HtmlDomNode::Symbol(next_sym) => {
+            if let Some(HtmlDomNode::Symbol(prev_sym)) = chars.last_mut()
+                && can_combine_symbols(prev_sym, &next_sym)
             {
-                let tail = mem::take(&mut next_sym.text);
-                prev_sym.text.push_str(&tail);
-
                 prev_sym.height = prev_sym.height.max(next_sym.height);
                 prev_sym.depth = prev_sym.depth.max(next_sym.depth);
                 prev_sym.italic = next_sym.italic;
-
-                merged = true;
+                prev_sym.text.push_str(&next_sym.text);
+            } else {
+                chars.push(HtmlDomNode::Symbol(next_sym));
             }
         }
-
-        if !merged {
-            if write != read {
-                chars.swap(write, read);
-            }
-            write += 1;
-        }
+        other => chars.push(other),
     }
-
-    chars.truncate(write);
 }
 
 impl KatexContext {

@@ -66,6 +66,7 @@ impl Style {
 
     /// Return true if this style is tightly spaced
     /// (scriptstyle/scriptscriptstyle)
+    #[inline]
     #[must_use]
     pub const fn is_tight(&self) -> bool {
         self.size >= 2

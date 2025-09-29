@@ -117,7 +117,7 @@ fn html_builder(
     };
 
     // Build the expression with the specified color
-    let colored_options = options.with_color(color_node.color.clone());
+    let colored_options = options.with_color(&color_node.color);
     let elements = build_html::build_expression(
         ctx,
         &color_node.body,
@@ -148,7 +148,7 @@ fn mathml_builder(
     let inner = build_mathml::build_expression(
         ctx,
         &color_node.body,
-        &options.with_color(color_node.color.clone()),
+        &options.with_color(&color_node.color),
         None,
     )?;
 

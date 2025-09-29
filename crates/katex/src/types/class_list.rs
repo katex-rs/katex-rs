@@ -1,6 +1,7 @@
 //! Abstraction for managing CSS class lists across DOM nodes.
 
 use alloc::borrow::Cow;
+use core::ptr;
 use core::slice;
 
 /// Iterator over class names stored in a [`ClassList`].
@@ -16,7 +17,7 @@ pub enum ClassListIter<'a> {
 }
 
 /// Represents a collection of CSS classes applied to a DOM node.
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Default)]
 pub enum ClassList {
     /// Owned storage for the list of classes.
     Owned(Vec<Cow<'static, str>>),
@@ -27,6 +28,20 @@ pub enum ClassList {
     /// Explicit empty list of classes.
     #[default]
     Empty,
+}
+
+impl PartialEq for ClassList {
+    fn eq(&self, other: &Self) -> bool {
+        ptr::eq(self, other)
+            || match (self, other) {
+                (Self::Empty, Self::Empty) => true,
+                (Self::Static(a), Self::Static(b)) => ptr::eq(*a, *b) || a == b,
+                (Self::Const(a), Self::Const(b)) if ptr::eq(*a, *b) => true,
+                _ => {
+                    self.len() == other.len() && self.iter().zip(other.iter()).all(|(x, y)| x == y)
+                }
+            }
+    }
 }
 
 const CLASS_PREALLOCATE: usize = 4;

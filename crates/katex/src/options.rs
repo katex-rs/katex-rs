@@ -272,9 +272,9 @@ impl Options {
 
     /// Create a new options object with the given color.
     #[must_use]
-    pub fn with_color(&self, color: String) -> Self {
+    pub fn with_color(&self, color: &str) -> Self {
         let mut new_options = self.clone();
-        new_options.color = Some(color);
+        new_options.color = Some(color.to_owned());
         new_options
     }
 
@@ -308,7 +308,7 @@ impl Options {
     pub fn with_text_font_weight(&self, font_weight: FontWeight) -> Self {
         let mut new_options = self.clone();
         new_options.font_weight = font_weight;
-        new_options.font = String::new();
+        new_options.font.clear();
         new_options
     }
 
@@ -317,7 +317,7 @@ impl Options {
     pub fn with_text_font_shape(&self, font_shape: FontShape) -> Self {
         let mut new_options = self.clone();
         new_options.font_shape = font_shape;
-        new_options.font = String::new();
+        new_options.font.clear();
         new_options
     }
 
@@ -353,11 +353,11 @@ impl Options {
 
     /// Gets the CSS color of the current options object
     #[must_use]
-    pub fn get_color(&self) -> Option<String> {
+    pub fn get_color(&self) -> Option<&str> {
         if self.phantom {
-            Some("transparent".to_owned())
+            Some("transparent")
         } else {
-            self.color.clone()
+            self.color.as_deref()
         }
     }
 
