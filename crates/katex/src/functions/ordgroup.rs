@@ -64,7 +64,7 @@ fn html_builder(
             build_html::GroupType::True,
             (None, None),
         )?;
-        let span = make_span(vec!["mord".to_owned()], body, Some(options), None);
+        let span = make_span("mord", body, Some(options), None);
         Ok(span.into())
     }
 }

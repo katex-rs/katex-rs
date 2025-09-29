@@ -6,6 +6,7 @@
 use core::cell::RefCell;
 use core::fmt;
 
+use crate::ClassList;
 use crate::ParseError;
 use crate::types::{CssStyle, ParseErrorKind};
 #[cfg(feature = "wasm")]
@@ -52,7 +53,7 @@ pub struct DocumentFragment<ChildType: VirtualNode> {
     ///
     /// # See Also
     /// - [`DocumentFragment::has_class`]: Method to check for specific classes
-    pub classes: Vec<String>,
+    pub classes: ClassList,
 
     /// The height of this document fragment in em units, representing the
     /// vertical extent above the baseline in mathematical rendering. Used
@@ -109,7 +110,7 @@ impl<ChildType: VirtualNode> DocumentFragment<ChildType> {
     pub fn new(children: Vec<ChildType>) -> Self {
         Self {
             children,
-            classes: Vec::new(),
+            classes: ClassList::Empty,
             height: 0.0,
             depth: 0.0,
             max_font_size: 0.0,
@@ -120,7 +121,7 @@ impl<ChildType: VirtualNode> DocumentFragment<ChildType> {
     /// Check if the fragment has a specific class
     #[must_use]
     pub fn has_class(&self, class_name: &str) -> bool {
-        self.classes.iter().any(|cls| cls == class_name)
+        self.classes.contains(class_name)
     }
 }
 

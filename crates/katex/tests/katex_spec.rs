@@ -1,6 +1,7 @@
 mod setup;
 use katex::{
     CharacterMetrics, KatexContext, Settings, TrustSetting,
+    build_html::DomType,
     dom_tree::HtmlDomNode,
     macros::{MacroDefinition, MacroExpansion},
     parser::parse_node::{AlignSpec, ParseNode},
@@ -98,7 +99,7 @@ fn a_rel_parser() {
             match node {
                 ParseNode::Atom(atom) => assert_eq!(atom.family, Atom::Rel),
                 ParseNode::Mclass(mclass) => {
-                    assert_eq!(mclass.mclass, "mrel");
+                    assert_eq!(mclass.mclass, DomType::Mrel);
                 }
                 _ => panic!("Expected Atom or Mclass, got {:?}", node),
             }
@@ -1010,11 +1011,11 @@ fn a_delimiter_sizing_parser() {
     it("should produce the correct direction delimiter", || {
         let left_parsed = get_parsed_strict(normal_delim)?;
         assert_let!(ParseNode::Delimsizing(left_node) = &left_parsed[0]);
-        assert_eq!(left_node.mclass, "mopen");
+        assert_eq!(left_node.mclass, DomType::Mopen);
 
         let right_parsed = get_parsed_strict(big_delim)?;
         assert_let!(ParseNode::Delimsizing(right_node) = &right_parsed[0]);
-        assert_eq!(right_node.mclass, "mclose");
+        assert_eq!(right_node.mclass, DomType::Mclose);
 
         Ok(())
     });

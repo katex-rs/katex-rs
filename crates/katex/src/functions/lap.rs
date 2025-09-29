@@ -11,7 +11,7 @@ use crate::options::Options;
 use crate::parser::parse_node::{LapAlignment, NodeType, ParseNode, ParseNodeLap};
 use crate::types::{ArgType, CssProperty, ParseError, ParseErrorKind};
 use crate::units::make_em;
-use crate::{KatexContext, build_html, build_mathml};
+use crate::{ClassList, KatexContext, build_html, build_mathml};
 
 /// Registers lap functions in the KaTeX context
 pub fn define_lap(ctx: &mut KatexContext) {
@@ -73,29 +73,24 @@ fn html_builder(
     let inner = if lap_node.alignment == LapAlignment::Center {
         // For clap, wrap the body in an intermediate span so CSS centering works
         let base = make_span(vec![], vec![body], Some(options), None);
-        make_span(
-            vec!["inner".to_owned()],
-            vec![base.into()],
-            Some(options),
-            None,
-        )
+        make_span("inner", vec![base.into()], Some(options), None)
     } else {
-        make_span(vec!["inner".to_owned()], vec![body], Some(options), None)
+        make_span("inner", vec![body], Some(options), None)
     };
 
     // Create fix span
-    let fix = make_span(vec!["fix".to_owned()], vec![], None, None);
+    let fix = make_span("fix", vec![], None, None);
 
     // Create main lap span
     let mut lap_span = make_span(
-        vec![lap_node.alignment.as_ref().to_owned()],
+        lap_node.alignment.as_str(),
         vec![inner.into(), fix.into()],
         Some(options),
         None,
     );
 
     // Set height for strut
-    let mut strut = make_span(vec!["strut".to_owned()], vec![], None, None);
+    let mut strut = make_span("strut", vec![], None, None);
     let strut_height = lap_span.height + lap_span.depth;
     strut
         .style
@@ -110,14 +105,9 @@ fn html_builder(
     lap_span.children.insert(0, strut.into());
 
     // Wrap in thinbox and vbox
-    let thinbox = make_span(
-        vec!["thinbox".to_owned()],
-        vec![lap_span.into()],
-        Some(options),
-        None,
-    );
+    let thinbox = make_span("thinbox", vec![lap_span.into()], Some(options), None);
     let result = make_span(
-        vec!["mord".to_owned(), "vbox".to_owned()],
+        ClassList::Const(&["mord", "vbox"]),
         vec![thinbox.into()],
         Some(options),
         None,

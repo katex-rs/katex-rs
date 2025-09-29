@@ -15,9 +15,11 @@ use crate::mathml_tree::{self, MathDomNode, MathNode, MathNodeType, TextNode};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeOp};
 use crate::style::DISPLAY;
+use crate::types::ClassList;
 use crate::types::{CssProperty, Mode, ParseError, ParseErrorKind};
 use crate::units::make_em;
 use crate::{build_html, build_mathml};
+use alloc::borrow::Cow;
 
 /// HTML builder for op nodes
 pub fn html_builder(
@@ -107,11 +109,11 @@ pub fn html_builder(
                 _ => (name_str, None),
             };
 
-            let mut base_classes = vec!["mop".to_owned(), "op-symbol".to_owned()];
+            let mut base_classes = ClassList::Const(&["mop", "op-symbol"]);
             if large {
-                base_classes.push("large-op".to_owned());
+                base_classes.push("large-op");
             } else {
-                base_classes.push("small-op".to_owned());
+                base_classes.push("small-op");
             }
 
             let symbol_base = make_symbol(
@@ -120,7 +122,7 @@ pub fn html_builder(
                 font_name,
                 Mode::Math,
                 Some(options),
-                Some(base_classes),
+                base_classes,
             )?;
 
             if let Some(stash) = stash {
@@ -153,7 +155,7 @@ pub fn html_builder(
                     },
                     options,
                 )?;
-                base.classes.insert(0, "mop".to_owned());
+                base.classes.insert(0, "mop");
                 base.italic = Some(italic);
                 base.into()
             } else {
@@ -163,9 +165,9 @@ pub fn html_builder(
             // Text operator
             let mut output = Vec::new();
             for ch in name.chars().skip(1) {
-                output.push(mathsym(ctx, &ch.to_string(), mode, options, None)?.into());
+                output.push(mathsym(ctx, &ch.to_string(), mode, options, ClassList::Empty)?.into());
             }
-            make_span(vec!["mop".to_owned()], output, Some(options), None).into()
+            make_span("mop", output, Some(options), None).into()
         }
     } else {
         // Compose the list
@@ -178,12 +180,15 @@ pub fn html_builder(
         )?;
         if inner.len() == 1 && matches!(inner[0], HtmlDomNode::Symbol(_)) {
             let mut symbol = inner[0].clone();
-            if let HtmlDomNode::Symbol(ref mut sym) = symbol {
-                "mop".clone_into(&mut sym.classes[0]); // replace old mclass
+            if let HtmlDomNode::Symbol(ref mut sym) = symbol
+                && let Some(class) = sym.classes.get_mut(0)
+            {
+                // replace old mclass
+                *class = Cow::Borrowed("mop");
             }
             symbol
         } else {
-            make_span(vec!["mop".to_owned()], inner, Some(options), None).into()
+            make_span("mop", inner, Some(options), None).into()
         }
     };
 

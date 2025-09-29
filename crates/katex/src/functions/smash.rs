@@ -7,7 +7,6 @@
 
 use crate::namespace::KeyMap;
 
-use crate::KatexContext;
 use crate::build_common::{VListElem, VListParam, make_span, make_v_list};
 use crate::build_html;
 use crate::build_mathml;
@@ -17,6 +16,7 @@ use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNode, ParseNodeSmash};
 use crate::types::{ParseError, ParseErrorKind};
+use crate::{ClassList, KatexContext};
 
 /// Registers the `\smash` function in the KaTeX context.
 ///
@@ -122,7 +122,7 @@ fn html_builder(
         Some(&options.having_cramped_style()),
     )?;
 
-    let mut node = make_span(vec![], vec![body], None, None);
+    let mut node = make_span(ClassList::Empty, vec![body], None, None);
 
     if !smash_node.smash_height && !smash_node.smash_depth {
         return Ok(node.into());
@@ -158,13 +158,7 @@ fn html_builder(
     )?;
 
     // Return as mord (ordinary symbol) for spacing
-    Ok(make_span(
-        vec!["mord".to_owned()],
-        vec![smashed_node.into()],
-        Some(options),
-        None,
-    )
-    .into())
+    Ok(make_span("mord", vec![smashed_node.into()], Some(options), None).into())
 }
 
 /// MathML builder for smash nodes

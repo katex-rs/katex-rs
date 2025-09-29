@@ -11,6 +11,7 @@ use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{AnyParseNode, NodeType};
 use crate::symbols::Atom;
+use crate::types::ClassList;
 use crate::types::ParseErrorKind;
 
 /// Registers atom functions in the KaTeX context
@@ -41,9 +42,9 @@ fn atom_html_builder(
 
     // Create class name: "m" + family (e.g., "mbin", "mrel", etc.)
     let class_name = format!("m{}", family.as_ref());
-    let classes = vec![class_name];
+    let classes = ClassList::Owned(vec![class_name.into()]);
 
-    Ok(mathsym(ctx, text, mode, options, Some(classes))?.into())
+    Ok(mathsym(ctx, text, mode, options, classes)?.into())
 }
 
 /// MathML builder for atom nodes

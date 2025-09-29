@@ -3,6 +3,7 @@
 //! This module handles accent symbols in mathematical expressions,
 //! migrated from KaTeX's accent.js.
 
+use alloc::borrow::Cow;
 use alloc::vec;
 
 use crate::build_common::{
@@ -15,6 +16,7 @@ use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeAccent, ParseNodeTextOrd};
 use crate::stretchy::{math_ml_node, svg_span};
+use crate::types::ClassList;
 use crate::types::{
     ArgType, CssProperty, CssStyle, ErrorLocationProvider, Mode, ParseError, ParseErrorKind,
 };
@@ -253,7 +255,7 @@ pub fn html_builder(
             VListElem::builder().elem(body).build().into(),
             VListElem::builder()
                 .elem(accent_body)
-                .wrapper_classes(vec!["svg-align".to_owned()])
+                .wrapper_classes(ClassList::Static("svg-align"))
                 .maybe_wrapper_style(wrapper_style)
                 .build()
                 .into(),
@@ -293,14 +295,14 @@ pub fn html_builder(
             (accent.into(), width)
         };
 
-        let mut accent_body = make_span(vec!["accent-body".to_owned()], vec![accent], None, None);
+        let mut accent_body = make_span("accent-body", vec![accent], None, None);
 
         // "Full" accents expand the width of the resulting symbol to be
         // at least the width of the accent, and overlap directly onto the
         // character without any vertical offset.
         let accent_full = group.label == "\\textcircled";
         if accent_full {
-            accent_body.classes.push("accent-full".to_owned());
+            accent_body.classes.push("accent-full");
             clearance = body.height();
         }
 
@@ -335,7 +337,7 @@ pub fn html_builder(
     };
 
     let accent_wrap: HtmlDomNode = make_span(
-        vec!["mord".to_owned(), "accent".to_owned()],
+        ClassList::Const(&["mord", "accent"]),
         vec![accent_body.into()],
         Some(options),
         None,
@@ -357,8 +359,10 @@ pub fn html_builder(
             span.height = span.height.max(accent_wrap_height);
 
             // Accents should always be ords, even when their innards are not.
-            if !span.classes.is_empty() {
-                "mord".clone_into(&mut span.classes[0]);
+            if !span.classes.is_empty()
+                && let Some(class) = span.classes.get_mut(0)
+            {
+                *class = Cow::Borrowed("mord");
             }
         }
         Ok(supsub_group)

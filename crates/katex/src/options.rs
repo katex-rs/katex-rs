@@ -4,18 +4,20 @@
 //! current parsing context including style, size, color, and font. Options
 //! objects are immutable and provide methods for creating new Options with
 //! different properties when recursing through the parsing process.
+
 use crate::style::TEXT;
 use crate::{
     font_metrics::{FONT_METRICS, FontMetrics},
     style::Style,
 };
+use alloc::borrow::Cow;
 use bon::bon;
 use core::cmp;
 use core::ptr;
-use strum::Display;
+use strum::EnumString;
 
 /// Font weight options
-#[derive(Debug, Clone, PartialEq, Eq, Display)]
+#[derive(Debug, Clone, PartialEq, Eq, EnumString)]
 #[strum(serialize_all = "lowercase")]
 pub enum FontWeight {
     /// Bold font weight
@@ -25,6 +27,18 @@ pub enum FontWeight {
     /// Means no change
     #[strum(serialize = "")]
     Empty, // ""
+}
+
+impl FontWeight {
+    /// Convert FontWeight to string representation
+    #[must_use]
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            Self::TextBf => "textbf",
+            Self::TextMd => "textmd",
+            Self::Empty => "",
+        }
+    }
 }
 
 /// Font shape options
@@ -310,14 +324,14 @@ impl Options {
     /// Return the CSS sizing classes required to switch from enclosing options
     /// `old_options` to `self`. Returns an array of classes.
     #[must_use]
-    pub fn sizing_classes(&self, old_options: &Self) -> Vec<String> {
+    pub fn sizing_classes(&self, old_options: &Self) -> Vec<Cow<'static, str>> {
         if old_options.size == self.size {
             vec![]
         } else {
             vec![
-                "sizing".to_owned(),
-                format!("reset-size{}", old_options.size),
-                format!("size{}", self.size),
+                Cow::Borrowed("sizing"),
+                Cow::Owned(format!("reset-size{}", old_options.size)),
+                Cow::Owned(format!("size{}", self.size)),
             ]
         }
     }
@@ -325,14 +339,14 @@ impl Options {
     /// Return the CSS sizing classes required to switch to the base size. Like
     /// `self.having_size(BASESIZE).sizing_classes(self)`.
     #[must_use]
-    pub fn base_sizing_classes(&self) -> Vec<String> {
+    pub fn base_sizing_classes(&self) -> Vec<Cow<'static, str>> {
         if self.size == Self::BASESIZE {
             vec![]
         } else {
             vec![
-                "sizing".to_owned(),
-                format!("reset-size{}", self.size),
-                format!("size{}", Self::BASESIZE),
+                Cow::Borrowed("sizing"),
+                Cow::Owned(format!("reset-size{}", self.size)),
+                Cow::Owned(format!("size{}", Self::BASESIZE)),
             ]
         }
     }

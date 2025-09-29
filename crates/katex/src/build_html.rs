@@ -8,12 +8,14 @@ use crate::dom_tree::{DomSpan, HtmlDomNode};
 use crate::options::Options;
 use crate::parser::parse_node::AnyParseNode;
 use crate::spacing_data::{SPACINGS, TIGHT_SPACINGS};
+use crate::types::ClassList;
 use crate::types::{CssProperty, ParseError, ParseErrorKind};
 use crate::units::make_em;
 use crate::{KatexContext, build_common};
+use alloc::borrow::Cow;
 use core::str::FromStr as _;
 use phf::phf_set;
-use strum::{AsRefStr, EnumString, IntoDiscriminant as _};
+use strum::{EnumString, IntoDiscriminant as _};
 
 // Binary atoms (first class `mbin`) change into ordinary atoms (`mord`)
 // depending on their surroundings. See TeXbook pg. 442-446, Rules 5 and 6,
@@ -23,7 +25,7 @@ const BIN_LEFT_CANCELLER: phf::Set<&str> =
 const BIN_RIGHT_CANCELLER: phf::Set<&str> = phf_set!("rightmost", "mrel", "mclose", "mpunct");
 
 /// DOM enum for atom classes
-#[derive(Debug, Clone, Copy, PartialEq, Eq, AsRefStr, EnumString)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumString)]
 #[strum(serialize_all = "lowercase")]
 pub enum DomType {
     /// Ordinary atom (mord) - default class for most symbols
@@ -138,11 +140,12 @@ pub enum Side {
 /// - Creates an empty span that takes up space but has no visible content
 /// - Used for maintaining layout consistency in cases like unmatched delimiters
 #[must_use]
-pub fn make_null_delimiter(options: &Options, classes: Vec<String>) -> DomSpan {
-    let mut combined_classes = classes;
-    combined_classes.reserve(1 + options.base_sizing_classes().len());
-    combined_classes.push(String::from("nulldelimiter"));
-    combined_classes.extend(options.base_sizing_classes());
+pub fn make_null_delimiter<T: Into<ClassList>>(options: &Options, classes: T) -> DomSpan {
+    let mut combined_classes: ClassList = classes.into();
+    let base_classes = options.base_sizing_classes();
+    combined_classes.reserve(1 + base_classes.len());
+    combined_classes.push("nulldelimiter");
+    combined_classes.extend(base_classes);
     make_span(combined_classes, vec![], None, None)
 }
 
@@ -152,9 +155,7 @@ fn check_partial_group(node: &HtmlDomNode) -> Option<&Vec<HtmlDomNode>> {
     match node {
         HtmlDomNode::Fragment(fragment) => Some(&fragment.children),
         HtmlDomNode::Anchor(anchor) => Some(&anchor.children),
-        HtmlDomNode::DomSpan(span) if span.classes.contains(&"enclosing".to_owned()) => {
-            Some(&span.children)
-        }
+        HtmlDomNode::DomSpan(span) if span.classes.contains("enclosing") => Some(&span.children),
         _ => None,
     }
 }
@@ -164,7 +165,7 @@ fn check_partial_group_mut(node: &mut HtmlDomNode) -> Option<&mut Vec<HtmlDomNod
     match node {
         HtmlDomNode::Fragment(fragment) => Some(&mut fragment.children),
         HtmlDomNode::Anchor(anchor) => Some(&mut anchor.children),
-        HtmlDomNode::DomSpan(span) if span.classes.contains(&"enclosing".to_owned()) => {
+        HtmlDomNode::DomSpan(span) if span.classes.contains("enclosing") => {
             Some(&mut span.children)
         }
         _ => None,
@@ -643,7 +644,7 @@ fn traverse_non_space_nodes(
                 .is_some_and(|node_ref| node_ref.has_class("newline"));
             if is_newline {
                 prev.set_owned_dummy(
-                    build_common::make_span(vec!["leftmost".to_owned()], vec![], None, None).into(),
+                    build_common::make_span("leftmost", vec![], None, None).into(),
                 );
             }
         }
@@ -745,12 +746,10 @@ pub fn build_expression(
     // If `expression` has no atoms on the left or right, class "leftmost"
     // or "rightmost", respectively, is used to indicate it.
     let mut dummy_prev = make_span(
-        vec![
-            surrounding
-                .0
-                .as_ref()
-                .map_or_else(|| "leftmost".to_owned(), |s| s.as_str().to_owned()),
-        ],
+        surrounding
+            .0
+            .as_ref()
+            .map_or_else(|| "leftmost", |s| s.as_str()),
         vec![],
         Some(options),
         None,
@@ -758,12 +757,10 @@ pub fn build_expression(
     .into();
     let mut dummy_next = Some(
         make_span(
-            vec![
-                surrounding
-                    .1
-                    .as_ref()
-                    .map_or_else(|| "rightmost".to_owned(), |s| s.as_str().to_owned()),
-            ],
+            surrounding
+                .1
+                .as_ref()
+                .map_or_else(|| "rightmost", |s| s.as_str()),
             vec![],
             Some(options),
             None,
@@ -790,16 +787,16 @@ pub fn build_expression(
             if prev_type == "mbin" && BIN_RIGHT_CANCELLER.contains(type_str) {
                 // Change prev.classes[0] to "mord"
                 if let Some(classes) = prev.classes_mut()
-                    && !classes.is_empty()
+                    && let Some(class) = classes.get_mut(0)
                 {
-                    "mord".clone_into(&mut classes[0]);
+                    *class = Cow::Borrowed("mord");
                 }
             } else if type_str == "mbin" && BIN_LEFT_CANCELLER.contains(prev_type) {
                 // Change node.classes[0] to "mord"
                 if let Some(classes) = node.classes_mut()
-                    && !classes.is_empty()
+                    && let Some(class) = classes.get_mut(0)
                 {
-                    "mord".clone_into(&mut classes[0]);
+                    *class = Cow::Borrowed("mord");
                 }
             }
             Ok(None)
@@ -926,12 +923,12 @@ pub fn build_group(
 /// .base
 fn build_html_unbreakable(children: Vec<HtmlDomNode>, options: &Options) -> HtmlDomNode {
     // Compute height and depth of this chunk.
-    let mut body = make_span(vec!["base".to_owned()], children, Some(options), None);
+    let mut body = make_span("base", children, Some(options), None);
 
     // Add strut, which ensures that the top of the HTML element falls at
     // the height of the expression, and the bottom of the HTML element
     // falls at the depth of the expression.
-    let mut strut = make_span(vec!["strut".to_owned()], vec![], Some(options), None);
+    let mut strut = make_span("strut", vec![], Some(options), None);
 
     strut
         .style
@@ -1077,7 +1074,7 @@ pub fn build_html(
         let tag_html = build_expression(ctx, tag_ref, options, GroupType::True, (None, None))?;
         let mut unbreakable = build_html_unbreakable(tag_html, options);
         if let HtmlDomNode::DomSpan(span) = &mut unbreakable {
-            span.classes = vec!["tag".to_owned()];
+            span.classes = ClassList::Static("tag");
         }
         children.push(unbreakable);
         Some(children.len() - 1)
@@ -1088,7 +1085,7 @@ pub fn build_html(
         None
     };
 
-    let mut span = make_span(vec!["katex-html".to_owned()], children, Some(options), None);
+    let mut span = make_span("katex-html", children, Some(options), None);
     span.attributes
         .insert("aria-hidden".to_owned(), "true".to_owned());
 

@@ -11,6 +11,7 @@ use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType, TextNode};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode};
 use crate::types::{Mode, ParseError, ParseErrorKind};
+use alloc::borrow::Cow;
 use phf::phf_map;
 
 /// CSS-based spacing functions mapped to their CSS class names
@@ -47,28 +48,39 @@ fn html_builder(
                         name: spacing_node.text.clone(),
                     }))
                 },
-                |class_name| {
+                |&class_name| {
                     // CSS-based spacing
-                    let classes = vec!["mspace".to_owned(), (*class_name).to_owned()];
+                    let classes = vec![Cow::Borrowed("mspace"), Cow::Owned(class_name.to_owned())];
                     Ok(make_span(classes, vec![], Some(options), None).into())
                 },
             )
         },
         |class_name_opt| {
-            let class_name = class_name_opt.unwrap_or("").to_owned();
-            let mspace_classes = vec!["mspace".to_owned(), class_name.clone()];
+            let class_name = class_name_opt;
+            let mut mspace_classes = vec![Cow::Borrowed("mspace")];
+            if let Some(cn) = &class_name {
+                mspace_classes.push(Cow::Owned((*cn).to_owned()));
+            }
 
             if spacing_node.mode == Mode::Text {
                 let mut ord = make_ord(ctx, &ParseNode::Spacing(spacing_node.clone()), options)?;
                 if let Some(classes) = ord.classes_mut() {
-                    classes.push(class_name);
+                    if let Some(cn) = class_name {
+                        classes.push(Cow::Owned((*cn).to_owned()));
+                    }
                 } else {
                     return Err(ParseError::new(ParseErrorKind::GeneratedOrdMissingClasses));
                 }
                 Ok(ord)
             } else {
                 // In math mode, create a span with the symbol
-                let symbol = mathsym(ctx, &spacing_node.text, Mode::Math, options, None)?;
+                let symbol = mathsym(
+                    ctx,
+                    &spacing_node.text,
+                    Mode::Math,
+                    options,
+                    crate::ClassList::Empty,
+                )?;
                 Ok(make_span(mspace_classes, vec![symbol.into()], Some(options), None).into())
             }
         },

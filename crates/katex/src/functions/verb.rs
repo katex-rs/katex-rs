@@ -3,6 +3,9 @@
 //! This module implements the LaTeX `\verb` command, which creates verbatim
 //! text that preserves exact formatting and spacing.
 
+use alloc::borrow::Cow;
+
+use crate::ClassList;
 use crate::build_common::{make_span, make_symbol, try_combine_chars};
 use crate::context::KatexContext;
 use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
@@ -63,14 +66,14 @@ fn html_builder(
                 "Typewriter-Regular",
                 verb_node.mode,
                 Some(&new_options),
-                Some(vec!["mord".to_owned(), "texttt".to_owned()]),
+                ClassList::Const(&["mord", "texttt"]),
             )?;
             body.push(symbol.into());
         }
 
         try_combine_chars(&mut body);
 
-        let mut classes = vec!["mord".to_owned(), "text".to_owned()];
+        let mut classes = vec![Cow::Borrowed("mord"), Cow::Borrowed("text")];
         classes.extend(new_options.sizing_classes(options));
 
         let span_struct = make_span(classes, body, Some(&new_options), None);

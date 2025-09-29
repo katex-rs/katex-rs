@@ -34,7 +34,7 @@ fn html_builder(
         build_html::GroupType::True,
         (None, None),
     )?;
-    let mut span = make_span(vec![pmb_node.mclass.clone()], elements, Some(options), None);
+    let mut span = make_span(pmb_node.mclass.as_str(), elements, Some(options), None);
 
     // Apply text-shadow to simulate bold
     span.style

@@ -12,7 +12,7 @@ use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType, TextNode};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeUnderline};
 use crate::types::{ParseError, ParseErrorKind};
-use crate::{KatexContext, build_html, build_mathml};
+use crate::{ClassList, KatexContext, build_html, build_mathml};
 
 /// Registers underline function in the KaTeX context
 pub fn define_underline(ctx: &mut KatexContext) {
@@ -77,7 +77,7 @@ fn html_builder(
     )?;
 
     Ok(make_span(
-        vec!["mord".to_owned(), "underline".to_owned()],
+        ClassList::Const(&["mord", "underline"]),
         vec![vlist.into()],
         Some(options),
         None,

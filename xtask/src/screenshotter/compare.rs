@@ -201,17 +201,7 @@ fn compare_screenshot(
         });
     }
 
-    let similarity =
-        rgba_hybrid_compare(actual_image, baseline_image).map_err(|err| match err {
-            HybridCompareError::DimensionsDiffer => {
-                anyhow!(
-                    "image dimensions diverged during hybrid comparison despite preflight checks"
-                )
-            }
-            HybridCompareError::CalculationFailed(msg) => {
-                anyhow!("hybrid comparison failed: {msg}")
-            }
-        })?;
+    let similarity = web_element_ssim(actual_image, baseline_image);
 
     let total_pixels = (aw as u64) * (ah as u64);
     let estimated_diff = estimate_diff_pixels(similarity.score, total_pixels);

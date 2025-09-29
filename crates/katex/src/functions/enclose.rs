@@ -12,6 +12,7 @@ use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNode, ParseNodeEncl
 use crate::spacing_data::Measurement;
 use crate::stretchy::enclose_span;
 use crate::svg_geometry::phase_path;
+use crate::types::ClassList;
 use crate::types::{ArgType, CssProperty, Mode, ParseError, ParseErrorKind};
 use crate::units::make_em as units_make_em;
 use crate::{KatexContext, build_common};
@@ -211,12 +212,7 @@ fn html_builder(
     let is_single_char = enclose_node.body.is_character_box()?;
 
     if label == "sout" {
-        let mut img = make_span(
-            vec!["stretchy".to_owned(), "sout".to_owned()],
-            vec![],
-            None,
-            None,
-        );
+        let mut img = make_span(ClassList::Const(&["stretchy", "sout"]), vec![], None, None);
         img.height = options.font_metrics().default_rule_thickness / scale;
         img_shift = -0.5 * options.font_metrics().x_height;
 
@@ -236,7 +232,7 @@ fn html_builder(
 
         if label == "cancel" && !is_single_char {
             return Ok(make_span(
-                vec!["mord".to_owned(), "cancel-lap".to_owned()],
+                ClassList::Const(&["mord", "cancel-lap"]),
                 vec![vlist.into()],
                 Some(options),
                 None,
@@ -245,7 +241,7 @@ fn html_builder(
         }
 
         return Ok(make_span(
-            vec!["mord".to_owned()],
+            ClassList::Static("mord"),
             vec![vlist.into()],
             Some(options),
             None,
@@ -305,8 +301,7 @@ fn html_builder(
             ),
         ]);
 
-        let mut img =
-            build_common::make_svg_span(vec!["hide-tail".to_owned()], vec![svg_node], options);
+        let mut img = build_common::make_svg_span("hide-tail", vec![svg_node], options);
         img.style
             .insert(CssProperty::Height, units_make_em(angle_height));
         img_shift = inner.depth() + line_weight + clearance;
@@ -319,14 +314,14 @@ fn html_builder(
                     VListElemAndShift::builder()
                         .elem(img.into())
                         .shift(img_shift)
-                        .wrapper_classes(vec!["svg-align".to_owned()])
+                        .wrapper_classes(ClassList::Static("svg-align"))
                         .build(),
                 ],
             },
             options,
         )?;
 
-        return Ok(make_span(vec!["mord".to_owned()], vec![vlist.into()], None, None).into());
+        return Ok(make_span("mord", vec![vlist.into()], None, None).into());
     }
 
     // Handle other enclosures (cancel, box, angl)
@@ -338,12 +333,12 @@ fn html_builder(
     if let Some(classes) = inner.classes_mut() {
         if label.contains("cancel") {
             if !is_single_char {
-                classes.push("cancel-pad".to_owned());
+                classes.push("cancel-pad");
             }
         } else if label == "angl" {
-            classes.push("anglpad".to_owned());
+            classes.push("anglpad");
         } else {
-            classes.push("boxpad".to_owned());
+            classes.push("boxpad");
         }
     }
 
@@ -423,8 +418,8 @@ fn html_builder(
             options,
         )?
     } else {
-        let wrapper_classes =
-            (label.contains("cancel") || label == "phase").then(|| vec!["svg-align".to_owned()]);
+        let wrapper_classes = (label.contains("cancel") || label == "phase")
+            .then_some(ClassList::Static("svg-align"));
 
         make_v_list(
             VListParam::IndividualShift {
@@ -451,7 +446,7 @@ fn html_builder(
 
     if label.contains("cancel") && !is_single_char {
         Ok(make_span(
-            vec!["mord".to_owned(), "cancel-lap".to_owned()],
+            ClassList::Const(&["mord", "cancel-lap"]),
             vec![vlist.into()],
             Some(options),
             None,
@@ -459,7 +454,7 @@ fn html_builder(
         .into())
     } else {
         Ok(make_span(
-            vec!["mord".to_owned()],
+            ClassList::Static("mord"),
             vec![vlist.into()],
             Some(options),
             None,

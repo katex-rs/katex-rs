@@ -13,6 +13,7 @@ use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeAccentUnder};
 use crate::stretchy::{math_ml_node, svg_span};
 use crate::tree::MathDomNode;
+use crate::types::ClassList;
 use crate::types::{ParseError, ParseErrorKind};
 
 /// Under-accent commands
@@ -71,7 +72,7 @@ fn html_builder(
                 children: vec![
                     VListElem::builder()
                         .elem(accent_body)
-                        .wrapper_classes(vec!["svg-align".to_owned()])
+                        .wrapper_classes(ClassList::Static("svg-align"))
                         .build()
                         .into(),
                     VListChild::Kern(VListKern { size: kern }),
@@ -82,7 +83,7 @@ fn html_builder(
         )?;
 
         Ok(make_span(
-            vec!["mord".to_owned(), "accentunder".to_owned()],
+            ClassList::Const(&["mord", "accentunder"]),
             vec![vlist.into()],
             Some(options),
             None,

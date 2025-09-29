@@ -4,6 +4,7 @@
 //! definitions for parse nodes, which form the core of KaTeX's Abstract Syntax
 //! Tree (AST).
 
+use crate::build_html::DomType;
 use crate::spacing_data::MeasurementOwned;
 use crate::style::Style;
 use crate::symbols::Atom;
@@ -1408,7 +1409,7 @@ pub struct ParseNodeDelimsizing {
     /// The size level (1-4, where 4 is largest)
     pub size: u8, // 1 | 2 | 3 | 4
     /// The math class ("mopen", "mclose", "mrel", "mord")
-    pub mclass: String, // "mopen" | "mclose" | "mrel" | "mord"
+    pub mclass: DomType, // "mopen" | "mclose" | "mrel" | "mord"
     /// The delimiter symbol
     pub delim: String,
 }
@@ -1927,17 +1928,26 @@ pub struct ParseNodeLap {
 }
 
 /// Alignment options for overlapping content.
-#[derive(Debug, Clone, PartialEq, Eq, AsRefStr)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LapAlignment {
     /// Align left
-    #[strum(serialize = "llap")]
     Left,
     /// Align center
-    #[strum(serialize = "clap")]
     Center,
     /// Align right
-    #[strum(serialize = "rlap")]
     Right,
+}
+
+impl LapAlignment {
+    /// Get as static string reference.
+    #[must_use]
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            Self::Left => "llap",
+            Self::Center => "clap",
+            Self::Right => "rlap",
+        }
+    }
 }
 
 /// Represents left-right delimiter pairs in mathematical expressions.
@@ -2112,7 +2122,7 @@ pub struct ParseNodeMclass {
     /// Optional source location for error reporting
     pub loc: Option<SourceLocation>,
     /// The math class ("mord", "mbin", "mrel", etc.)
-    pub mclass: String,
+    pub mclass: DomType,
     /// The mathematical expressions
     pub body: Vec<AnyParseNode>,
     /// Whether this represents a single character box
@@ -2312,7 +2322,7 @@ pub struct ParseNodePmb {
     /// Optional source location for error reporting
     pub loc: Option<SourceLocation>,
     /// The math class of the content
-    pub mclass: String,
+    pub mclass: DomType,
     /// The content to be made bold
     pub body: Vec<AnyParseNode>,
 }

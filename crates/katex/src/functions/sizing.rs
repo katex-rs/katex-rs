@@ -53,14 +53,17 @@ pub fn sizing_group(
         let Some(classes) = item.classes_mut() else {
             continue;
         };
-        let pos = classes.iter().position(|c| c == "sizing");
+        let pos = classes.into_iter().position(|c| c == "sizing");
 
         if let Some(pos) = pos {
-            if classes.get(pos + 1) == Some(&format!("reset-size{}", options.size)) {
+            let expected = format!("reset-size{}", options.size);
+            if classes.get(pos + 1) == Some(expected.as_str()) {
                 // This is a nested size change: e.g., item is the "b" in
                 // `\Huge a \small b`. Override the old size (the `reset-` class)
                 // but not the new size.
-                classes[pos + 1] = format!("reset-size{}", base_options.size);
+                if let Some(class) = classes.get_mut(pos + 1) {
+                    *class = format!("reset-size{}", base_options.size).into();
+                }
             }
         } else {
             let sizing_classes = options.sizing_classes(base_options);

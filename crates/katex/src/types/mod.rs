@@ -1,6 +1,8 @@
 //! Core type definitions for KaTeX Rust implementation
 
+mod class_list;
 mod source_location;
+
 use core::fmt;
 use core::option;
 
@@ -23,6 +25,7 @@ use strum::FromRepr;
 
 mod tokens;
 pub use crate::symbols::Mode;
+pub use class_list::ClassList;
 pub use tokens::{Token, TokenText};
 
 mod settings;

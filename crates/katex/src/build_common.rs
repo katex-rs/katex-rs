@@ -4,8 +4,6 @@
 //! KaTeX's math rendering process. It includes utilities for creating symbols
 //! and other DOM elements with proper styling and metrics.
 
-use core::mem;
-
 use crate::ParseError;
 use crate::context::KatexContext;
 use crate::dom_tree::{Anchor, DomSpan, HtmlDomFragment, HtmlDomNode, Span, SvgNode, SymbolNode};
@@ -17,10 +15,13 @@ use crate::parser::parse_node::AnyParseNode;
 use crate::spacing_data::Measurement;
 use crate::symbols::{Font, Mode, is_ligature};
 use crate::tree::DocumentFragment;
+use crate::types::ClassList;
 use crate::types::{CssProperty, CssStyle, ParseErrorKind};
 use crate::units::make_em;
 use crate::wide_character::get_wide_character_font;
+use alloc::borrow::Cow;
 use bon::bon;
+use core::mem;
 use phf::phf_map;
 
 /// Font mapping for TeX font commands to font names and variants
@@ -109,7 +110,7 @@ pub struct VListElem {
     /// Optional right margin
     pub margin_right: Option<String>,
     /// Optional wrapper classes
-    pub wrapper_classes: Option<Vec<String>>,
+    pub wrapper_classes: Option<ClassList>,
     /// Optional wrapper style
     pub wrapper_style: Option<CssStyle>,
 }
@@ -154,7 +155,7 @@ pub struct VListElemAndShift {
     /// Optional right margin
     pub margin_right: Option<String>,
     /// Optional wrapper classes
-    pub wrapper_classes: Option<Vec<String>>,
+    pub wrapper_classes: Option<ClassList>,
     /// Optional wrapper style
     pub wrapper_style: Option<CssStyle>,
 }
@@ -173,7 +174,7 @@ impl VListElemAndShift {
         /// Optional right margin
         margin_right: Option<String>,
         /// Optional wrapper classes
-        wrapper_classes: Option<Vec<String>>,
+        wrapper_classes: Option<ClassList>,
         /// Optional wrapper style
         wrapper_style: Option<CssStyle>,
     ) -> Self {
@@ -244,12 +245,13 @@ fn size_element_from_children_dom(node: &mut DomSpan) {
 
 /// Create a span with given classes and options
 #[must_use]
-pub fn make_span(
-    classes: Vec<String>,
+pub fn make_span<T: Into<ClassList>>(
+    classes: T,
     children: Vec<HtmlDomNode>,
     options: Option<&Options>,
     style: Option<CssStyle>,
 ) -> DomSpan {
+    let classes = classes.into();
     // `Span::builder` offers a flexible construction API but it also ends up
     // allocating intermediate buffers on every invocation. The vast majority of
     // `make_span` calls populate just a handful of fields, so we build the span
@@ -282,7 +284,7 @@ pub fn make_v_list(params: VListParam, _options: &Options) -> Result<DomSpan, Pa
         }
     }
     pstrut_size += 2.0; // Add buffer for safety
-    let mut pstrut = make_span(vec!["pstrut".to_owned()], vec![], None, None);
+    let mut pstrut = make_span("pstrut", vec![], None, None);
     pstrut
         .style
         .insert(CssProperty::Height, make_em(pstrut_size));
@@ -341,26 +343,21 @@ pub fn make_v_list(params: VListParam, _options: &Options) -> Result<DomSpan, Pa
     }
 
     // Create the main vlist cell with vertical-align: bottom
-    let mut vlist = make_span(vec!["vlist".to_owned()], real_children, None, None);
+    let mut vlist = make_span("vlist", real_children, None, None);
     vlist.style.insert(CssProperty::Height, make_em(max_pos));
 
     // Handle depth with multiple rows when needed
     let rows: Vec<HtmlDomNode> = if min_pos < 0.0 {
         // Create depth row with proper height
-        let empty_span = make_span(vec![], vec![], None, None);
-        let mut depth_strut = make_span(
-            vec!["vlist".to_owned()],
-            vec![empty_span.into()],
-            None,
-            None,
-        );
+        let empty_span = make_span(ClassList::Empty, vec![], None, None);
+        let mut depth_strut = make_span("vlist", vec![empty_span.into()], None, None);
         depth_strut
             .style
             .insert(CssProperty::Height, make_em(-min_pos));
 
         // Create top row with zero-width space for Safari compatibility
         let top_strut = make_span(
-            vec!["vlist-s".to_owned()],
+            "vlist-s",
             vec![HtmlDomNode::Symbol(
                 SymbolNode::builder().text("\u{200b}").build(),
             )],
@@ -369,31 +366,19 @@ pub fn make_v_list(params: VListParam, _options: &Options) -> Result<DomSpan, Pa
         );
 
         vec![
-            make_span(
-                vec!["vlist-r".to_owned()],
-                vec![vlist.into(), top_strut.into()],
-                None,
-                None,
-            )
-            .into(),
-            make_span(
-                vec!["vlist-r".to_owned()],
-                vec![depth_strut.into()],
-                None,
-                None,
-            )
-            .into(),
+            make_span("vlist-r", vec![vlist.into(), top_strut.into()], None, None).into(),
+            make_span("vlist-r", vec![depth_strut.into()], None, None).into(),
         ]
     } else {
-        vec![make_span(vec!["vlist-r".to_owned()], vec![vlist.into()], None, None).into()]
+        vec![make_span("vlist-r", vec![vlist.into()], None, None).into()]
     };
 
-    let mut vtable_classes = vec!["vlist-t".to_owned()];
-
     // Add vlist-t2 class if depth row is present
-    if rows.len() == 2 {
-        vtable_classes.push("vlist-t2".to_owned());
-    }
+    let vtable_classes = if rows.len() == 2 {
+        ClassList::Const(&["vlist-t", "vlist-t2"])
+    } else {
+        ClassList::Const(&["vlist-t"])
+    };
 
     // Create the table structure with vlist-t class
     let mut vtable = make_span(vtable_classes, rows, None, None);
@@ -596,7 +581,7 @@ pub fn make_symbol(
     font_name: &str,
     mode: Mode,
     options: Option<&Options>,
-    classes: Option<Vec<String>>,
+    classes: ClassList,
 ) -> Result<SymbolNode, ParseError> {
     let (metrics, value) = lookup_symbol(ctx, value, font_name, mode)?.map_or_else(
         || (None, value.to_owned()),
@@ -613,12 +598,12 @@ pub fn make_symbol(
         (m.height, m.depth, italic, m.skew, m.width)
     });
 
-    let mut classes_vec = classes.unwrap_or_default();
+    let mut classes_vec = classes;
     let mut style = CssStyle::default();
 
     if let Some(options) = options {
         if options.style.is_tight() {
-            classes_vec.push("mtight".to_owned());
+            classes_vec.push("mtight");
         }
         if let Some(color) = options.get_color() {
             style.insert(CssProperty::Color, color);
@@ -648,21 +633,21 @@ pub fn mathsym(
     value: &str,
     mode: Mode,
     options: &Options,
-    classes: Option<Vec<String>>,
+    classes: ClassList,
 ) -> Result<SymbolNode, ParseError> {
     if options.font == "boldsymbol"
         && lookup_symbol(ctx, value, "Main-Bold", mode)?
             .is_some_and(|lookup| lookup.metrics.is_some())
     {
-        let mut combined_classes = classes.unwrap_or_default();
-        combined_classes.push("mathbf".to_owned());
+        let mut combined_classes = classes;
+        combined_classes.push("mathbf");
         make_symbol(
             ctx,
             value,
             "Main-Bold",
             mode,
             Some(options),
-            Some(combined_classes),
+            combined_classes,
         )
     } else if value == "\\"
         || ctx
@@ -672,15 +657,15 @@ pub fn mathsym(
     {
         make_symbol(ctx, value, "Main-Regular", mode, Some(options), classes)
     } else {
-        let mut combined_classes = classes.unwrap_or_default();
-        combined_classes.push("amsrm".to_owned());
+        let mut combined_classes = classes;
+        combined_classes.push("amsrm");
         make_symbol(
             ctx,
             value,
             "AMS-Regular",
             mode,
             Some(options),
-            Some(combined_classes),
+            combined_classes,
         )
     }
 }
@@ -711,14 +696,10 @@ pub fn retrieve_text_font_name(
 }
 
 #[inline]
-fn both_single_same_mbin_or_mord(a: &[String], b: &[String]) -> bool {
-    if a.len() == 1 && b.len() == 1 {
-        match (a[0].as_str(), b[0].as_str()) {
-            ("mbin", "mbin") | ("mord", "mord") => return true,
-            _ => {}
-        }
-    }
-    false
+fn both_single_same_mbin_or_mord(a: &ClassList, b: &ClassList) -> bool {
+    let mut a_iter = a.into_iter();
+    let mut b_iter = b.into_iter();
+    matches!((a_iter.next(), b_iter.next()), (Some("mbin"), Some("mbin")) | (Some("mord"), Some("mord")) if a_iter.next().is_none() && b_iter.next().is_none())
 }
 
 #[inline]
@@ -730,21 +711,13 @@ fn can_combine_symbols(prev: &SymbolNode, next: &SymbolNode) -> bool {
         return false;
     }
 
-    let (a, b) = (&prev.classes, &next.classes);
-    let (mut i, mut j) = (0, 0);
-    while i < a.len() || j < b.len() {
-        while i < a.len() && a[i].is_empty() {
-            i += 1;
-        }
-        while j < b.len() && b[j].is_empty() {
-            j += 1;
-        }
-        match (i < a.len(), j < b.len()) {
-            (false, false) => break,
-            (true, true) if a[i] == b[j] => {
-                i += 1;
-                j += 1;
-            }
+    let mut a_iter = prev.classes.into_iter();
+    let mut b_iter = next.classes.into_iter();
+
+    loop {
+        match (a_iter.next(), b_iter.next()) {
+            (None, None) => break,
+            (Some(a_cls), Some(b_cls)) if a_cls == b_cls => {}
             _ => return false,
         }
     }
@@ -809,7 +782,7 @@ impl KatexContext {
         T: AsRef<str>,
     {
         // Calculate the size using proper unit conversion
-        let mut rule = make_span(vec!["mspace".to_owned()], vec![], Some(options), None);
+        let mut rule = make_span("mspace", vec![], Some(options), None);
         let size = self.calculate_size(measurement, options)?;
         rule.style.insert(CssProperty::MarginRight, make_em(size));
         Ok(rule)
@@ -834,7 +807,7 @@ pub fn make_ord(
         }
     };
 
-    let classes = vec!["mord".to_owned()];
+    let classes = ClassList::Static("mord");
 
     // Math mode or Old font (i.e. \rm)
     let is_font = mode == Mode::Math || (mode == Mode::Text && !options.font.is_empty());
@@ -859,17 +832,11 @@ pub fn make_ord(
     {
         let mut combined_classes = classes;
         if !font_class.is_empty() {
-            combined_classes.push(font_class.to_owned());
+            combined_classes.push(font_class);
         }
-        return Ok(make_symbol(
-            ctx,
-            text,
-            font_name,
-            mode,
-            Some(options),
-            Some(combined_classes),
-        )?
-        .into());
+        return Ok(
+            make_symbol(ctx, text, font_name, mode, Some(options), combined_classes)?.into(),
+        );
     }
 
     // Handle font selection
@@ -877,13 +844,16 @@ pub fn make_ord(
         let (font_name, font_classes) = if font_or_family == "boldsymbol" {
             // Special handling for boldsymbol
             let font_data = bold_symbol(ctx, text, mode, ord_type)?;
-            (font_data.font_name, vec![font_data.font_class])
+            (font_data.font_name, vec![Cow::Owned(font_data.font_class)])
         } else if is_font {
             // Font command like \mathbf
             let font_name: &str = FONT_MAP
                 .get(font_or_family)
                 .map_or(font_or_family, |entry| entry.font_name);
-            (font_name.to_owned(), vec![font_or_family.clone()])
+            (
+                font_name.to_owned(),
+                vec![Cow::Owned(font_or_family.clone())],
+            )
         } else {
             // Font family like \textrm
             let font_name =
@@ -891,9 +861,9 @@ pub fn make_ord(
             (
                 font_name,
                 vec![
-                    font_or_family.clone(),
-                    options.font_weight.to_string(),
-                    options.font_shape.as_str().to_owned(),
+                    Cow::Owned(font_or_family.clone()),
+                    Cow::Borrowed(options.font_weight.as_str()),
+                    Cow::Borrowed(options.font_shape.as_str()),
                 ],
             )
         };
@@ -903,15 +873,9 @@ pub fn make_ord(
         {
             let mut combined_classes = classes;
             combined_classes.extend(font_classes);
-            return Ok(make_symbol(
-                ctx,
-                text,
-                &font_name,
-                mode,
-                Some(options),
-                Some(combined_classes),
-            )?
-            .into());
+            return Ok(
+                make_symbol(ctx, text, &font_name, mode, Some(options), combined_classes)?.into(),
+            );
         }
 
         // Handle ligature decomposition for monospace fonts
@@ -928,7 +892,7 @@ pub fn make_ord(
                     &font_name,
                     mode,
                     Some(options),
-                    Some(base_classes.clone()),
+                    base_classes.clone(),
                 )?;
                 parts.push(symbol.into());
             }
@@ -940,14 +904,14 @@ pub fn make_ord(
     match ord_type {
         Mode::Math => {
             let mut combined_classes = classes;
-            combined_classes.push("mathnormal".to_owned());
+            combined_classes.push("mathnormal");
             Ok(make_symbol(
                 ctx,
                 text,
                 "Math-Italic",
                 mode,
                 Some(options),
-                Some(combined_classes),
+                combined_classes,
             )?
             .into())
         }
@@ -963,16 +927,16 @@ pub fn make_ord(
                             &options.font_shape,
                         );
                         let mut combined_classes = classes;
-                        combined_classes.push("amsrm".to_owned());
-                        combined_classes.push(options.font_weight.to_string());
-                        combined_classes.push(options.font_shape.as_str().to_owned());
+                        combined_classes.push("amsrm");
+                        combined_classes.push(options.font_weight.as_str());
+                        combined_classes.push(options.font_shape.as_str());
                         Ok(make_symbol(
                             ctx,
                             text,
                             &font_name,
                             mode,
                             Some(options),
-                            Some(combined_classes),
+                            combined_classes,
                         )?
                         .into())
                     }
@@ -983,15 +947,15 @@ pub fn make_ord(
                             &options.font_shape,
                         );
                         let mut combined_classes = classes;
-                        combined_classes.push(options.font_weight.to_string());
-                        combined_classes.push(options.font_shape.as_str().to_owned());
+                        combined_classes.push(options.font_weight.as_str());
+                        combined_classes.push(options.font_shape.as_str());
                         Ok(make_symbol(
                             ctx,
                             text,
                             &font_name,
                             mode,
                             Some(options),
-                            Some(combined_classes),
+                            combined_classes,
                         )?
                         .into())
                     }
@@ -1002,15 +966,15 @@ pub fn make_ord(
                             &options.font_shape,
                         );
                         let mut combined_classes = classes;
-                        combined_classes.push(options.font_weight.to_string());
-                        combined_classes.push(options.font_shape.as_str().to_owned());
+                        combined_classes.push(options.font_weight.as_str());
+                        combined_classes.push(options.font_shape.as_str());
                         Ok(make_symbol(
                             ctx,
                             text,
                             &font_name,
                             mode,
                             Some(options),
-                            Some(combined_classes),
+                            combined_classes,
                         )?
                         .into())
                     }
@@ -1020,27 +984,26 @@ pub fn make_ord(
                 let font_name =
                     retrieve_text_font_name("textrm", &options.font_weight, &options.font_shape);
                 let mut combined_classes = classes;
-                combined_classes.push(options.font_weight.to_string());
-                combined_classes.push(options.font_shape.as_str().to_owned());
-                Ok(make_symbol(
-                    ctx,
-                    text,
-                    &font_name,
-                    mode,
-                    Some(options),
-                    Some(combined_classes),
-                )?
-                .into())
+                combined_classes.push(options.font_weight.as_str());
+                combined_classes.push(options.font_shape.as_str());
+                Ok(
+                    make_symbol(ctx, text, &font_name, mode, Some(options), combined_classes)?
+                        .into(),
+                )
             }
         }
     }
 }
 
 /// Create an SVG span with given classes and SvgNode
-pub fn make_svg_span(classes: Vec<String>, svg_node: Vec<SvgNode>, options: &Options) -> DomSpan {
+pub fn make_svg_span<T: Into<ClassList>>(
+    classes: T,
+    svg_node: Vec<SvgNode>,
+    options: &Options,
+) -> DomSpan {
     Span::builder()
         .children(svg_node.into_iter().map(HtmlDomNode::SvgNode).collect())
-        .classes(classes)
+        .classes(classes.into())
         .build(Some(options))
 }
 
@@ -1099,7 +1062,7 @@ pub fn static_svg(path_name: &str, options: &Options) -> Result<DomSpan, ParseEr
             .children(vec![SvgChildNode::Path(path)])
             .attributes(svg_attributes)
             .build();
-        let mut span = make_svg_span(vec!["overlay".to_owned()], vec![svg_node], options);
+        let mut span = make_svg_span("overlay", vec![svg_node], options);
         span.height = *height;
         span.style.insert(CssProperty::Height, make_em(*height));
         span.style.insert(CssProperty::Width, make_em(*width));
@@ -1107,7 +1070,7 @@ pub fn static_svg(path_name: &str, options: &Options) -> Result<DomSpan, ParseEr
     } else {
         // Fallback
         use crate::build_common::make_span;
-        Ok(make_span(vec![], vec![], Some(options), None))
+        Ok(make_span(ClassList::Empty, vec![], Some(options), None))
     }
 }
 
@@ -1162,8 +1125,12 @@ fn bold_symbol(
 /// # Returns
 /// A DomSpan configured as a horizontal line element
 #[must_use]
-pub fn make_line_span(class_name: &str, options: &Options, thickness: Option<f64>) -> DomSpan {
-    let mut line = make_span(vec![class_name.to_owned()], vec![], Some(options), None);
+pub fn make_line_span(
+    class_name: &'static str,
+    options: &Options,
+    thickness: Option<f64>,
+) -> DomSpan {
+    let mut line = make_span(class_name, vec![], Some(options), None);
 
     // Calculate line height: use thickness, or default rule thickness, with minimum
     // threshold
@@ -1199,9 +1166,9 @@ pub fn make_line_span(class_name: &str, options: &Options, thickness: Option<f64
 /// # Returns
 /// An Anchor element properly sized based on its children
 #[must_use]
-pub fn make_anchor(
+pub fn make_anchor<T: Into<ClassList>>(
     href: &str,
-    classes: Vec<String>,
+    classes: T,
     children: Vec<HtmlDomNode>,
     options: &Options,
 ) -> Anchor {
@@ -1212,7 +1179,7 @@ pub fn make_anchor(
     let mut anchor = Anchor::builder()
         .children(children)
         .attributes(attributes)
-        .classes(classes)
+        .classes(classes.into())
         .height(0.0)
         .depth(0.0)
         .max_font_size(options.size_multiplier)
@@ -1275,7 +1242,7 @@ pub fn wrap_fragment(group: HtmlDomNode, options: &Options) -> HtmlDomNode {
         HtmlDomNode::Fragment(fragment) => {
             // Wrap the fragment in a span
             let span = make_span(
-                vec![],
+                ClassList::Empty,
                 vec![HtmlDomNode::Fragment(fragment)],
                 Some(options),
                 None,

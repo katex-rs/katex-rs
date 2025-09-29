@@ -10,7 +10,7 @@ use crate::mathml_tree::MathDomNode;
 use crate::options::{FontShape, FontWeight, Options};
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeText};
 use crate::types::{ArgType, Mode, ParseError, ParseErrorKind};
-use crate::{build_html, build_mathml};
+use crate::{ClassList, build_html, build_mathml};
 use phf::phf_map;
 
 /// Text font families mapping
@@ -131,7 +131,7 @@ fn html_builder(
         (None, None),
     )?;
     Ok(make_span(
-        vec!["mord".to_owned(), "text".to_owned()],
+        ClassList::Const(&["mord", "text"]),
         inner,
         Some(&new_options),
         None,

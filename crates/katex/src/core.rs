@@ -23,7 +23,7 @@ fn render_error(
     }
 
     let mut node = make_span(
-        vec!["katex-error".to_owned()],
+        "katex-error",
         vec![SymbolNode::builder().text(expression).build().into()],
         None,
         None,

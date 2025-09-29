@@ -3,6 +3,7 @@
 //! This module handles math class commands in mathematical expressions,
 //! migrated from KaTeX's mclass.js.
 
+use crate::build_html::DomType;
 use crate::namespace::KeyMap;
 
 use crate::build_common::make_span;
@@ -29,7 +30,7 @@ use crate::{KatexContext, build_html, build_mathml};
 /// # Returns
 ///
 /// The math class string ("mbin", "mrel", or "mord")
-pub fn binrel_class(arg: &AnyParseNode) -> String {
+pub fn binrel_class(arg: &AnyParseNode) -> DomType {
     // \binrel@ spacing varies with (bin|rel|ord) of the atom in the argument.
     // (by rendering separately and with {}s before and after, and measuring
     // the change in spacing).  We'll do roughly the same by detecting the
@@ -40,14 +41,12 @@ pub fn binrel_class(arg: &AnyParseNode) -> String {
     };
 
     match atom {
-        AnyParseNode::Atom(atom_node) => {
-            if atom_node.family == Atom::Bin || atom_node.family == Atom::Rel {
-                format!("m{}", atom_node.family.as_ref())
-            } else {
-                "mord".to_owned()
-            }
-        }
-        _ => "mord".to_owned(),
+        AnyParseNode::Atom(atom_node) => match atom_node.family {
+            Atom::Bin => DomType::Mbin,
+            Atom::Rel => DomType::Mrel,
+            _ => DomType::Mord,
+        },
+        _ => DomType::Mord,
     }
 }
 
@@ -70,13 +69,7 @@ fn html_builder(
         build_html::GroupType::True,
         (None, None),
     )?;
-    Ok(make_span(
-        vec![mclass_node.mclass.clone()],
-        elements,
-        Some(options),
-        None,
-    )
-    .into())
+    Ok(make_span(mclass_node.mclass.as_str(), elements, Some(options), None).into())
 }
 
 /// MathML builder for mclass nodes
@@ -93,13 +86,13 @@ fn mathml_builder(
 
     let inner = build_mathml::build_expression(ctx, &mclass_node.body, options, None)?;
 
-    let node_result = if mclass_node.mclass == "minner" {
+    let node_result = if mclass_node.mclass == DomType::Minner {
         MathNode::builder()
             .node_type(MathNodeType::Mpadded)
             .children(inner)
             .build()
             .into()
-    } else if mclass_node.mclass == "mord" {
+    } else if mclass_node.mclass == DomType::Mord {
         if mclass_node.is_character_box {
             // Use the first inner element directly
             if inner.is_empty() {
@@ -143,19 +136,26 @@ fn mathml_builder(
         if let MathDomNode::Math(math_node) = &mut node {
             let mut attributes = KeyMap::default();
 
-            if mclass_node.mclass == "mbin" {
-                attributes.insert("lspace".to_owned(), "0.22em".to_owned()); // medium space
-                attributes.insert("rspace".to_owned(), "0.22em".to_owned());
-            } else if mclass_node.mclass == "mpunct" {
-                attributes.insert("lspace".to_owned(), "0em".to_owned());
-                attributes.insert("rspace".to_owned(), "0.17em".to_owned()); // thinspace
-            } else if mclass_node.mclass == "mopen" || mclass_node.mclass == "mclose" {
-                attributes.insert("lspace".to_owned(), "0em".to_owned());
-                attributes.insert("rspace".to_owned(), "0em".to_owned());
-            } else if mclass_node.mclass == "minner" {
-                attributes.insert("lspace".to_owned(), "0.0556em".to_owned()); // 1 mu is the most likely option
-                attributes.insert("width".to_owned(), "+0.1111em".to_owned());
+            match mclass_node.mclass {
+                DomType::Mbin => {
+                    attributes.insert("lspace".to_owned(), "0.22em".to_owned()); // medium space
+                    attributes.insert("rspace".to_owned(), "0.22em".to_owned());
+                }
+                DomType::Mopen | DomType::Mclose => {
+                    attributes.insert("lspace".to_owned(), "0em".to_owned());
+                    attributes.insert("rspace".to_owned(), "0em".to_owned());
+                }
+                DomType::Mpunct => {
+                    attributes.insert("lspace".to_owned(), "0em".to_owned());
+                    attributes.insert("rspace".to_owned(), "0.17em".to_owned()); // thinspace
+                }
+                DomType::Minner => {
+                    attributes.insert("lspace".to_owned(), "0.0556em".to_owned()); // 1 mu is the most likely option
+                    attributes.insert("width".to_owned(), "+0.1111em".to_owned());
+                }
+                _ => {} // mord or mrel
             }
+
             // MathML <mo> default space is 5/18 em, so <mrel> needs no action.
             // Ref: https://developer.mozilla.org/en-US/docs/Web/MathML/Element/mo
 
@@ -195,28 +195,20 @@ pub fn define_mclass(ctx: &mut crate::KatexContext) {
             let func_name = context.func_name;
 
             // Extract mclass from function name: \mathord -> mord, etc.
-            let mclass = if func_name == "\\mathord" {
-                "mord"
-            } else if func_name == "\\mathbin" {
-                "mbin"
-            } else if func_name == "\\mathrel" {
-                "mrel"
-            } else if func_name == "\\mathopen" {
-                "mopen"
-            } else if func_name == "\\mathclose" {
-                "mclose"
-            } else if func_name == "\\mathpunct" {
-                "mpunct"
-            } else if func_name == "\\mathinner" {
-                "minner"
-            } else {
-                "mord" // fallback
+            let mclass = match func_name {
+                "\\mathbin" => DomType::Mbin,
+                "\\mathrel" => DomType::Mrel,
+                "\\mathopen" => DomType::Mopen,
+                "\\mathclose" => DomType::Mclose,
+                "\\mathpunct" => DomType::Mpunct,
+                "\\mathinner" => DomType::Minner,
+                _ => DomType::Mord, // Default to \mathord
             };
 
             Ok(ParseNode::Mclass(ParseNodeMclass {
                 mode: context.parser.mode,
                 loc: context.loc(),
-                mclass: mclass.to_owned(),
+                mclass,
                 body: ord_argument(body),
                 is_character_box: body.is_character_box()?,
             }))
@@ -265,7 +257,7 @@ pub fn define_mclass(ctx: &mut crate::KatexContext) {
             let func_name = context.func_name;
 
             let mclass = if func_name == "\\stackrel" {
-                "mrel".to_owned() // for \stackrel
+                DomType::Mrel
             } else {
                 // LaTeX applies \binrel spacing to \overset and \underset.
                 binrel_class(base_arg)

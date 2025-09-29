@@ -18,28 +18,28 @@ use crate::parser::parse_node::{
 };
 use crate::types::{ArgType, ParseError, ParseErrorKind};
 use crate::units::make_em;
-use crate::{KatexContext, build_html, build_mathml};
+use crate::{ClassList, KatexContext, build_html, build_mathml};
 
 use phf::phf_map;
 
 /// Delimiter size mappings for sizing commands
-const DELIMITER_SIZES: phf::Map<&'static str, (&'static str, u8)> = phf_map! {
-    "\\bigl" => ("mopen", 1),
-    "\\Bigl" => ("mopen", 2),
-    "\\biggl" => ("mopen", 3),
-    "\\Biggl" => ("mopen", 4),
-    "\\bigr" => ("mclose", 1),
-    "\\Bigr" => ("mclose", 2),
-    "\\biggr" => ("mclose", 3),
-    "\\Biggr" => ("mclose", 4),
-    "\\bigm" => ("mrel", 1),
-    "\\Bigm" => ("mrel", 2),
-    "\\biggm" => ("mrel", 3),
-    "\\Biggm" => ("mrel", 4),
-    "\\big" => ("mord", 1),
-    "\\Big" => ("mord", 2),
-    "\\bigg" => ("mord", 3),
-    "\\Bigg" => ("mord", 4),
+const DELIMITER_SIZES: phf::Map<&'static str, (DomType, u8)> = phf_map! {
+    "\\bigl" => (DomType::Mopen, 1),
+    "\\Bigl" => (DomType::Mopen, 2),
+    "\\biggl" => (DomType::Mopen, 3),
+    "\\Biggl" => (DomType::Mopen, 4),
+    "\\bigr" => (DomType::Mclose, 1),
+    "\\Bigr" => (DomType::Mclose, 2),
+    "\\biggr" => (DomType::Mclose, 3),
+    "\\Biggr" => (DomType::Mclose, 4),
+    "\\bigm" => (DomType::Mrel, 1),
+    "\\Bigm" => (DomType::Mrel, 2),
+    "\\biggm" => (DomType::Mrel, 3),
+    "\\Biggm" => (DomType::Mrel, 4),
+    "\\big" => (DomType::Mord, 1),
+    "\\Big" => (DomType::Mord, 2),
+    "\\bigg" => (DomType::Mord, 3),
+    "\\Bigg" => (DomType::Mord, 4),
 };
 
 /// Supported delimiters
@@ -105,7 +105,7 @@ pub fn define_delimsizing(ctx: &mut KatexContext) {
                 mode: context.parser.mode,
                 loc: context.loc(),
                 size,
-                mclass: mclass.to_owned(),
+                mclass,
                 delim: delim_text,
             }))
         }),
@@ -231,7 +231,7 @@ fn delimsizing_html_builder(
 
     if group.delim == "." {
         // Empty delimiters still count as elements
-        return Ok(make_span(vec![group.mclass.clone()], vec![], None, None).into());
+        return Ok(make_span(group.mclass.as_str(), vec![], None, None).into());
     }
 
     // Use sized_delim to generate the delimiter
@@ -241,7 +241,7 @@ fn delimsizing_html_builder(
         usize::from(group.size),
         options,
         group.mode,
-        vec![group.mclass.clone()],
+        group.mclass.as_str(),
     )?
     .into())
 }
@@ -269,7 +269,7 @@ fn delimsizing_mathml_builder(
         .children(children)
         .build();
 
-    if group.mclass == "mopen" || group.mclass == "mclose" {
+    if group.mclass == DomType::Mopen || group.mclass == DomType::Mclose {
         node.set_attribute("fence", "true");
     } else {
         node.set_attribute("fence", "false");
@@ -332,7 +332,7 @@ fn leftright_html_builder(
 
     // Handle left delimiter
     let left_delim = if group.left == "." {
-        build_html::make_null_delimiter(options, vec!["mopen".to_owned()])
+        build_html::make_null_delimiter(options, "mopen")
     } else {
         left_right_delim(
             ctx,
@@ -341,7 +341,7 @@ fn leftright_html_builder(
             inner_depth,
             options,
             group.mode,
-            vec!["mopen".to_owned()],
+            "mopen",
         )?
     };
     inner_modified.insert(0, left_delim.into());
@@ -367,7 +367,7 @@ fn leftright_html_builder(
 
     // Handle right delimiter
     let right_delim = if group.right == "." {
-        build_html::make_null_delimiter(options, vec!["mclose".to_owned()])
+        build_html::make_null_delimiter(options, "mclose")
     } else {
         let mut right_options = options;
         let maybe_option;
@@ -382,18 +382,12 @@ fn leftright_html_builder(
             inner_depth,
             right_options,
             group.mode,
-            vec!["mclose".to_owned()],
+            "mclose",
         )?
     };
     inner_modified.push(right_delim.into());
 
-    Ok(make_span(
-        vec!["minner".to_owned()],
-        inner_modified,
-        Some(options),
-        None,
-    )
-    .into())
+    Ok(make_span("minner", inner_modified, Some(options), None).into())
 }
 
 /// MathML builder for leftright nodes
@@ -459,7 +453,7 @@ fn middle_html_builder(
     };
 
     let mut middle_delim = if group.delim == "." {
-        build_html::make_null_delimiter(options, vec![])
+        build_html::make_null_delimiter(options, ClassList::Empty)
     } else {
         sized_delim(ctx, &group.delim, 1, options, group.mode, vec![])?
     };

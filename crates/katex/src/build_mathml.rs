@@ -17,6 +17,7 @@ use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType, TextNode};
 use crate::options::{FontShape, FontWeight, Options};
 use crate::parser::parse_node::AnyParseNode;
 use crate::symbols::{Symbols, is_ligature};
+use crate::types::ClassList;
 use crate::types::Mode;
 use crate::types::ParseErrorKind;
 
@@ -121,7 +122,7 @@ pub fn make_row(mut body: Vec<MathDomNode>) -> MathDomNode {
         node_type: MathNodeType::Mrow,
         attributes: KeyMap::default(),
         children: body,
-        classes: Vec::new(),
+        classes: ClassList::Empty,
     })
 }
 
@@ -573,7 +574,7 @@ pub fn build_mathml(
                     node_type: MathNodeType::Mrow,
                     attributes: KeyMap::default(),
                     children: expression_enum.clone(),
-                    classes: Vec::new(),
+                    classes: ClassList::Empty,
                 })
             }
         } else {
@@ -581,7 +582,7 @@ pub fn build_mathml(
                 node_type: MathNodeType::Mrow,
                 attributes: KeyMap::default(),
                 children: expression_enum,
-                classes: Vec::new(),
+                classes: ClassList::Empty,
             })
         }
     } else {
@@ -589,7 +590,7 @@ pub fn build_mathml(
             node_type: MathNodeType::Mrow,
             attributes: KeyMap::default(),
             children: expression_enum,
-            classes: Vec::new(),
+            classes: ClassList::Empty,
         })
     };
 
@@ -600,7 +601,7 @@ pub fn build_mathml(
         children: vec![MathDomNode::Text(TextNode {
             text: tex_expression.to_owned(),
         })],
-        classes: Vec::new(),
+        classes: ClassList::Empty,
     });
 
     // Set encoding
@@ -617,7 +618,7 @@ pub fn build_mathml(
         node_type: MathNodeType::Semantics,
         attributes: KeyMap::default(),
         children: vec![wrapper_enum, annotation_with_encoding],
-        classes: Vec::new(),
+        classes: ClassList::Empty,
     });
 
     // Create math element using MathDomNodeEnum
@@ -625,7 +626,7 @@ pub fn build_mathml(
         node_type: MathNodeType::Math,
         attributes: KeyMap::default(),
         children: vec![semantics_enum],
-        classes: Vec::new(),
+        classes: ClassList::Empty,
     });
 
     // Set namespace and display mode
@@ -658,7 +659,7 @@ pub fn build_mathml(
     };
 
     Ok(make_span(
-        vec![wrapper_class.to_owned()],
+        ClassList::Static(wrapper_class),
         vec![HtmlDomNode::MathML(math_node)],
         None,
         None,

@@ -12,7 +12,7 @@ use crate::mathml_tree::MathDomNode;
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeHtml};
 use crate::types::{ArgType, ErrorLocationProvider, ParseError, ParseErrorKind};
-use crate::{KatexContext, TrustContext, build_html, build_mathml};
+use crate::{ClassList, KatexContext, TrustContext, build_html, build_mathml};
 
 /// HTML extension command names
 const HTML_COMMANDS: &[&str] = &["\\htmlClass", "\\htmlId", "\\htmlStyle", "\\htmlData"];
@@ -139,9 +139,9 @@ fn html_builder(
         (None, None),
     )?;
 
-    let mut classes = vec!["enclosing".to_owned()];
+    let mut classes = ClassList::Static("enclosing");
     if let Some(class) = html_node.attributes.get("class") {
-        classes.extend(class.split_whitespace().map(ToString::to_string));
+        classes.extend(class.split_whitespace().map(|s| s.to_owned().into()));
     }
 
     let mut span = make_span(classes, elements, Some(options), None);

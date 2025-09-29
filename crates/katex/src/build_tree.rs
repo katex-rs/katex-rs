@@ -12,6 +12,7 @@ use crate::options::{FontShape, FontWeight, Options};
 use crate::parser::parse_node::AnyParseNode;
 use crate::style;
 use crate::types::{OutputFormat, ParseError, Settings};
+use alloc::borrow::Cow;
 
 /// Creates Options from Settings for building
 fn options_from_settings(settings: &Settings) -> Options {
@@ -40,12 +41,12 @@ fn options_from_settings(settings: &Settings) -> Options {
 /// Wraps the node with display-related classes if in display mode
 fn display_wrap(node: DomSpan, settings: &Settings) -> DomSpan {
     if settings.display_mode {
-        let mut classes = vec!["katex-display".to_owned()];
+        let mut classes = vec![Cow::Borrowed("katex-display")];
         if settings.leqno {
-            classes.push("leqno".to_owned());
+            classes.push(Cow::Borrowed("leqno"));
         }
         if settings.fleqn {
-            classes.push("fleqn".to_owned());
+            classes.push(Cow::Borrowed("fleqn"));
         }
         make_span(classes, vec![node.into()], None, None)
     } else {
@@ -83,7 +84,7 @@ pub fn build_tree(
         OutputFormat::Html => {
             // HTML only
             let html_node = build_html(ctx, tree, &options)?;
-            make_span(vec!["katex".to_owned()], vec![html_node], None, None)
+            make_span("katex", vec![html_node], None, None)
         }
         OutputFormat::HtmlAndMathml => {
             // Both HTML and MathML
@@ -96,12 +97,7 @@ pub fn build_tree(
                 false,
             )?;
             let html_node = build_html(ctx, tree, &options)?;
-            make_span(
-                vec!["katex".to_owned()],
-                vec![mathml_node.into(), html_node],
-                None,
-                None,
-            )
+            make_span("katex", vec![mathml_node.into(), html_node], None, None)
         }
     };
 
@@ -130,6 +126,6 @@ pub fn build_html_tree(
 ) -> Result<DomSpan, ParseError> {
     let options = options_from_settings(settings);
     let html_node = build_html(ctx, tree, &options)?;
-    let katex_node = make_span(vec!["katex".to_owned()], vec![html_node], None, None);
+    let katex_node = make_span("katex", vec![html_node], None, None);
     Ok(display_wrap(katex_node, settings))
 }

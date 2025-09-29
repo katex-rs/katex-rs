@@ -25,7 +25,8 @@ use crate::spacing_data::Measurement;
 use crate::style::{DISPLAY, SCRIPT, Style, TEXT};
 use crate::types::{BreakToken, CssProperty, ParseError, ParseErrorKind, Token};
 use crate::utils::{push_and_get_mut, push_and_get_ref};
-use crate::{KatexContext, build_html, build_mathml, units};
+use crate::{ClassList, KatexContext, build_html, build_mathml, units};
+use alloc::borrow::Cow;
 use core::iter::repeat_n;
 // Type definitions for array environment
 
@@ -440,10 +441,10 @@ fn html_builder(
             let shift = rw.pos - offset;
             let tag = &tags[r];
             let mut tag_span = match tag {
-                ParseNodeArrayTag::Bool(true) => {
-                    make_span(vec!["eqn-num".to_owned()], vec![], Some(options), None)
+                ParseNodeArrayTag::Bool(true) => make_span("eqn-num", vec![], Some(options), None),
+                ParseNodeArrayTag::Bool(false) => {
+                    make_span(ClassList::Empty, vec![], Some(options), None)
                 }
-                ParseNodeArrayTag::Bool(false) => make_span(vec![], vec![], Some(options), None),
                 ParseNodeArrayTag::Nodes(nodes) => {
                     let tag_expr = build_html::build_expression(
                         ctx,
@@ -452,7 +453,7 @@ fn html_builder(
                         build_html::GroupType::True,
                         (None, None),
                     )?;
-                    make_span(vec![], tag_expr, Some(options), None)
+                    make_span(ClassList::Empty, tag_expr, Some(options), None)
                 }
             };
 
@@ -484,7 +485,7 @@ fn html_builder(
             };
 
             if !first_separator {
-                col_sep = make_span(vec!["arraycolsep".to_owned()], vec![], None, None);
+                col_sep = make_span("arraycolsep", vec![], None, None);
                 col_sep.style.insert(
                     CssProperty::Width,
                     units::make_em(options.font_metrics().double_rule_sep),
@@ -494,12 +495,8 @@ fn html_builder(
 
             if separator == "|" || separator == ":" {
                 let line_type = if separator == "|" { "solid" } else { "dashed" };
-                let mut separator_span = make_span(
-                    vec!["vertical-separator".to_owned()],
-                    vec![],
-                    Some(options),
-                    None,
-                );
+                let mut separator_span =
+                    make_span("vertical-separator", vec![], Some(options), None);
                 separator_span
                     .style
                     .insert(CssProperty::Height, units::make_em(total_height));
@@ -552,7 +549,7 @@ fn html_builder(
         };
 
         if sepwidth != 0.0 {
-            col_sep = make_span(vec!["arraycolsep".to_owned()], vec![], None, None);
+            col_sep = make_span("arraycolsep", vec![], None, None);
             col_sep
                 .style
                 .insert(CssProperty::Width, units::make_em(sepwidth));
@@ -591,7 +588,7 @@ fn html_builder(
             .unwrap_or_else(|| "c".to_owned());
 
         let col_span = make_span(
-            vec![format!("col-align-{col_align}")],
+            vec![Cow::Owned(format!("col-align-{col_align}"))],
             vec![col_vlist.into()],
             None,
             None,
@@ -607,7 +604,7 @@ fn html_builder(
                 .unwrap_or(arraycolsep);
 
             if sepwidth != 0.0 {
-                col_sep = make_span(vec!["arraycolsep".to_owned()], vec![], None, None);
+                col_sep = make_span("arraycolsep", vec![], None, None);
                 col_sep
                     .style
                     .insert(CssProperty::Width, units::make_em(sepwidth));
@@ -619,7 +616,7 @@ fn html_builder(
         col_descr_num += 1;
     }
 
-    let mut mtable = make_span(vec!["mtable".to_owned()], cols, None, None);
+    let mut mtable = make_span("mtable", cols, None, None);
 
     // Add \hline(s), if any.
     if !hlines.is_empty() {
@@ -656,13 +653,7 @@ fn html_builder(
     }
 
     if tag_spans.is_empty() {
-        Ok(make_span(
-            vec!["mord".to_owned()],
-            vec![mtable.into()],
-            Some(options),
-            None,
-        )
-        .into())
+        Ok(make_span("mord", vec![mtable.into()], Some(options), None).into())
     } else {
         let eqn_num_col = make_v_list(
             VListParam::IndividualShift {
@@ -670,12 +661,7 @@ fn html_builder(
             },
             options,
         )?;
-        let tag_span = make_span(
-            vec!["tag".to_owned()],
-            vec![eqn_num_col.into()],
-            Some(options),
-            None,
-        );
+        let tag_span = make_span("tag", vec![eqn_num_col.into()], Some(options), None);
         Ok(make_fragment(vec![mtable.into(), tag_span.into()]).into())
     }
 }
@@ -727,11 +713,11 @@ fn mathml_builder(
     let mut tbl = Vec::new();
     let glue = MathNode::builder()
         .node_type(MathNodeType::Mtd)
-        .classes(vec!["mtr-glue".to_owned()])
+        .classes("mtr-glue".into())
         .build();
     let tag = MathNode::builder()
         .node_type(MathNodeType::Mtd)
-        .classes(vec!["mml-eqn-num".to_owned()])
+        .classes("mml-eqn-num".into())
         .build();
 
     for i in 0..array_node.body.len() {

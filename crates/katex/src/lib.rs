@@ -89,6 +89,8 @@ pub mod wasm;
 pub mod web_context;
 pub mod wide_character;
 
+pub use crate::types::ClassList;
+
 /// Global context for KaTeX operations, containing all registered functions,
 /// HTML/MathML builders, symbols, environments, and macros. This context is
 /// essential for parsing and rendering mathematical expressions and provides

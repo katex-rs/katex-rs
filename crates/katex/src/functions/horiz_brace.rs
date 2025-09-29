@@ -11,6 +11,7 @@ use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeHorizBrace};
 use crate::stretchy::{math_ml_node, svg_span};
 use crate::style::DISPLAY;
+use crate::types::ClassList;
 use crate::types::{ParseError, ParseErrorKind};
 use crate::{KatexContext, build_html, build_mathml};
 
@@ -108,7 +109,7 @@ pub fn html_builder(
                     VListChild::Kern(0.1.into()),
                     VListElem::builder()
                         .elem(brace_body)
-                        .wrapper_classes(vec!["svg-align".to_owned()])
+                        .wrapper_classes(ClassList::Static("svg-align"))
                         .build()
                         .into(),
                 ],
@@ -122,7 +123,7 @@ pub fn html_builder(
                 children: vec![
                     VListElem::builder()
                         .elem(brace_body)
-                        .wrapper_classes(vec!["svg-align".to_owned()])
+                        .wrapper_classes(ClassList::Static("svg-align"))
                         .build()
                         .into(),
                     VListChild::Kern(0.1.into()),
@@ -133,21 +134,19 @@ pub fn html_builder(
         )?
     };
 
+    let classes = if group.is_over {
+        ClassList::Const(&["mord", "mover"])
+    } else {
+        ClassList::Const(&["mord", "munder"])
+    };
+
     if let Some(sup_sub_group) = sup_sub_group {
         // To write the supsub, wrap the first vlist in another vlist:
         // They can't all go in the same vlist, because the note might be
         // wider than the equation. We want the equation to control the
         // brace width.
 
-        let v_span = make_span(
-            vec![
-                "mord".to_owned(),
-                if group.is_over { "mover" } else { "munder" }.to_owned(),
-            ],
-            vec![vlist.into()],
-            Some(options),
-            None,
-        );
+        let v_span = make_span(classes, vec![vlist.into()], Some(options), None);
 
         if group.is_over {
             let vlist = make_v_list(
@@ -161,7 +160,7 @@ pub fn html_builder(
                 options,
             )?;
             Ok(make_span(
-                vec!["mord".to_owned(), "mover".to_owned()],
+                ClassList::Const(&["mord", "mover"]),
                 vec![vlist.into()],
                 Some(options),
                 None,
@@ -183,7 +182,7 @@ pub fn html_builder(
                 options,
             )?;
             Ok(make_span(
-                vec!["mord".to_owned(), "munder".to_owned()],
+                ClassList::Const(&["mord", "munder"]),
                 vec![vlist.into()],
                 Some(options),
                 None,
@@ -191,16 +190,7 @@ pub fn html_builder(
             .into())
         }
     } else {
-        Ok(make_span(
-            vec![
-                "mord".to_owned(),
-                if group.is_over { "mover" } else { "munder" }.to_owned(),
-            ],
-            vec![vlist.into()],
-            Some(options),
-            None,
-        )
-        .into())
+        Ok(make_span(classes, vec![vlist.into()], Some(options), None).into())
     }
 }
 

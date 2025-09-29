@@ -15,7 +15,7 @@ use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeXArrow};
 use crate::stretchy::math_ml_node;
 use crate::stretchy::svg_span;
 use crate::types::{ParseError, ParseErrorKind};
-use crate::{KatexContext, build_mathml};
+use crate::{ClassList, KatexContext, build_mathml};
 
 /// Extensible arrow commands
 const ARROW_COMMANDS: &[&str] = &[
@@ -99,7 +99,7 @@ fn html_builder(
     let mut upper_group = if let Some(body) = &xarrow.body {
         build_group(ctx, body, &new_options, Some(options))?
     } else {
-        make_span(vec![], vec![], None, None).into()
+        make_span(ClassList::Empty, vec![], None, None).into()
     };
     let arrow_prefix = if xarrow.label.starts_with("\\x") {
         "x"
@@ -190,7 +190,7 @@ fn html_builder(
     };
 
     Ok(make_span(
-        vec!["mrel".to_owned(), "x-arrow".to_owned()],
+        ClassList::Const(&["mrel", "x-arrow"]),
         vec![vlist.into()],
         Some(options),
         None,

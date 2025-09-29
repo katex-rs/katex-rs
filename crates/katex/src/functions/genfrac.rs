@@ -13,6 +13,7 @@ use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeGenfrac, ParseNodeInfix};
 use crate::style::{DISPLAY, SCRIPT, SCRIPTSCRIPT, Style, TEXT};
 use crate::symbols::Atom;
+use crate::types::ClassList;
 use crate::types::{ArgType, Mode, ParseError, ParseErrorKind};
 use crate::units::make_em;
 use crate::{KatexContext, build_html, build_mathml, make_line_span};
@@ -506,13 +507,13 @@ fn html_builder(
             true,
             &options.having_style(style),
             group.mode,
-            vec![String::from("mopen")],
+            "mopen",
         )?
     } else {
-        make_null_delimiter(options, vec![String::from("mopen")])
+        make_null_delimiter(options, "mopen")
     };
     let right_delim_span = if group.continued {
-        make_span(vec![], vec![], None, None)
+        make_span(ClassList::Empty, vec![], None, None)
     } else if let Some(right_delim) = &group.right_delim {
         custom_sized_delim(
             ctx,
@@ -521,13 +522,13 @@ fn html_builder(
             true,
             &options.having_style(style),
             group.mode,
-            vec![String::from("mclose")],
+            "mclose",
         )?
     } else {
-        make_null_delimiter(options, vec![String::from("mclose")])
+        make_null_delimiter(options, "mclose")
     };
 
-    let frac_span = make_span(vec![String::from("mfrac")], vec![frac.into()], None, None);
+    let frac_span = make_span("mfrac", vec![frac.into()], None, None);
 
     // Create final span
     let final_children = vec![
@@ -535,10 +536,8 @@ fn html_builder(
         frac_span.into(),
         right_delim_span.into(),
     ];
-    let classes = vec![String::from("mord")]
-        .into_iter()
-        .chain(new_options.sizing_classes(options))
-        .collect();
+    let mut classes = ClassList::Static("mord");
+    classes.extend(new_options.sizing_classes(options));
     Ok(make_span(classes, final_children, Some(options), None).into())
 }
 

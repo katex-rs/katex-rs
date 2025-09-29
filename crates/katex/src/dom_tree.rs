@@ -20,10 +20,13 @@ use crate::mathml_tree::MathNode;
 use crate::options::Options;
 use crate::svg_geometry::PATH_MAP;
 use crate::tree::{DocumentFragment, VirtualNode};
+use crate::types::ClassList;
 use crate::types::{CssProperty, CssStyle};
 use crate::unicode::script_from_codepoint;
 use crate::units::make_em;
 use crate::utils::escape_into;
+
+const EMPTY_CLASS_LIST: ClassList = ClassList::Empty;
 
 /// Span wrapping other DOM nodes with generic child type
 #[derive(Debug, Clone, PartialEq)]
@@ -33,7 +36,7 @@ pub struct Span<T> {
     /// HTML attributes for this span element
     pub attributes: KeyMap<String, String>,
     /// CSS classes applied to this span
-    pub classes: Vec<String>,
+    pub classes: ClassList,
     /// Height of this span element
     pub height: f64,
     /// Depth of this span element
@@ -66,7 +69,7 @@ impl<T> Span<T> {
         /// Attributes for this span element
         attributes: Option<KeyMap<String, String>>,
         /// Classes applied to this span
-        classes: Option<Vec<String>>,
+        classes: Option<ClassList>,
         /// Height of this span element
         height: Option<f64>,
         /// Depth of this span element
@@ -104,7 +107,7 @@ impl<T> Span<T> {
     /// available and would otherwise go through the builder for every node.
     pub(crate) fn from_parts(
         children: Vec<T>,
-        classes: Vec<String>,
+        classes: ClassList,
         style: Option<CssStyle>,
         options: Option<&Options>,
     ) -> Self {
@@ -137,7 +140,7 @@ pub struct Anchor {
     /// HTML attributes for this anchor element
     pub attributes: KeyMap<String, String>,
     /// CSS classes applied to this anchor
-    pub classes: Vec<String>,
+    pub classes: ClassList,
     /// Height of this anchor element
     pub height: f64,
     /// Depth of this anchor element
@@ -167,7 +170,7 @@ impl Anchor {
         /// HTML attributes for this anchor element
         attributes: Option<KeyMap<String, String>>,
         /// Classes applied to this anchor
-        classes: Option<Vec<String>>,
+        classes: Option<ClassList>,
         /// Height of this anchor element
         height: Option<f64>,
         /// Depth of this anchor element
@@ -201,7 +204,7 @@ impl Anchor {
     pub const fn new(
         children: Vec<HtmlDomNode>,
         attributes: KeyMap<String, String>,
-        classes: Vec<String>,
+        classes: ClassList,
         height: f64,
         depth: f64,
         max_font_size: f64,
@@ -227,7 +230,7 @@ pub struct Img {
     /// Alternative text for the image
     pub alt: String,
     /// CSS classes applied to this image
-    pub classes: Vec<String>,
+    pub classes: ClassList,
     /// Height of this image element
     pub height: f64,
     /// Depth of this image element
@@ -241,7 +244,7 @@ pub struct Img {
 impl Img {
     /// Create a new Img
     #[must_use]
-    pub fn new(
+    pub const fn new(
         src: String,
         alt: String,
         height: f64,
@@ -252,7 +255,7 @@ impl Img {
         Self {
             src,
             alt,
-            classes: vec!["mord".to_owned()],
+            classes: ClassList::Static("mord"),
             height,
             depth,
             max_font_size,
@@ -279,7 +282,7 @@ pub struct SymbolNode {
     /// Maximum font size used in this symbol
     pub max_font_size: f64,
     /// CSS classes applied to this symbol
-    pub classes: Vec<String>,
+    pub classes: ClassList,
     /// Inline CSS style object
     pub style: CssStyle,
 }
@@ -317,7 +320,7 @@ impl SymbolNode {
         /// Maximum font size used in this symbol
         max_font_size: Option<f64>,
         /// Classes applied to this symbol
-        classes: Option<Vec<String>>,
+        classes: Option<ClassList>,
         /// Inline CSS style object
         style: Option<CssStyle>,
     ) -> Self {
@@ -450,7 +453,7 @@ impl SvgNode {
 /// Create an HTML className based on a list of classes. In addition to joining
 /// with spaces, we also remove empty classes.
 #[must_use]
-pub fn create_class(classes: &[String]) -> String {
+pub fn create_class(classes: &ClassList) -> String {
     let mut result = String::new();
     let mut first = true;
 
@@ -472,9 +475,9 @@ pub fn create_class(classes: &[String]) -> String {
 /// Initialize a DOM node with common properties according to KaTeX.js initNode
 /// implementation
 #[inline]
-fn init_node(classes: &mut Vec<String>, style: &mut CssStyle, options: &Options) {
+fn init_node(classes: &mut ClassList, style: &mut CssStyle, options: &Options) {
     if options.style.is_tight() {
-        classes.push("mtight".to_owned());
+        classes.push("mtight");
     }
     if let Some(color) = options.get_color() {
         style.insert(CssProperty::Color, color);
@@ -497,8 +500,8 @@ fn map_fmt(result: fmt::Result) -> Result<(), ParseError> {
     result.map_err(ParseError::from)
 }
 
-fn write_node_class<W: fmt::Write>(writer: &mut W, classes: &[String]) -> fmt::Result {
-    let mut iter = classes.iter().filter(|cls| !cls.is_empty());
+fn write_node_class<W: fmt::Write>(writer: &mut W, classes: &ClassList) -> fmt::Result {
+    let mut iter = classes.into_iter();
     if let Some(first) = iter.next() {
         writer.write_str(" class=\"")?;
         escape_into(writer, first)?;
@@ -528,7 +531,7 @@ fn write_node_style<W: fmt::Write>(writer: &mut W, style: &CssStyle) -> fmt::Res
 }
 
 #[cfg(feature = "wasm")]
-fn class_to_node(element: &web_sys::Element, classes: &[String]) {
+fn class_to_node(element: &web_sys::Element, classes: &ClassList) {
     if !classes.is_empty() {
         let class_attr = create_class(classes);
         element.set_attribute("class", &class_attr).unwrap();
@@ -831,26 +834,27 @@ impl VirtualNode for HtmlDomNode {
 impl HtmlDomNode {
     /// Get the CSS classes applied to this node
     ///
-    /// Returns an empty slice for node types that don't support CSS classes
-    /// (SvgNode, MathML). For other node types, returns their class list.
+    /// Returns an empty class list for node types that don't support CSS
+    /// classes (SvgNode, MathML). For other node types, returns their class
+    /// list.
     #[must_use]
-    pub fn classes(&self) -> &[String] {
+    pub const fn classes(&self) -> &ClassList {
         match self {
             Self::DomSpan(span) => &span.classes,
             Self::Anchor(anchor) => &anchor.classes,
             Self::Img(img) => &img.classes,
             Self::Symbol(symbol) => &symbol.classes,
-            Self::SvgNode(_) | Self::MathML { .. } => &[],
             Self::Fragment(fragment) => &fragment.classes,
+            Self::SvgNode(_) | Self::MathML { .. } => &EMPTY_CLASS_LIST,
         }
     }
 
     /// Try to mutate the CSS classes applied to this node
     ///
-    /// Returns `Some(&mut Vec<String>)` for node types that support mutable CSS
+    /// Returns `Some(&mut ClassList)` for node types that support mutable CSS
     /// classes, or `None` for node types that don't support CSS classes
     /// (SvgNode, MathML).
-    pub const fn classes_mut(&mut self) -> Option<&mut Vec<String>> {
+    pub const fn classes_mut(&mut self) -> Option<&mut ClassList> {
         match self {
             Self::DomSpan(span) => Some(&mut span.classes),
             Self::Anchor(anchor) => Some(&mut anchor.classes),
@@ -1018,7 +1022,7 @@ impl HtmlDomNode {
     /// MathML), always returns `false`.
     #[must_use]
     pub fn has_class(&self, class_name: &str) -> bool {
-        self.classes().iter().any(|cls| cls == class_name)
+        self.classes().contains(class_name)
     }
 
     /// Get the attributes of this node

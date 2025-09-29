@@ -5,6 +5,8 @@
 //! mathematical symbols. It handles the complex logic for choosing appropriate
 //! delimiter sizes and styles based on the content they surround.
 
+use alloc::borrow::Cow;
+
 use phf::{Set, phf_set};
 
 use crate::namespace::KeyMap;
@@ -18,6 +20,7 @@ use crate::options::Options;
 use crate::style::{SCRIPT, SCRIPTSCRIPT, Style, TEXT};
 use crate::svg_geometry::{inner_path, sqrt_path, tall_delim};
 use crate::symbols::Mode;
+use crate::types::ClassList;
 use crate::types::{CssProperty, ParseError, ParseErrorKind};
 use crate::units::make_em;
 use crate::{CharacterMetrics, KatexContext};
@@ -103,7 +106,7 @@ fn style_wrap(
     delim: HtmlDomNode,
     to_style: &'static Style,
     options: &Options,
-    classes: Vec<String>,
+    classes: ClassList,
 ) -> DomSpan {
     let new_options = options.having_base_style(Some(to_style));
     let mut combined_classes = classes;
@@ -121,22 +124,23 @@ fn style_wrap(
 /// Makes a small delimiter. This is a delimiter that comes in the Main-Regular
 /// font, but is restyled to either be in textstyle, scriptstyle, or
 /// scriptscriptstyle.
-pub fn make_small_delim(
+pub fn make_small_delim<T: Into<ClassList>>(
     ctx: &KatexContext,
     delim: &str,
     style: &'static Style,
     center: bool,
     options: &Options,
     mode: Mode,
-    classes: Vec<String>,
+    classes: T,
 ) -> Result<DomSpan, ParseError> {
+    let classes = classes.into();
     let text = make_symbol(
         ctx,
         delim,
         "Main-Regular",
         mode,
         Some(options),
-        Some(classes.clone()),
+        classes.clone(),
     )?;
     let mut span = style_wrap(text.into(), style, options, classes);
 
@@ -156,24 +160,35 @@ fn mathrm_size(
     options: &Options,
 ) -> Result<SymbolNode, ParseError> {
     let font_name = format!("Size{size}-Regular");
-    make_symbol(ctx, value, &font_name, mode, Some(options), None)
+    make_symbol(
+        ctx,
+        value,
+        &font_name,
+        mode,
+        Some(options),
+        ClassList::Empty,
+    )
 }
 
 /// Makes a large delimiter. This is a delimiter that comes in the Size1, Size2,
 /// Size3, or Size4 fonts. It is always rendered in textstyle.
-pub fn make_large_delim(
+pub fn make_large_delim<T: Into<ClassList>>(
     ctx: &KatexContext,
     delim: &str,
     size: usize,
     center: bool,
     options: &Options,
     mode: Mode,
-    classes: Vec<String>,
+    classes: T,
 ) -> Result<DomSpan, ParseError> {
+    let classes = classes.into();
     let inner = mathrm_size(ctx, delim, size, mode, options)?;
     let mut span = style_wrap(
         make_span(
-            vec!["delimsizing".to_owned(), format!("size{size}")],
+            vec![
+                Cow::Borrowed("delimsizing"),
+                Cow::Owned(format!("size{size}")),
+            ],
             vec![inner.into()],
             Some(options),
             None,
@@ -200,7 +215,7 @@ fn center_span(mut span: DomSpan, options: &Options, style: &'static Style) -> D
     // Apply the shift to center the span around the axis
     // In KaTeX.js, this modifies the span's style to apply vertical positioning
     // We'll create a modified span with the vertical shift applied
-    span.classes.push("delimcenter".to_owned());
+    span.classes.push("delimcenter");
     span.height -= shift;
     span.depth += shift;
     span.style.insert(CssProperty::Top, make_em(shift));
@@ -216,18 +231,18 @@ fn make_glyph_span(
     font: &str,
     mode: Mode,
 ) -> Result<VListChild, ParseError> {
-    let size_class = if font == "Size1-Regular" {
-        "delim-size1"
+    let size_classes = if font == "Size1-Regular" {
+        &["delimsizinginner", "delim-size1"]
     } else {
-        "delim-size4"
+        &["delimsizinginner", "delim-size4"]
     };
 
     let corner = make_span(
-        vec!["delimsizinginner".to_owned(), size_class.to_owned()],
+        ClassList::Const(size_classes),
         vec![
             make_span(
-                vec![],
-                vec![make_symbol(ctx, symbol, font, mode, None, None)?.into()],
+                ClassList::Empty,
+                vec![make_symbol(ctx, symbol, font, mode, None, ClassList::Empty)?.into()],
                 None,
                 None,
             )
@@ -288,7 +303,7 @@ fn make_inner(
         .children(svg_children)
         .attributes(svg_attributes)
         .build();
-    let mut span = make_svg_span(vec![], vec![svg_node], options);
+    let mut span = make_svg_span(ClassList::Empty, vec![svg_node], options);
 
     // Set span properties to match JavaScript version
     span.height = height;
@@ -300,15 +315,16 @@ fn make_inner(
 
 /// Make a stacked delimiter out of a given delimiter, with the total height at
 /// least `height_total`. This routine is mentioned on page 442 of the TeXbook.
-pub fn make_stacked_delim(
+pub fn make_stacked_delim<T: Into<ClassList>>(
     ctx: &KatexContext,
     delim: &str,
     height_total: f64,
     center: bool,
     options: &Options,
     mode: Mode,
-    classes: Vec<String>,
+    classes: T,
 ) -> Result<DomSpan, ParseError> {
+    let classes = classes.into();
     // There are four parts, the top, an optional middle, a repeated part, and a
     // bottom.
     let mut top = delim.to_owned();
@@ -562,7 +578,7 @@ pub fn make_stacked_delim(
             .children(vec![SvgChildNode::Path(path)])
             .attributes(svg_attributes)
             .build();
-        let mut wrapper = make_svg_span(vec![], vec![svg_node], options);
+        let mut wrapper = make_svg_span(ClassList::Empty, vec![svg_node], options);
         wrapper.height = view_box_height / 1000.0;
         wrapper.style.insert(CssProperty::Width, width);
         wrapper.style.insert(CssProperty::Height, height);
@@ -581,7 +597,7 @@ pub fn make_stacked_delim(
 
     let span = style_wrap(
         make_span(
-            vec!["delimsizing".to_owned(), "mult".to_owned()],
+            ClassList::Const(&["delimsizing", "mult"]),
             vec![inner.into()],
             Some(&new_options),
             None,
@@ -732,7 +748,7 @@ fn sqrt_svg(
         .children(svg_children)
         .attributes(svg_attributes)
         .build();
-    let mut svg = make_svg_span(vec!["hide-tail".to_owned()], vec![svg_node], options);
+    let mut svg = make_svg_span("hide-tail", vec![svg_node], options);
 
     // Set style properties
     svg.style
@@ -744,14 +760,15 @@ fn sqrt_svg(
 
 /// Used to create a delimiter of a specific size, where `size` is 1, 2, 3, or
 /// 4.
-pub fn sized_delim(
+pub fn sized_delim<T: Into<ClassList>>(
     ctx: &KatexContext,
     delim: &str,
     size: usize,
     options: &Options,
     mode: Mode,
-    classes: Vec<String>,
+    classes: T,
 ) -> Result<DomSpan, ParseError> {
+    let classes = classes.into();
     // < and > turn into \langle and \rangle in delimiters
     let delim = match delim {
         "<" | "\\lt" | "\u{27e8}" => "\\langle",
@@ -832,15 +849,16 @@ fn delim_type_to_font(delimiter_type: &DelimiterType) -> String {
 /// Make a delimiter of a given height+depth, with optional centering. Here, we
 /// traverse the sequences, and create a delimiter that the sequence tells us
 /// to.
-pub fn custom_sized_delim(
+pub fn custom_sized_delim<T: Into<ClassList>>(
     ctx: &KatexContext,
     delim: &str,
     height: f64,
     center: bool,
     options: &Options,
     mode: Mode,
-    classes: Vec<String>,
+    classes: T,
 ) -> Result<DomSpan, ParseError> {
+    let classes = classes.into();
     let delim = match delim {
         "<" | "\\lt" | "\u{27e8}" => "\\langle",
         ">" | "\\gt" | "\u{27e9}" => "\\rangle",
@@ -875,15 +893,16 @@ pub fn custom_sized_delim(
 
 /// Make a delimiter for use with `\left` and `\right`, given a height and depth
 /// of an expression that the delimiters surround.
-pub fn left_right_delim(
+pub fn left_right_delim<T: Into<ClassList>>(
     ctx: &KatexContext,
     delim: &str,
     height: f64,
     depth: f64,
     options: &Options,
     mode: Mode,
-    classes: Vec<String>,
+    classes: T,
 ) -> Result<DomSpan, ParseError> {
+    let classes = classes.into();
     // We always center \left/\right delimiters, so the axis is always shifted
     let axis_height = options.font_metrics().axis_height * options.size_multiplier;
 

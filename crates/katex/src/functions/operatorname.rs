@@ -100,7 +100,7 @@ pub fn html_builder(
         .collect();
 
     let base = if body.is_empty() {
-        make_span(vec!["mop".to_owned()], vec![], Some(options), None)
+        make_span("mop", vec![], Some(options), None)
     } else {
         let mut expression = build_html::build_expression(
             ctx,
@@ -114,7 +114,7 @@ pub fn html_builder(
             normalize_symbol_text(node);
         }
 
-        make_span(vec!["mop".to_owned()], expression, Some(options), None)
+        make_span("mop", expression, Some(options), None)
     };
 
     if has_limits {

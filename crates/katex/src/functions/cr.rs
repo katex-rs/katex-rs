@@ -69,9 +69,9 @@ fn html_builder(
     ctx: &KatexContext,
 ) -> Result<HtmlDomNode, ParseError> {
     if let ParseNode::Cr(cr) = node {
-        let mut span = make_span(vec!["mspace".to_owned()], vec![], Some(options), None);
+        let mut span = make_span("mspace", vec![], Some(options), None);
         if cr.new_line {
-            span.classes.push("newline".to_owned());
+            span.classes.push("newline");
             if let Some(size) = &cr.size {
                 span.style.insert(
                     CssProperty::MarginTop,

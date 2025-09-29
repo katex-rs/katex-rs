@@ -13,7 +13,7 @@ use crate::units::make_em;
 use crate::utils::escape_into;
 #[cfg(feature = "wasm")]
 use crate::web_context::WebContext;
-use crate::{namespace::KeyMap, types::CssStyle};
+use crate::{namespace::KeyMap, types::ClassList, types::CssStyle};
 use bon::bon;
 use core::fmt::{self, Debug, Write as _};
 use strum::AsRefStr;
@@ -141,7 +141,7 @@ pub type MathDomFragment = DocumentFragment<MathDomNode>;
 pub fn make_fragment(children: Vec<MathDomNode>) -> MathDomFragment {
     MathDomFragment {
         children,
-        classes: vec![],
+        classes: ClassList::Empty,
         depth: 0.0,
         height: 0.0,
         max_font_size: 0.0,
@@ -159,7 +159,7 @@ pub struct MathNode {
     /// Child nodes of the MathML node
     pub children: Vec<MathDomNode>,
     /// CSS classes applied to the MathML node
-    pub classes: Vec<String>,
+    pub classes: ClassList,
 }
 
 impl Debug for MathNode {
@@ -188,7 +188,7 @@ impl MathNode {
         /// Child nodes
         children: Option<Vec<MathDomNode>>,
         /// CSS classes
-        classes: Option<Vec<String>>,
+        classes: Option<ClassList>,
     ) -> Self {
         Self {
             node_type,
@@ -205,7 +205,7 @@ impl MathNode {
             node_type,
             attributes: KeyMap::default(),
             children,
-            classes: Vec::new(),
+            classes: ClassList::Empty,
         }
     }
 
@@ -221,11 +221,6 @@ impl MathNode {
         V: Into<String>,
     {
         self.attributes.insert(key.into(), value.into());
-    }
-
-    /// Add a CSS class to this node
-    pub fn add_class(&mut self, class: String) {
-        self.classes.push(class);
     }
 
     fn to_text(&self) -> String {

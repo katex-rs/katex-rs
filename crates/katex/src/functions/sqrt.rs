@@ -13,6 +13,7 @@ use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeSqrt};
 use crate::style::{SCRIPTSCRIPT, TEXT};
+use crate::types::ClassList;
 use crate::types::{CssProperty, ParseError, ParseErrorKind};
 use crate::units::make_em;
 use crate::{KatexContext, build_html, build_mathml};
@@ -114,7 +115,7 @@ fn html_builder(
             children: vec![
                 VListElem::builder()
                     .elem(inner)
-                    .wrapper_classes(vec!["svg-align".to_owned()])
+                    .wrapper_classes(ClassList::Static("svg-align"))
                     .build()
                     .into(),
                 VListChild::Kern(VListKern {
@@ -134,7 +135,7 @@ fn html_builder(
 
     let Some(sqrt_index) = &sqrt_node.index else {
         return Ok(make_span(
-            vec!["mord".to_owned(), "sqrt".to_owned()],
+            ClassList::Const(&["mord", "sqrt"]),
             vec![body.into()],
             Some(options),
             None,
@@ -163,15 +164,10 @@ fn html_builder(
 
     // Add a class surrounding it so we can add on the appropriate
     // kerning
-    let root_v_list_wrap = make_span(
-        vec!["root".to_owned()],
-        vec![root_v_list.into()],
-        Some(options),
-        None,
-    );
+    let root_v_list_wrap = make_span("root", vec![root_v_list.into()], Some(options), None);
 
     Ok(make_span(
-        vec!["mord".to_owned(), "sqrt".to_owned()],
+        ClassList::Const(&["mord", "sqrt"]),
         vec![root_v_list_wrap.into(), body.into()],
         Some(options),
         None,

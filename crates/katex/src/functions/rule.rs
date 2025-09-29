@@ -3,6 +3,7 @@
 //! This module implements the LaTeX `\rule` command, which creates horizontal
 //! or vertical rules (lines) with specified width and height.
 
+use crate::ClassList;
 use crate::context::KatexContext;
 use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::dom_tree::{HtmlDomNode, Span};
@@ -95,7 +96,7 @@ fn html_builder(
         Ok(HtmlDomNode::DomSpan(
             Span::builder()
                 .children(vec![]) // Empty content for the rule
-                .classes(vec!["mord".to_owned(), "rule".to_owned()])
+                .classes(ClassList::Const(&["mord", "rule"]))
                 .height(height + shift)
                 .depth(-shift)
                 .width(Some(width))

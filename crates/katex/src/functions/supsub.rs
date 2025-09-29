@@ -18,7 +18,7 @@ use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNode, ParseNodeOp, 
 use crate::style::DISPLAY;
 use crate::types::{ParseError, ParseErrorKind};
 use crate::units::make_em;
-use crate::{KatexContext, build_html, build_mathml};
+use crate::{ClassList, KatexContext, build_html, build_mathml};
 
 /// HTML builder delegate for supsub nodes
 ///
@@ -95,7 +95,7 @@ fn html_builder(
         build_html::build_group(ctx, base, options, None)?
     } else {
         // When base is None, create an empty span
-        make_span(vec![], vec![], Some(options), None).into()
+        make_span(ClassList::Empty, vec![], Some(options), None).into()
     };
 
     let mut super_m = None;
@@ -282,10 +282,10 @@ fn html_builder(
     let mclass =
         build_html::get_type_of_dom_tree(&base_html, Some(Side::Right)).unwrap_or(DomType::Mord);
     Ok(make_span(
-        vec![mclass.as_ref().to_owned()],
+        mclass.as_str(),
         vec![
             base_html,
-            make_span(vec!["msupsub".to_owned()], vec![supsub.into()], None, None).into(),
+            make_span("msupsub", vec![supsub.into()], None, None).into(),
         ],
         Some(options),
         None,

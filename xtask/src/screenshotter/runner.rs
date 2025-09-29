@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 use anyhow::{Context, Result, anyhow, bail};
 use camino::Utf8PathBuf;
 use indicatif::ProgressBar;
-use serde_json::{Value as JsonValue, json};
+use serde_json::Value as JsonValue;
 use thirtyfour::WebDriver;
 use tokio::task::{JoinSet, spawn_blocking};
 use tokio::time::sleep;
@@ -195,7 +195,6 @@ async fn run_browser(
                 process_next_compare(
                     &logger,
                     compare_progress.as_ref(),
-                    &driver,
                     &mut compare_tasks,
                     &mut case_states,
                     &mut queue,
@@ -344,7 +343,6 @@ async fn run_browser(
             process_next_compare(
                 &logger,
                 compare_progress.as_ref(),
-                &driver,
                 &mut compare_tasks,
                 &mut case_states,
                 &mut queue,
@@ -359,7 +357,6 @@ async fn run_browser(
         process_next_compare(
             &logger,
             compare_progress.as_ref(),
-            &driver,
             &mut compare_tasks,
             &mut case_states,
             &mut queue,
@@ -442,7 +439,6 @@ async fn run_browser(
 async fn process_next_compare(
     logger: &Logger,
     compare_progress: Option<&ProgressBar>,
-    driver: &WebDriver,
     compare_tasks: &mut JoinSet<(CompareMeta, Result<CompareWorkResult>)>,
     case_states: &mut [CaseState],
     queue: &mut VecDeque<usize>,

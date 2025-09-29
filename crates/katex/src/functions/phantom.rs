@@ -14,7 +14,7 @@ use crate::parser::parse_node::{
     AnyParseNode, NodeType, ParseNodeHphantom, ParseNodePhantom, ParseNodeVphantom,
 };
 use crate::types::{ParseError, ParseErrorKind};
-use crate::{build_html, build_mathml};
+use crate::{ClassList, build_html, build_mathml};
 
 /// Registers phantom functions in the KaTeX context
 pub fn define_phantom(ctx: &mut crate::KatexContext) {
@@ -123,7 +123,7 @@ fn html_builder_hphantom(
 
     let phantom_options = options.with_phantom();
     let inner = build_html::build_group(ctx, &hphantom_node.body, &phantom_options, None)?;
-    let mut node_span = make_span(vec![], vec![inner], None, None);
+    let mut node_span = make_span(ClassList::Empty, vec![inner], None, None);
     node_span.height = 0.0;
     node_span.depth = 0.0;
 
@@ -148,13 +148,7 @@ fn html_builder_hphantom(
     )?;
 
     // For spacing, TeX treats \hphantom as a math group (same spacing as ord).
-    Ok(make_span(
-        vec!["mord".to_owned()],
-        vec![vlist.into()],
-        Some(options),
-        None,
-    )
-    .into())
+    Ok(make_span("mord", vec![vlist.into()], Some(options), None).into())
 }
 
 /// HTML builder for \vphantom nodes
@@ -171,11 +165,11 @@ fn html_builder_vphantom(
 
     let phantom_options = options.with_phantom();
     let inner = build_html::build_group(ctx, &vphantom_node.body, &phantom_options, None)?;
-    let inner_span = make_span(vec!["inner".to_owned()], vec![inner], None, None);
-    let fix = make_span(vec!["fix".to_owned()], vec![], None, None);
+    let inner_span = make_span("inner", vec![inner], None, None);
+    let fix = make_span("fix", vec![], None, None);
 
     Ok(make_span(
-        vec!["mord".to_owned(), "rlap".to_owned()],
+        ClassList::Const(&["mord", "rlap"]),
         vec![inner_span.into(), fix.into()],
         Some(options),
         None,

@@ -14,7 +14,7 @@ use crate::parser::parse_node::ParseNode;
 use crate::style::Style;
 use crate::types::{CssProperty, ParseError};
 use crate::units::make_em;
-use crate::{KatexContext, build_html};
+use crate::{ClassList, KatexContext, build_html};
 
 /// Helper struct for superscript/subscript elements with kerning information.
 struct SupSubElem {
@@ -57,7 +57,7 @@ pub fn assemble_sup_sub(
     base_shift: f64,
 ) -> Result<HtmlDomNode, ParseError> {
     // Wrap base in a span if it's not already
-    let base = HtmlDomNode::from(make_span(vec![], vec![base], Some(options), None));
+    let base = HtmlDomNode::from(make_span(ClassList::Empty, vec![base], Some(options), None));
     let base_height = base.height();
     let base_depth = base.depth();
 
@@ -255,7 +255,7 @@ pub fn assemble_sup_sub(
     let mut parts = vec![final_group.into()];
     if has_sub && slant != 0.0 && !sub_is_single_character {
         // Add spacer to prevent overlap
-        let mut spacer = make_span(vec!["mspace".to_owned()], vec![], Some(options), None);
+        let mut spacer = make_span("mspace", vec![], Some(options), None);
         spacer
             .style
             .insert(CssProperty::MarginRight, make_em(slant));
@@ -263,7 +263,7 @@ pub fn assemble_sup_sub(
     }
 
     Ok(make_span(
-        vec!["mop".to_owned(), "op-limits".to_owned()],
+        ClassList::Const(&["mop", "op-limits"]),
         parts,
         Some(options),
         None,

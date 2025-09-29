@@ -118,7 +118,7 @@ fn html_builder(
             Ok(HtmlDomNode::DomSpan(
                 Span::builder()
                     .children(vec![]) // Empty content for spacing
-                    .classes(vec!["mspace".to_owned()])
+                    .classes("mspace".into())
                     .max_font_size(options.size_multiplier)
                     .style(style)
                     .build(Some(options)),

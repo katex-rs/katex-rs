@@ -407,7 +407,7 @@ pub fn define_cd(ctx: &mut crate::KatexContext) {
             let mut parent =
                 wrap_fragment(build_group(ctx, &group.fragment, options, None)?, options);
             if let Some(classes) = parent.classes_mut() {
-                classes.push("cd-vert-arrow".to_owned());
+                classes.push("cd-vert-arrow");
             }
             Ok(parent)
         }),

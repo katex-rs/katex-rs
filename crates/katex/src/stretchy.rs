@@ -5,6 +5,8 @@
 //! for creating SVG spans, enclosing spans, and MathML nodes for stretchy
 //! symbols.
 
+use alloc::borrow::Cow;
+
 use crate::ParseError;
 use crate::build_common::{make_span, make_svg_span};
 use crate::dom_tree::{DomSpan, HtmlDomNode, LineNode, PathNode, SvgChildNode, SvgNode};
@@ -12,6 +14,7 @@ use crate::mathml_tree::{MathNode, MathNodeType, TextNode};
 use crate::namespace::KeyMap;
 use crate::options::Options;
 use crate::parser::parse_node::AnyParseNode;
+use crate::types::ClassList;
 use crate::types::CssProperty;
 use crate::types::ParseErrorKind;
 use crate::units::make_em;
@@ -244,26 +247,18 @@ pub fn svg_span(group: &AnyParseNode, options: &Options) -> Result<HtmlDomNode, 
         let height_val = data.height / 1000.0;
         let view_box_width = 400000.0;
 
-        let (width_classes, aligns) = match data.paths.len() {
+        let (width_classes, aligns): (&[&str], &[&str]) = match data.paths.len() {
             1 => {
                 let align = data.align.unwrap_or("xMinYMin");
-                (vec!["hide-tail".to_owned()], vec![align.to_owned()])
+                (&["hide-tail"], &[align])
             }
             2 => (
-                vec!["halfarrow-left".to_owned(), "halfarrow-right".to_owned()],
-                vec!["xMinYMin".to_owned(), "xMaxYMin".to_owned()],
+                &["halfarrow-left", "halfarrow-right"],
+                &["xMinYMin", "xMaxYMin"],
             ),
             3 => (
-                vec![
-                    "brace-left".to_owned(),
-                    "brace-center".to_owned(),
-                    "brace-right".to_owned(),
-                ],
-                vec![
-                    "xMinYMin".to_owned(),
-                    "xMidYMin".to_owned(),
-                    "xMaxYMin".to_owned(),
-                ],
+                &["brace-left", "brace-center", "brace-right"],
+                &["xMinYMin", "xMidYMin", "xMaxYMin"],
             ),
             _ => {
                 return Err(ParseError::new(
@@ -274,7 +269,7 @@ pub fn svg_span(group: &AnyParseNode, options: &Options) -> Result<HtmlDomNode, 
             }
         };
 
-        for i in 0..data.paths.len() {
+        for (i, (width_class, align)) in width_classes.iter().zip(aligns.iter()).enumerate() {
             let path = PathNode {
                 path_name: data.paths[i].to_owned(),
                 alternate: None,
@@ -291,14 +286,11 @@ pub fn svg_span(group: &AnyParseNode, options: &Options) -> Result<HtmlDomNode, 
                     "viewBox".to_owned(),
                     format!("0 0 {} {}", view_box_width, data.height),
                 ),
-                (
-                    "preserveAspectRatio".to_owned(),
-                    format!("{} slice", aligns[i]),
-                ),
+                ("preserveAspectRatio".to_owned(), format!("{align} slice")),
             ]);
 
             let span = make_span(
-                vec![width_classes[i].clone()],
+                ClassList::Static(width_class),
                 vec![HtmlDomNode::SvgNode(svg_node)],
                 Some(options),
                 None,
@@ -323,7 +315,7 @@ pub fn svg_span(group: &AnyParseNode, options: &Options) -> Result<HtmlDomNode, 
         }
 
         // For multiple paths, create a stretchy span containing all spans
-        let mut span = make_span(vec!["stretchy".to_owned()], spans, Some(options), None);
+        let mut span = make_span("stretchy", spans, Some(options), None);
         span.height = height_val;
         span.style.insert(CssProperty::Height, make_em(height_val));
         if data.min_width > 0.0 {
@@ -347,7 +339,7 @@ pub fn enclose_span(
 
     let is_box_like = label.contains("fbox") || label.contains("color");
     if is_box_like || label == "angl" {
-        let classes = vec!["stretchy".to_owned(), label.to_owned()];
+        let classes = vec![Cow::Borrowed("stretchy"), Cow::Owned(label.to_owned())];
         let mut span = make_span(classes, vec![], Some(options), None);
 
         if label == "fbox"
@@ -430,7 +422,7 @@ pub fn math_ml_node(label: &str) -> MathNode {
         node_type: MathNodeType::Mo,
         attributes: KeyMap::default(),
         children: vec![text_node.into()],
-        classes: Vec::new(),
+        classes: ClassList::Empty,
     };
 
     node.attributes

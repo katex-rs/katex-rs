@@ -14,7 +14,7 @@ use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType, TextNode};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeOverline};
 use crate::types::{ParseError, ParseErrorKind};
-use crate::{KatexContext, build_html, build_mathml};
+use crate::{ClassList, KatexContext, build_html, build_mathml};
 
 /// Registers the \overline function in the KaTeX context
 pub fn define_overline(ctx: &mut KatexContext) {
@@ -81,7 +81,7 @@ fn html_builder(
     )?;
 
     Ok(make_span(
-        vec!["mord".to_owned(), "overline".to_owned()],
+        ClassList::Const(&["mord", "overline"]),
         vec![vlist.into()],
         Some(options),
         None,
