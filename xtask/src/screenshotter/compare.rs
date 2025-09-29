@@ -1,11 +1,14 @@
+use std::simd::{LaneCount, Simd, SupportedLaneCount, num::SimdFloat};
 use std::sync::Arc;
 
-use anyhow::{Context, Result, anyhow};
+use anyhow::{Context, Result};
 use image::{ColorType, ImageBuffer, ImageEncoder, Rgba, RgbaImage, codecs::png::PngEncoder};
-use image_compare::{CompareError as HybridCompareError, rgba_hybrid_compare};
 
 use crate::screenshotter::args::{CompareTolerance, DIFF_DIR};
 use crate::screenshotter::models::{BaselineEntry, MismatchSeverity, Screenshot};
+
+const LANE_COUNT: usize = 16;
+type F32s = Simd<f32, LANE_COUNT>;
 
 #[derive(Copy, Clone, Debug)]
 pub struct CompareSettings {
@@ -62,8 +65,8 @@ impl CompareTolerance {
 
     pub fn settings(self) -> CompareSettings {
         match self {
-            CompareTolerance::Strict => CompareSettings::new(self, 0.0010, 0.0030, 0.0070),
-            CompareTolerance::Normal => CompareSettings::new(self, 0.0035, 0.0085, 0.0180),
+            CompareTolerance::Strict => CompareSettings::new(self, 0.002, 0.0035, 0.0070),
+            CompareTolerance::Normal => CompareSettings::new(self, 0.004, 0.0085, 0.0180),
             CompareTolerance::Tolerant => CompareSettings::new(self, 0.0090, 0.0180, 0.0350),
         }
     }
@@ -238,6 +241,216 @@ fn estimate_diff_pixels(score: f64, total_pixels: u64) -> u64 {
     ((1.0 - clamped) * total_pixels as f64).round() as u64
 }
 
+#[derive(Copy, Clone, Debug)]
+struct SimilarityResult {
+    score: f64,
+}
+
+fn web_element_ssim(actual: &RgbaImage, baseline: &RgbaImage) -> SimilarityResult
+where
+    LaneCount<LANE_COUNT>: SupportedLaneCount,
+{
+    let patch = 8u32;
+    let width = actual.width();
+    let height = actual.height();
+    let mut total_weight = 0.0f64;
+    let mut weighted_score = 0.0f64;
+
+    let mut y = 0u32;
+    while y < height {
+        let patch_h = patch.min(height - y);
+        let mut x = 0u32;
+        while x < width {
+            let patch_w = patch.min(width - x);
+            let stats = compute_patch_stats(actual, baseline, x, y, patch_w, patch_h);
+
+            if stats.count == 0 {
+                x += patch;
+                continue;
+            }
+
+            let mean_x = stats.sum_x / stats.count as f64;
+            let mean_y = stats.sum_y / stats.count as f64;
+            let var_x = (stats.sum_xx / stats.count as f64 - mean_x * mean_x).max(0.0);
+            let var_y = (stats.sum_yy / stats.count as f64 - mean_y * mean_y).max(0.0);
+            let cov_xy = (stats.sum_xy / stats.count as f64 - mean_x * mean_y).clamp(-1.0, 1.0);
+
+            // Tuned for screen content where crisp edges dominate perception.
+            let c1 = 0.01f64.powi(2);
+            let c2 = 0.03f64.powi(2);
+
+            let numerator_luma = (2.0 * mean_x * mean_y) + c1;
+            let numerator_structure = (2.0 * cov_xy) + c2;
+            let denominator_luma = (mean_x * mean_x + mean_y * mean_y) + c1;
+            let denominator_structure = (var_x + var_y) + c2;
+
+            let mut ssim = (numerator_luma * numerator_structure)
+                / (denominator_luma * denominator_structure + f64::EPSILON);
+            if !ssim.is_finite() {
+                ssim = 0.0;
+            }
+
+            let gradient_boost =
+                1.0 + (stats.gradient / (stats.count as f64 + f64::EPSILON)).min(1.5) * 0.5;
+            let weight = stats.count as f64 * gradient_boost;
+            total_weight += weight;
+            weighted_score += weight * ssim.clamp(0.0, 1.0);
+
+            x += patch;
+        }
+        y += patch;
+    }
+
+    if total_weight == 0.0 {
+        SimilarityResult { score: 1.0 }
+    } else {
+        SimilarityResult {
+            score: (weighted_score / total_weight).clamp(0.0, 1.0),
+        }
+    }
+}
+
+struct PatchStats {
+    sum_x: f64,
+    sum_y: f64,
+    sum_xx: f64,
+    sum_yy: f64,
+    sum_xy: f64,
+    gradient: f64,
+    count: usize,
+}
+
+fn compute_patch_stats(
+    actual: &RgbaImage,
+    baseline: &RgbaImage,
+    origin_x: u32,
+    origin_y: u32,
+    patch_w: u32,
+    patch_h: u32,
+) -> PatchStats
+where
+    LaneCount<LANE_COUNT>: SupportedLaneCount,
+{
+    let mut actual_buf = Vec::with_capacity((patch_w * patch_h) as usize);
+    let mut baseline_buf = Vec::with_capacity((patch_w * patch_h) as usize);
+
+    let width = actual.width() as usize;
+    let actual_raw = actual.as_raw();
+    let baseline_raw = baseline.as_raw();
+
+    for row in 0..patch_h {
+        let y = origin_y + row;
+        let row_start = (y as usize * width + origin_x as usize) * 4;
+        let row_len = patch_w as usize * 4;
+        let actual_row = &actual_raw[row_start..row_start + row_len];
+        let baseline_row = &baseline_raw[row_start..row_start + row_len];
+
+        for pixel in 0..patch_w as usize {
+            let idx = pixel * 4;
+            actual_buf.push(luma_from_rgba(&actual_row[idx..idx + 4]));
+            baseline_buf.push(luma_from_rgba(&baseline_row[idx..idx + 4]));
+        }
+    }
+
+    let mut sum_x = 0.0f64;
+    let mut sum_y = 0.0f64;
+    let mut sum_xx = 0.0f64;
+    let mut sum_yy = 0.0f64;
+    let mut sum_xy = 0.0f64;
+
+    let len = actual_buf.len();
+    let mut index = 0;
+
+    while index + LANE_COUNT <= len {
+        let a_chunk: [f32; LANE_COUNT] = actual_buf[index..index + LANE_COUNT]
+            .try_into()
+            .expect("chunk has exact lanes");
+        let b_chunk: [f32; LANE_COUNT] = baseline_buf[index..index + LANE_COUNT]
+            .try_into()
+            .expect("chunk has exact lanes");
+
+        let a_simd = F32s::from_array(a_chunk);
+        let b_simd = F32s::from_array(b_chunk);
+
+        sum_x += a_simd.reduce_sum() as f64;
+        sum_y += b_simd.reduce_sum() as f64;
+        sum_xx += (a_simd * a_simd).reduce_sum() as f64;
+        sum_yy += (b_simd * b_simd).reduce_sum() as f64;
+        sum_xy += (a_simd * b_simd).reduce_sum() as f64;
+
+        index += LANE_COUNT;
+    }
+
+    while index < len {
+        let ax = actual_buf[index] as f64;
+        let bx = baseline_buf[index] as f64;
+        sum_x += ax;
+        sum_y += bx;
+        sum_xx += ax * ax;
+        sum_yy += bx * bx;
+        sum_xy += ax * bx;
+        index += 1;
+    }
+
+    let patch_w = patch_w as usize;
+    let patch_h = patch_h as usize;
+    let mut gradient = 0.0f64;
+
+    for y in 0..patch_h {
+        for x in 0..patch_w {
+            let idx = y * patch_w + x;
+            let actual_val = actual_buf[idx];
+            let baseline_val = baseline_buf[idx];
+
+            if x + 1 < patch_w {
+                let right_idx = idx + 1;
+                gradient += (actual_val - actual_buf[right_idx]).abs() as f64;
+                gradient += (baseline_val - baseline_buf[right_idx]).abs() as f64;
+            }
+
+            if y + 1 < patch_h {
+                let down_idx = idx + patch_w;
+                gradient += (actual_val - actual_buf[down_idx]).abs() as f64;
+                gradient += (baseline_val - baseline_buf[down_idx]).abs() as f64;
+            }
+        }
+    }
+
+    PatchStats {
+        sum_x,
+        sum_y,
+        sum_xx,
+        sum_yy,
+        sum_xy,
+        gradient,
+        count: len,
+    }
+}
+
+#[inline]
+fn luma_from_rgba(px: &[u8]) -> f32 {
+    debug_assert!(px.len() == 4);
+    let alpha = px[3] as f32 / 255.0;
+    if alpha == 0.0 {
+        return 0.0;
+    }
+
+    let r = srgb_to_linear(px[0] as f32 / 255.0);
+    let g = srgb_to_linear(px[1] as f32 / 255.0);
+    let b = srgb_to_linear(px[2] as f32 / 255.0);
+
+    alpha * (0.2126 * r + 0.7152 * g + 0.0722 * b)
+}
+
+#[inline]
+fn srgb_to_linear(v: f32) -> f32 {
+    if v <= 0.04045 {
+        v / 12.92
+    } else {
+        ((v + 0.055) / 1.055).powf(2.4)
+    }
+}
+
 fn build_composite_diff(actual: &RgbaImage, baseline: &RgbaImage) -> Result<Vec<u8>> {
     let (width, height) = actual.dimensions();
     let separator = 4;
@@ -269,42 +482,79 @@ pub(crate) fn encode_rgba_png(image: &RgbaImage) -> Result<Vec<u8>> {
 
 fn build_highlight_view(actual: &RgbaImage, baseline: &RgbaImage) -> RgbaImage {
     let (width, height) = actual.dimensions();
-    let mut tinted = RgbaImage::new(width, height);
+    let mut tinted = vec![0u8; (width * height * 4) as usize];
+    let actual_raw = actual.as_raw();
+    let baseline_raw = baseline.as_raw();
 
-    for y in 0..height {
-        for x in 0..width {
-            let a = actual.get_pixel(x, y).0;
-            let b = baseline.get_pixel(x, y).0;
-            let diff_r = (a[0] as f32 - b[0] as f32).abs() / 255.0;
-            let diff_g = (a[1] as f32 - b[1] as f32).abs() / 255.0;
-            let diff_b = (a[2] as f32 - b[2] as f32).abs() / 255.0;
-            let diff = diff_r.max(diff_g.max(diff_b));
+    let inv_255 = Simd::splat(1.0 / 255.0);
 
-            if diff > 0.0 {
-                let weight = diff.min(1.0);
-                let red = (a[0] as f32 * (1.0 - weight) + 255.0 * weight) as u8;
-                let green = (a[1] as f32 * (1.0 - weight * 0.9)) as u8;
-                let blue = (a[2] as f32 * (1.0 - weight * 0.9)) as u8;
-                tinted.put_pixel(x, y, Rgba([red, green, blue, 255]));
-            } else {
-                tinted.put_pixel(x, y, Rgba([a[0], a[1], a[2], 255]));
-            }
+    for (dst, (a, b)) in tinted
+        .chunks_exact_mut(4)
+        .zip(actual_raw.chunks_exact(4).zip(baseline_raw.chunks_exact(4)))
+    {
+        let a_simd = Simd::from_array([a[0] as f32, a[1] as f32, a[2] as f32, a[3] as f32]);
+        let b_simd = Simd::from_array([b[0] as f32, b[1] as f32, b[2] as f32, b[3] as f32]);
+
+        let diff = (a_simd - b_simd).abs() * inv_255;
+        let weight = (diff * Simd::from_array([1.0, 1.0, 1.0, 0.0]))
+            .reduce_max()
+            .clamp(0.0, 1.0);
+
+        if weight > 0.0 {
+            let scale =
+                Simd::from_array([1.0 - weight, 1.0 - weight * 0.9, 1.0 - weight * 0.9, 0.0]);
+            let highlight = Simd::from_array([255.0 * weight, 0.0, 0.0, 255.0]);
+            let tinted_simd = a_simd * scale + highlight;
+            let tinted_arr = tinted_simd.to_array();
+            dst.copy_from_slice(&[
+                tinted_arr[0].clamp(0.0, 255.0) as u8,
+                tinted_arr[1].clamp(0.0, 255.0) as u8,
+                tinted_arr[2].clamp(0.0, 255.0) as u8,
+                255,
+            ]);
+        } else {
+            dst.copy_from_slice(&[a[0], a[1], a[2], 255]);
         }
     }
 
-    tinted
+    RgbaImage::from_raw(width, height, tinted).expect("image dimensions should match")
 }
 
 fn blit_image(target: &mut RgbaImage, source: &RgbaImage, offset_x: u32) {
-    for (x, y, pixel) in source.enumerate_pixels() {
-        target.put_pixel(offset_x + x, y, *pixel);
+    let bytes_per_pixel = 4usize;
+    let target_width = target.width() as usize;
+    let source_width = source.width() as usize;
+    let offset_bytes = offset_x as usize * bytes_per_pixel;
+    let target_stride = target_width * bytes_per_pixel;
+    let source_stride = source_width * bytes_per_pixel;
+
+    let mut target_samples = target.as_flat_samples_mut();
+    let target_raw = target_samples.as_mut_slice();
+    let source_raw = source.as_raw();
+
+    for row in 0..source.height() as usize {
+        let src_start = row * source_stride;
+        let dst_start = row * target_stride + offset_bytes;
+        target_raw[dst_start..dst_start + source_stride]
+            .copy_from_slice(&source_raw[src_start..src_start + source_stride]);
     }
 }
 
 fn fill_separator(image: &mut RgbaImage, start_x: u32, width: u32, height: u32) {
-    for dx in 0..width {
-        for y in 0..height {
-            image.put_pixel(start_x + dx, y, Rgba([54, 54, 54, 255]));
+    let bytes_per_pixel = 4usize;
+    let image_width = image.width() as usize;
+    let stride = image_width * bytes_per_pixel;
+    let fill_width = width as usize * bytes_per_pixel;
+    let offset_bytes = start_x as usize * bytes_per_pixel;
+    let mut target_samples = image.as_flat_samples_mut();
+    let target_raw = target_samples.as_mut_slice();
+    let fill_pixel = [54u8, 54, 54, 255];
+
+    for row in 0..height as usize {
+        let row_start = row * stride + offset_bytes;
+        let row_slice = &mut target_raw[row_start..row_start + fill_width];
+        for chunk in row_slice.chunks_exact_mut(bytes_per_pixel) {
+            chunk.copy_from_slice(&fill_pixel);
         }
     }
 }

@@ -1,3 +1,5 @@
+#![feature(portable_simd)]
+
 mod flamegraph;
 mod screenshotter;
 

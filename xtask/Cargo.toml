@@ -20,7 +20,6 @@ tower-http = { version = "0.5", features = ["fs"] }
 url = "2.5"
 xshell = "0.2"
 futures = "0.3"
-image-compare = "0.5"
 strum = "0.26"
 strum_macros = "0.26"
 atty = "0.2"
