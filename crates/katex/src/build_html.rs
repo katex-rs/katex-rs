@@ -282,6 +282,19 @@ fn node_mut_in_slice<'a>(
     }
 }
 
+fn node_mut_in_slice_zero_first<'a>(
+    slice: &'a mut [HtmlDomNode],
+    path: &[usize],
+) -> Option<&'a mut HtmlDomNode> {
+    let (_, rest) = path.split_first()?;
+    if rest.is_empty() {
+        slice.get_mut(0)
+    } else {
+        let children = check_partial_group_mut(slice.get_mut(0)?)?;
+        node_mut_by_path(children, rest)
+    }
+}
+
 fn two_nodes_mut_in_container<'a>(
     container: &'a mut [HtmlDomNode],
     left_path: &[usize],
@@ -301,9 +314,7 @@ fn two_nodes_mut_in_container<'a>(
         }
         let (left_slice, right_slice) = container.split_at_mut(split_at);
         let left_node = node_mut_in_slice(left_slice, left_path)?;
-        let mut adjusted = right_path.to_vec();
-        adjusted[0] = 0;
-        let right_node = node_mut_in_slice(right_slice, &adjusted)?;
+        let right_node = node_mut_in_slice_zero_first(right_slice, right_path)?;
         Some((left_node, right_node))
     } else {
         let split_at = left_path[0];
@@ -311,9 +322,7 @@ fn two_nodes_mut_in_container<'a>(
             return None;
         }
         let (left_slice, right_slice) = container.split_at_mut(split_at);
-        let mut adjusted = left_path.to_vec();
-        adjusted[0] = 0;
-        let right_node = node_mut_in_slice(right_slice, &adjusted)?;
+        let right_node = node_mut_in_slice_zero_first(right_slice, left_path)?;
         let left_node = node_mut_in_slice(left_slice, right_path)?;
         Some((right_node, left_node))
     }
@@ -337,54 +346,51 @@ fn two_nodes_mut_by_path<'a>(
     two_nodes_mut_in_container(container, &left[prefix_len..], &right[prefix_len..])
 }
 
-fn insert_into_container(
+fn insert_into_container<'a>(
     nodes: &mut Vec<HtmlDomNode>,
-    parent_path: &[usize],
+    parent_path: &'a [usize],
     index: usize,
     node: HtmlDomNode,
-) -> (Vec<usize>, usize) {
+) -> (&'a [usize], usize) {
     if let Some(container) = container_mut_by_path(nodes, parent_path) {
         let insert_index = index.min(container.len());
         container.insert(insert_index, node);
-        (parent_path.to_vec(), insert_index)
+        (parent_path, insert_index)
     } else {
         let insert_index = index.min(nodes.len());
         nodes.insert(insert_index, node);
-        (Vec::new(), insert_index)
+        (&[], insert_index)
     }
 }
 
-fn seek_last_nonspace(nodes: &Vec<HtmlDomNode>, path: &[usize]) -> Option<NodePath> {
-    let node = node_ref_by_path(nodes, path)?;
+fn seek_last_nonspace(node: &HtmlDomNode, path: &mut Vec<usize>) -> bool {
     if let Some(children) = check_partial_group(node) {
         for idx in (0..children.len()).rev() {
-            let mut child_path = path.to_vec();
-            child_path.push(idx);
-            if let Some(result) = seek_last_nonspace(nodes, &child_path) {
-                return Some(result);
+            path.push(idx);
+            if seek_last_nonspace(&children[idx], path) {
+                return true;
             }
+            path.pop();
         }
-        None
-    } else if node.has_class("mspace") {
-        None
+        false
     } else {
-        Some(NodePath::new(path.to_vec()))
+        !node.has_class("mspace")
     }
 }
 
-fn find_prev_nonspace_path(nodes: &Vec<HtmlDomNode>, path: &[usize]) -> Option<NodePath> {
-    if path.is_empty() {
-        return None;
-    }
-    let (last, rest) = path.split_last()?;
-    for idx in (0..*last).rev() {
-        let mut candidate = rest.to_vec();
-        candidate.push(idx);
-        if let Some(result) = seek_last_nonspace(nodes, &candidate) {
-            return Some(result);
+fn find_prev_nonspace_path(nodes: &Vec<HtmlDomNode>, path: &mut Vec<usize>) -> bool {
+    while let Some(last) = path.pop() {
+        if let Some(container) = container_ref_by_path(nodes, path) {
+            for idx in (0..last).rev() {
+                path.push(idx);
+                if seek_last_nonspace(&container[idx], path) {
+                    return true;
+                }
+                path.pop();
+            }
         }
     }
-    find_prev_nonspace_path(nodes, rest)
+    false
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -430,13 +436,16 @@ impl PrevTracker {
         }
     }
 
-    fn with_prev_and_current(
+    fn with_prev_and_current<F>(
         &mut self,
         root: &mut Vec<HtmlDomNode>,
         dummy_prev: &mut HtmlDomNode,
         current_path: &[usize],
-        mut f: impl FnMut(&mut HtmlDomNode, &mut HtmlDomNode) -> Result<Option<HtmlDomNode>, ParseError>,
-    ) -> Result<Option<HtmlDomNode>, ParseError> {
+        f: &F,
+    ) -> Result<Option<HtmlDomNode>, ParseError>
+    where
+        F: Fn(&mut HtmlDomNode, &mut HtmlDomNode) -> Result<Option<HtmlDomNode>, ParseError>,
+    {
         match &mut self.state {
             PrevNodeState::Dummy => {
                 let Some(current) = node_mut_by_path(root, current_path) else {
@@ -451,11 +460,11 @@ impl PrevTracker {
                 f(current, node)
             }
             PrevNodeState::Located(_) => {
-                let root_ref = &*root;
-                if let Some(prev_path) = find_prev_nonspace_path(root_ref, current_path) {
+                let mut prev_path = current_path.to_vec();
+                if find_prev_nonspace_path(root, &mut prev_path) {
                     let prev_slice = prev_path.as_slice();
                     let nodes = two_nodes_mut_by_path(root, current_path, prev_slice);
-                    self.state = PrevNodeState::Located(prev_path);
+                    self.state = PrevNodeState::Located(NodePath(prev_path));
                     if let Some((current, prev)) = nodes {
                         f(current, prev)
                     } else {
@@ -492,49 +501,60 @@ impl PrevTracker {
             path.adjust_for_insert(parent_path, index);
         }
     }
+
+    fn adjust_for_insert_self(&mut self, index: usize, slot: usize) {
+        if let PrevNodeState::Located(path) = &mut self.state
+            && path.0[slot] >= index
+        {
+            path.0[slot] += 1;
+        }
+    }
+}
+
+#[derive(Clone, Default)]
+struct TraverseFrame {
+    path: Vec<usize>,
+    index: usize,
+}
+
+fn adjust_frame_paths(frames: &mut [TraverseFrame], parent_path: &[usize], index: usize) {
+    for frame in frames.iter_mut() {
+        if frame.path == parent_path {
+            if frame.index >= index {
+                frame.index += 1;
+            }
+            continue;
+        }
+        if frame.path.len() < parent_path.len() + 1 {
+            continue;
+        }
+        if frame.path[..parent_path.len()] == parent_path[..] {
+            let slot = parent_path.len();
+            if frame.path[slot] >= index {
+                frame.path[slot] += 1;
+            }
+        }
+    }
 }
 
 /// Traverse non-space nodes, calling callback with current and previous node
-fn traverse_non_space_nodes(
+fn traverse_non_space_nodes<F>(
     ctx: &KatexContext,
     root: &mut Vec<HtmlDomNode>,
-    callback: &mut impl FnMut(
-        &KatexContext,
-        &mut HtmlDomNode,
-        &mut HtmlDomNode,
-    ) -> Result<Option<HtmlDomNode>, ParseError>,
+    callback: &F,
     prev: &mut PrevTracker,
     next: &mut Option<HtmlDomNode>,
     dummy_prev: &mut HtmlDomNode,
     is_root: bool,
-) -> Result<(), ParseError> {
-    #[derive(Clone, Default)]
-    struct Frame {
-        path: Vec<usize>,
-        index: usize,
-    }
-
-    fn adjust_frame_paths(frames: &mut [Frame], parent_path: &[usize], index: usize) {
-        for frame in frames.iter_mut() {
-            if frame.path == parent_path {
-                if frame.index >= index {
-                    frame.index += 1;
-                }
-                continue;
-            }
-            if frame.path.len() < parent_path.len() + 1 {
-                continue;
-            }
-            if frame.path[..parent_path.len()] == parent_path[..] {
-                let slot = parent_path.len();
-                if frame.path[slot] >= index {
-                    frame.path[slot] += 1;
-                }
-            }
-        }
-    }
-
-    let mut frames = vec![Frame::default()];
+) -> Result<(), ParseError>
+where
+    F: Fn(
+        &KatexContext,
+        &mut HtmlDomNode,
+        &mut HtmlDomNode,
+    ) -> Result<Option<HtmlDomNode>, ParseError>,
+{
+    let mut frames = vec![TraverseFrame::default()];
 
     let appended_next = next.take().is_some_and(|next_node| {
         root.push(next_node);
@@ -572,7 +592,7 @@ fn traverse_non_space_nodes(
 
         if is_partial_group {
             frames[frame_index].index = current_index + 1;
-            frames.push(Frame {
+            frames.push(TraverseFrame {
                 path: current_path,
                 index: 0,
             });
@@ -591,7 +611,7 @@ fn traverse_non_space_nodes(
 
         if nonspace {
             let result =
-                prev.with_prev_and_current(root, dummy_prev, &current_path, |node, prev_node| {
+                prev.with_prev_and_current(root, dummy_prev, &current_path, &|node, prev_node| {
                     callback(ctx, node, prev_node)
                 })?;
 
@@ -602,9 +622,9 @@ fn traverse_non_space_nodes(
                         let container_path_slice = &current_path[..container_path_len];
                         let (actual_path, actual_index) =
                             insert_into_container(root, parent, inserted_pos, new_node);
-                        let same_container = actual_path.as_slice() == container_path_slice;
-                        adjust_frame_paths(&mut frames, actual_path.as_slice(), actual_index);
-                        prev.adjust_for_insert(actual_path.as_slice(), actual_index);
+                        let same_container = actual_path == container_path_slice;
+                        adjust_frame_paths(&mut frames, actual_path, actual_index);
+                        prev.adjust_for_insert_self(actual_index, actual_path.len());
                         if same_container && actual_index <= current_index {
                             skip_inserted += 1;
                         }
@@ -612,9 +632,9 @@ fn traverse_non_space_nodes(
                         let container_path_slice = &current_path[..container_path_len];
                         let (actual_path, actual_index) =
                             insert_into_container(root, container_path_slice, 0, new_node);
-                        let same_container = actual_path.as_slice() == container_path_slice;
-                        adjust_frame_paths(&mut frames, actual_path.as_slice(), actual_index);
-                        prev.adjust_for_insert(actual_path.as_slice(), actual_index);
+                        let same_container = actual_path == container_path_slice;
+                        adjust_frame_paths(&mut frames, actual_path, actual_index);
+                        prev.adjust_for_insert(actual_path, actual_index);
                         if same_container && actual_index <= current_index {
                             skip_inserted += 1;
                         }
@@ -623,9 +643,9 @@ fn traverse_non_space_nodes(
                     let container_path_slice = &current_path[..container_path_len];
                     let (actual_path, actual_index) =
                         insert_into_container(root, container_path_slice, 0, new_node);
-                    let same_container = actual_path.as_slice() == container_path_slice;
-                    adjust_frame_paths(&mut frames, actual_path.as_slice(), actual_index);
-                    prev.adjust_for_insert(actual_path.as_slice(), actual_index);
+                    let same_container = actual_path == container_path_slice;
+                    adjust_frame_paths(&mut frames, actual_path, actual_index);
+                    prev.adjust_for_insert(actual_path, actual_index);
                     if same_container && actual_index <= current_index {
                         skip_inserted += 1;
                     }
@@ -778,7 +798,7 @@ pub fn build_expression(
     traverse_non_space_nodes(
         ctx,
         &mut groups,
-        &mut |_ctx: &KatexContext, node: &mut HtmlDomNode, prev: &mut HtmlDomNode| {
+        &|_ctx: &KatexContext, node: &mut HtmlDomNode, prev: &mut HtmlDomNode| {
             let Some(prev_type) = prev.classes().first() else {
                 return Ok(None);
             };
@@ -814,7 +834,7 @@ pub fn build_expression(
     traverse_non_space_nodes(
         ctx,
         &mut groups,
-        &mut |ctx: &KatexContext, node: &mut HtmlDomNode, prev: &mut HtmlDomNode| {
+        &move |ctx: &KatexContext, node: &mut HtmlDomNode, prev: &mut HtmlDomNode| {
             let prev_type = get_type_of_dom_tree(prev, None);
             let type_opt = get_type_of_dom_tree(node, None);
             if let (Some(prev_type), Some(type_val)) = (prev_type, type_opt) {

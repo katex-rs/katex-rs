@@ -43,7 +43,19 @@ pub use source_location::SourceRangeRef;
 /// CSS strings and is especially useful when generating styles
 /// programmatically.
 #[derive(
-    EnumIter, Debug, Copy, AsRefStr, PartialEq, Eq, Hash, Clone, Display, EnumCount, FromRepr, Ord, PartialOrd
+    EnumIter,
+    Debug,
+    Copy,
+    AsRefStr,
+    PartialEq,
+    Eq,
+    Hash,
+    Clone,
+    Display,
+    EnumCount,
+    FromRepr,
+    Ord,
+    PartialOrd,
 )]
 #[strum(serialize_all = "kebab-case")]
 #[repr(u8)]
@@ -143,7 +155,7 @@ impl fmt::Display for CssStyle {
 impl CssStyle {
     /// Creates one with given capacity
     #[inline]
-    #[must_use] 
+    #[must_use]
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
             map: KeyMap::with_capacity(capacity),

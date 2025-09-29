@@ -11,9 +11,8 @@ use katex::{
     tree::VirtualNode as _,
     types::{CssProperty, Mode, Token},
 };
-use regex::Regex;
 use setup::*;
-use std::{collections::HashSet, io::Read};
+use std::io::Read;
 use std::sync::Arc;
 use std::sync::Mutex;
 

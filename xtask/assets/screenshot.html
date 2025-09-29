@@ -261,12 +261,6 @@
         })();
       }
 
-      // Make font loads deterministic across cases
-      if (document.fonts && document.fonts.ready) {
-        try { await document.fonts.ready; } catch (_) {}
-      }
-      await ensureFonts();
-
       const { payload, error } = decodePayloadFromSearch(searchParams);
       if (error) {
         setStatus("error", error, null);
@@ -278,6 +272,11 @@
 
       try {
         await window.runCase(payload);
+        // Make font loads deterministic across cases
+        if (document.fonts && document.fonts.ready) {
+          try { await document.fonts.ready; } catch (_) {}
+        }
+        await ensureFonts();
       } catch (err) {
         const message = err && err.message ? err.message : String(err);
         const stack = err && err.stack ? String(err.stack) : null;
