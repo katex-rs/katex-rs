@@ -242,7 +242,7 @@ pub fn html_builder(
         let accent_body = svg_span(&ParseNode::Accent(group.clone()), options)?;
 
         let wrapper_style = (skew > 0.0).then(|| {
-            let mut style = CssStyle::default();
+            let mut style = CssStyle::with_capacity(2);
             style.insert(
                 CssProperty::Width,
                 format!("calc(100% - {})", make_em(2.0 * skew)),

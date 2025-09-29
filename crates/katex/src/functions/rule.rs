@@ -87,7 +87,7 @@ fn html_builder(
         };
 
         // Create style for the rule
-        let mut style = CssStyle::default();
+        let mut style = CssStyle::with_capacity(4);
         style.insert(CssProperty::BorderRightWidth, make_em(width));
         style.insert(CssProperty::BorderTopWidth, make_em(height));
         style.insert(CssProperty::Bottom, make_em(shift));

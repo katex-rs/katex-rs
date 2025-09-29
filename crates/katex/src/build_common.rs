@@ -598,7 +598,7 @@ pub fn make_symbol(
     });
 
     let mut classes_vec = classes;
-    let mut style = CssStyle::default();
+    let mut style = CssStyle::with_capacity(2);
 
     if let Some(options) = options {
         if options.style.is_tight() {

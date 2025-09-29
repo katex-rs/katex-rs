@@ -407,7 +407,7 @@ fn html_builder(
             0.0
         };
 
-        let mut style = CssStyle::default();
+        let mut style = CssStyle::with_capacity(3);
         style.insert(CssProperty::Height, make_em(height + depth));
         if width > 0.0 {
             style.insert(CssProperty::Width, make_em(width));

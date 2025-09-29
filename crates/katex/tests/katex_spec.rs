@@ -11,8 +11,9 @@ use katex::{
     tree::VirtualNode as _,
     types::{CssProperty, Mode, Token},
 };
+use regex::Regex;
 use setup::*;
-use std::io::Read;
+use std::{collections::HashSet, io::Read};
 use std::sync::Arc;
 use std::sync::Mutex;
 
@@ -5088,7 +5089,9 @@ fn internal_interface() {
         let built = katex::build_tree::build_tree(ctx, &parsed, latex, &settings)?;
         let markup = built.to_markup()?;
         let rendered = katex::render_to_string(ctx, latex, &settings)?;
-        assert_eq!(markup, rendered);
+
+        assert_html_eq_unordered_styles(&markup, &rendered);
+
         Ok(())
     });
 
@@ -5097,7 +5100,7 @@ fn internal_interface() {
         let ctx = default_ctx();
         let tree = katex::render_to_dom_tree(ctx, latex, &settings)?;
         let rendered = katex::render_to_string(ctx, latex, &settings)?;
-        assert_eq!(tree.to_markup()?, rendered);
+        assert_html_eq_unordered_styles(&tree.to_markup()?, &rendered);
         Ok(())
     });
 
@@ -5119,7 +5122,7 @@ fn internal_interface() {
             } else {
                 rendered
             };
-            assert_eq!(tree.to_markup()?, rendered_sans_mathml);
+            assert_html_eq_unordered_styles(&tree.to_markup()?, &rendered_sans_mathml);
             Ok(())
         },
     );

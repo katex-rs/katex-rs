@@ -112,7 +112,7 @@ fn html_builder(
         // Use calculate_size to properly convert the measurement to ems
         if let Ok(size_value) = ctx.calculate_size(&kern_node.dimension, options) {
             // Create a span with the calculated width
-            let mut style = CssStyle::default();
+            let mut style = CssStyle::with_capacity(2);
             style.insert(CssProperty::MarginRight, make_em(size_value));
 
             Ok(HtmlDomNode::DomSpan(

@@ -173,7 +173,7 @@ pub use crate::context::KatexContext;
 ///
 /// match render_to_string(&ctx, r"\frac{a}{", &settings) {
 ///     Ok(_) => println!("Success"),
-///     Err(e) => println!("Error at position {}: {}", e.position.unwrap_or(0), e),
+///     Err(e) => println!("Error at position {}: {}", e.position().unwrap_or(0), e),
 /// }
 /// ```
 ///
@@ -391,7 +391,7 @@ pub use crate::font_metrics_data::FontMetricsData;
 /// fn main() {
 ///     if let Err(err) = try_render() {
 ///         println!("Parse error: {}", err);
-///         if let Some(pos) = err.position {
+///         if let Some(pos) = err.position() {
 ///             println!("Error at position: {pos}");
 ///         }
 ///         println!("Error kind: {:?}", err.kind);

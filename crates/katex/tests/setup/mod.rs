@@ -1,8 +1,7 @@
 #[cfg(feature = "backtrace")]
 use std::backtrace::Backtrace;
 use std::{
-    panic::{UnwindSafe, catch_unwind},
-    sync::OnceLock,
+    collections::HashSet, panic::{UnwindSafe, catch_unwind}, sync::OnceLock
 };
 
 #[cfg(feature = "backtrace")]
@@ -18,6 +17,7 @@ use katex::{
     tree::HtmlDomNode,
     types::ParseErrorKind,
 };
+use regex::Regex;
 use thiserror::Error;
 
 static DEFAULT_CONTEXT: OnceLock<KatexContext> = OnceLock::new();
@@ -616,4 +616,43 @@ macro_rules! assert_let {
             );
         };
     };
+}
+
+
+/// Helper for comparing HTML with unordered style attributes
+pub fn assert_html_eq_unordered_styles(markup: &str, rendered: &str)
+{
+    // Since style attributes order may vary, we should extract and compare them separately
+    // style=\"...\"
+    let style_regex = Regex::new(r#"style="([^"]*)""#).unwrap();
+    // seperate the style attributes from the rest of the markup
+    let clean_markup = style_regex.replace_all(&markup, "style=\"\"");
+    let clean_rendered = style_regex.replace_all(&rendered, "style=\"\"");
+    assert_eq!(clean_markup, clean_rendered);
+
+    // Now compare the style attributes, both may occur multiple times, so we need to find all
+    let mut markup_styles = style_regex.captures_iter(&markup);
+    let mut rendered_styles = style_regex.captures_iter(&rendered);
+    loop {
+        let caps_markup = markup_styles.next();
+        let caps_rendered = rendered_styles.next();
+        if caps_markup.is_none() && caps_rendered.is_none() {
+            break;
+        }
+        if let (Some(caps_markup), Some(caps_rendered)) = (caps_markup, caps_rendered) {
+            let style_markup: HashSet<&str> = caps_markup[1]
+                .split(';')
+                .map(|s| s.trim())
+                .filter(|s| !s.is_empty())
+                .collect();
+            let style_rendered: HashSet<&str> = caps_rendered[1]
+                .split(';')
+                .map(|s| s.trim())
+                .filter(|s| !s.is_empty())
+                .collect();
+            assert_eq!(style_markup, style_rendered);
+        } else {
+            panic!("Mismatch in style attributes between markup and rendered output");
+        }
+    }
 }

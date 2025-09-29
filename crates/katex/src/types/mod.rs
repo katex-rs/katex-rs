@@ -4,13 +4,13 @@ mod class_list;
 mod source_location;
 
 use core::fmt;
-use core::option;
-
-use alloc::rc::Rc;
 
 use crate::define_environment::EnvSpec;
 use crate::define_function::FunctionSpec;
+use crate::namespace::KeyMap;
 use crate::parser::parse_node::NodeType;
+use crate::utils::escape_into;
+use rapidhash::HashMapExt as _;
 pub use source_location::{LexerInterface, SourceLocation};
 use strum::AsRefStr;
 use strum::Display;
@@ -43,7 +43,7 @@ pub use source_location::SourceRangeRef;
 /// CSS strings and is especially useful when generating styles
 /// programmatically.
 #[derive(
-    EnumIter, Debug, Copy, AsRefStr, PartialEq, Eq, Hash, Clone, Display, EnumCount, FromRepr,
+    EnumIter, Debug, Copy, AsRefStr, PartialEq, Eq, Hash, Clone, Display, EnumCount, FromRepr, Ord, PartialOrd
 )]
 #[strum(serialize_all = "kebab-case")]
 #[repr(u8)]
@@ -118,99 +118,78 @@ pub enum CssProperty {
 /// - Related to [`FontVariant`] for font-specific styling.
 #[derive(Clone, PartialEq, Eq, Default)]
 pub struct CssStyle {
-    map: [Option<Rc<str>>; CssProperty::COUNT],
+    map: KeyMap<CssProperty, String>,
 }
 
 impl fmt::Debug for CssStyle {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        use strum::IntoEnumIterator as _;
-
         let mut ds = f.debug_struct("CssStyle");
-        for (property, value) in CssProperty::iter().zip(self.map.iter()) {
-            if let Some(value) = value {
-                ds.field(property.as_ref(), value);
-            }
+        // Sort the keys for consistent output
+        let mut entries: Vec<(&CssProperty, &String)> = self.map.iter().collect();
+        entries.sort_by_key(|(k, _)| *k);
+        for (key, value) in entries {
+            ds.field(key.as_ref(), value);
         }
         ds.finish()
     }
 }
 
-/// Iterator over CSS style properties
-pub struct CssStyleIter<'a> {
-    index: usize,
-    data: &'a [Option<Rc<str>>; CssProperty::COUNT],
-}
-
-impl<'a> Iterator for CssStyleIter<'a> {
-    type Item = (CssProperty, &'a str);
-    fn next(&mut self) -> Option<Self::Item> {
-        while self.index < CssProperty::COUNT {
-            let idx = self.index;
-            self.index += 1;
-            if let Some(v) = &self.data[idx]
-                && let Some(prop) = CssProperty::from_repr(idx as u8)
-            {
-                return Some((prop, v.as_ref()));
-            }
-        }
-        None
-    }
-}
-
-impl<'a> IntoIterator for &'a CssStyle {
-    type Item = (CssProperty, &'a str);
-    type IntoIter = CssStyleIter<'a>;
-    fn into_iter(self) -> Self::IntoIter {
-        CssStyleIter {
-            index: 0,
-            data: &self.map,
-        }
+impl fmt::Display for CssStyle {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.write_to(f)
     }
 }
 
 impl CssStyle {
+    /// Creates one with given capacity
+    #[inline]
+    #[must_use] 
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            map: KeyMap::with_capacity(capacity),
+        }
+    }
+
     /// Inserts or updates a CSS property with the given value.
     #[inline]
     pub fn insert<T>(&mut self, property: CssProperty, value: T)
     where
-        T: Into<Rc<str>>,
+        T: Into<String>,
     {
-        self.map[property as usize] = Some(value.into());
+        self.map.insert(property, value.into());
     }
 
-    /// Extends the current style with properties from another `CssStyle`.
-    pub fn extend(&mut self, other: &Self) {
-        for (i, value) in other.map.iter().enumerate() {
-            if let Some(value) = value {
-                self.map[i] = Some(Rc::clone(value));
-            }
-        }
-    }
-
-    #[inline]
     /// Checks if the style contains a specific CSS property.
+    #[inline]
     #[must_use]
-    pub const fn contains_key(&self, property: CssProperty) -> bool {
-        self.map[property as usize].is_some()
+    pub fn contains_key(&self, property: CssProperty) -> bool {
+        self.map.contains_key(&property)
     }
 
-    #[inline]
     /// Retrieves the value of a specific CSS property, if it exists.
+    #[inline]
     #[must_use]
     pub fn get(&self, property: CssProperty) -> Option<&str> {
-        self.map[property as usize].as_deref()
+        self.map.get(&property).map(AsRef::as_ref)
     }
 
     /// Checks if the style is empty (contains no properties).
+    #[inline]
     #[must_use]
     pub fn is_empty(&self) -> bool {
-        self.map.iter().all(option::Option::is_none)
+        self.map.is_empty()
     }
 
-    /// Iterates over all CSS properties and their values in the style.
-    #[must_use]
-    pub fn iter(&self) -> CssStyleIter<'_> {
-        self.into_iter()
+    /// Writes the CSS style as a string to the provided formatter.
+    #[inline]
+    pub fn write_to<W: fmt::Write>(&self, writer: &mut W) -> fmt::Result {
+        for (key, value) in &self.map {
+            writer.write_str(key.as_ref())?;
+            writer.write_char(':')?;
+            escape_into(writer, value)?;
+            writer.write_char(';')?;
+        }
+        Ok(())
     }
 }
 

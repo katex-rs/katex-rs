@@ -521,12 +521,7 @@ fn write_node_style<W: fmt::Write>(writer: &mut W, style: &CssStyle) -> fmt::Res
     }
 
     writer.write_str(" style=\"")?;
-    for (key, value) in style {
-        writer.write_str(key.as_ref())?;
-        writer.write_char(':')?;
-        escape_into(writer, value)?;
-        writer.write_char(';')?;
-    }
+    style.write_to(writer)?;
     writer.write_char('"')
 }
 
@@ -541,10 +536,8 @@ fn class_to_node(element: &web_sys::Element, classes: &ClassList) {
 #[cfg(feature = "wasm")]
 fn style_to_node(element: &web_sys::Element, style: &CssStyle) {
     if !style.is_empty() {
-        let styles = style.iter().fold(String::new(), |mut s, (key, value)| {
-            let _ = write!(s, "{key}:{value};");
-            s
-        });
+        let mut styles = String::new();
+        let _ = write!(styles, "{style}");
         element.set_attribute("style", &styles).unwrap();
     }
 }
@@ -678,12 +671,7 @@ fn write_symbol_style<W: fmt::Write>(writer: &mut W, italic: f64, style: &CssSty
         writer.write_str(&make_em(italic))?;
         writer.write_char(';')?;
     }
-    for (key, value) in style {
-        writer.write_str(key.as_ref())?;
-        writer.write_char(':')?;
-        escape_into(writer, value)?;
-        writer.write_char(';')?;
-    }
+    style.write_to(writer)?;
     writer.write_char('"')
 }
 
@@ -693,9 +681,7 @@ fn symbol_node_style_str(italic: f64, style: &CssStyle) -> String {
     if italic > 0.0 {
         let _ = write!(styles, "margin-right:{};", make_em(italic));
     }
-    for (key, value) in style {
-        let _ = write!(styles, "{key}:{value};");
-    }
+    let _ = write!(styles, "{style}");
 
     let mut escaped = String::with_capacity(styles.len() * 9 / 8);
     let _ = escape_into(&mut escaped, &styles);
