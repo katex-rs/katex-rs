@@ -130,6 +130,20 @@
         });
       }));
     }
+
+    function setHTMLSafe(node, html) {
+      node.textContent = "";
+      if (typeof html !== "string" || html.length === 0) return;
+      // Simple sanitizer: only allow <br> tags, everything else is text.
+      const chunks = html.split(/(<br>)/i);
+      for (const chunk of chunks) {
+        if (chunk.toLowerCase() === "<br>") {
+          node.appendChild(document.createElement("br"));
+        } else if (chunk.length > 0) {
+          node.appendChild(document.createTextNode(chunk));
+        }
+      }
+    }
  
     async function ensureFonts() {
       if (!(document.fonts && document.fonts.load)) return;
@@ -163,8 +177,8 @@
         payload && typeof payload === "object" && !Array.isArray(payload) ? payload : {};
       const pre = payloadObject.pre;
       const post = payloadObject.post;
-      preNode.innerHTML = pre == null ? "" : String(pre);
-      postNode.innerHTML = post == null ? "" : String(post);
+      setHTMLSafe(preNode, pre && typeof pre === "string" ? pre : "");
+      setHTMLSafe(postNode, post && typeof post === "string" ? post : "");
 
       const styles = payloadObject.styles;
       if (typeof styles === "string" && styles.length > 0) {

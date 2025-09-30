@@ -13,6 +13,8 @@ jobs:
   fmt:
     name: Format Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,6 +32,8 @@ jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -57,6 +61,8 @@ jobs:
   clippy:
     name: Clippy Lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -86,6 +92,8 @@ jobs:
   test:
     name: Unit and Integration Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -116,6 +124,8 @@ jobs:
   doc-test:
     name: Documentation Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     continue-on-error: true  # Allow doc tests to fail as they have existing issues
     steps:
       - uses: actions/checkout@v4
@@ -144,6 +154,8 @@ jobs:
   browser-test:
     name: Browser Tests (Screenshots)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     continue-on-error: true  # Allow this job to fail without failing the overall workflow
     steps:
       - uses: actions/checkout@v4
