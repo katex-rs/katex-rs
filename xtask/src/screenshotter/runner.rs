@@ -184,7 +184,7 @@ async fn run_browser(
     let capture_progress = progress.as_ref().map(|group| group.capture().clone());
     let compare_progress = progress.as_ref().map(|group| group.compare().clone());
 
-    while !queue.is_empty() || compare_tasks.len() > 0 {
+    while !queue.is_empty() || !compare_tasks.is_empty() {
         if let Some(case_index) = queue.pop_front() {
             if case_states[case_index].is_finished() {
                 continue;
@@ -339,7 +339,7 @@ async fn run_browser(
             }
         }
 
-        if compare_tasks.len() > 0 {
+        if !compare_tasks.is_empty() {
             process_next_compare(
                 &logger,
                 compare_progress.as_ref(),
@@ -353,7 +353,7 @@ async fn run_browser(
         }
     }
 
-    while compare_tasks.len() > 0 {
+    while !compare_tasks.is_empty() {
         process_next_compare(
             &logger,
             compare_progress.as_ref(),
@@ -470,7 +470,7 @@ async fn process_next_compare(
                 sync_artifact(diff_path.as_ref(), outcome.diff_image.as_deref()).await?;
 
                 let should_write_actual = !outcome.equal || outcome.note.is_some();
-                let actual_bytes = should_write_actual.then(|| screenshot.png.as_slice());
+                let actual_bytes = should_write_actual.then_some(screenshot.png.as_slice());
                 sync_artifact(actual_path.as_ref(), actual_bytes).await?;
 
                 if outcome.equal {
@@ -561,20 +561,20 @@ async fn render_case(
         .map_err(anyhow::Error::from)?
         .convert::<JsonValue>()?;
 
-    if let Some(state) = run_result.get("state").and_then(JsonValue::as_str) {
-        if state.eq_ignore_ascii_case("error") {
-            let message = run_result
-                .get("message")
-                .and_then(JsonValue::as_str)
-                .unwrap_or("render error")
-                .to_owned();
+    if let Some(state) = run_result.get("state").and_then(JsonValue::as_str)
+        && state.eq_ignore_ascii_case("error")
+    {
+        let message = run_result
+            .get("message")
+            .and_then(JsonValue::as_str)
+            .unwrap_or("render error")
+            .to_owned();
 
-            return Ok(RenderOutcome::Error(CaseResult {
-                status: CaseStatus::Error,
-                message: Some(message),
-                severity: None,
-            }));
-        }
+        return Ok(RenderOutcome::Error(CaseResult {
+            status: CaseStatus::Error,
+            message: Some(message),
+            severity: None,
+        }));
     }
 
     let start = Instant::now();
