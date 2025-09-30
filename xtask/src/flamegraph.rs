@@ -162,13 +162,14 @@ fn run_native(args: NativeArgs) -> Result<()> {
         run_command(cargo).context("failed to pre-build Criterion benchmarks")?;
     }
 
-    let mut command = Vec::new();
-    command.push(OsString::from("cargo"));
-    command.push(OsString::from("bench"));
-    command.push(OsString::from("--bench"));
-    command.push(OsString::from(&args.bench));
-    command.push(OsString::from("--profile"));
-    command.push(OsString::from(&args.profile));
+    let mut command = vec![
+        OsString::from("cargo"),
+        OsString::from("bench"),
+        OsString::from("--bench"),
+        OsString::from(&args.bench),
+        OsString::from("--profile"),
+        OsString::from(&args.profile),
+    ];
 
     if args.case.is_some() || !args.extra.is_empty() {
         command.push(OsString::from("--"));

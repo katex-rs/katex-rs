@@ -1,14 +1,17 @@
 [package]
 name = "katex-rs"
-version = "0.1.1"
-edition = "2024"
+publish = true
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
 description = "A Rust implementation of KaTeX - Fast math typesetting for anywhere, more than just the web."
-license = "MIT"
 categories = ["mathematics", "wasm", "parsing"]
 keywords = ["latex", "math", "katex", "wasm", "parsing"]
 include = [
     "../../LICENSE",
-    "README.md",
+    "../../README.md",
     "build.rs",
     "data/**",
     "src/**/*.rs",

@@ -162,7 +162,7 @@ impl Logger {
         key: &str,
         _browser: BrowserKind,
     ) {
-        let message = format!("{}", key);
+        let message = key.to_string();
         if let Some(pb) = pb {
             pb.set_message(message);
         } else {
