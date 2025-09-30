@@ -2,6 +2,17 @@
 
 ## Running the benchmarks directly
 
+The Criterion suite replays the same expressions used by the screenshotter
+tests. It expects the KaTeX fixtures from the `KaTeX/test/screenshotter`
+directory – fetch them with `git submodule update --init --recursive` before
+running any of the commands below.【F:crates/katex/benches/perf.rs†L87-L118】 A
+missing dataset triggers a helpful error:
+
+```
+missing dataset at …/KaTeX/test/screenshotter/ss_data.yaml. Run `git submodule
+update --init --recursive` to fetch the KaTeX fixtures.
+```
+
 ### JavaScript (reference)
 
 ```bash
@@ -19,10 +30,14 @@ operations per second for KaTeX’s JavaScript renderer.
 cargo bench --bench perf
 ```
 
+The harness primes each case once before timing to ensure fonts and layout data
+are cached the same way as the production renderer.
+
 ### Rust (WebAssembly)
 
-This part is work-in-progress. Since native part shows similar performance to
-JavaScript, there is less urgency to optimise the WebAssembly path.
+The WebAssembly benchmark is a work-in-progress. Since the native implementation
+matches the JavaScript renderer closely, optimising the WASM path has lower
+priority right now.
 
 ## Flamegraph tooling
 

@@ -1,8 +1,10 @@
 # Flamegraph tooling and baseline measurements
 
-This document summarises the new profiling workflow introduced via
+This document summarises the profiling workflow introduced via
 `cargo xtask flamegraph` and records the first set of measurements gathered while
-validating the native Criterion benchmark harness.
+validating the native Criterion benchmark harness. For a reproducible setup that
+covers repository hydration, toolchain installation, and verification commands,
+see [`docs/GETTING_STARTED.md`](GETTING_STARTED.md).
 
 ## Prerequisites
 

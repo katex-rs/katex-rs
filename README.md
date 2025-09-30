@@ -5,200 +5,140 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![NPM version](https://img.shields.io/npm/v/katex-rs.svg)](https://www.npmjs.com/package/katex-rs)
 
-**KaTeX-rs** is a Rust implementation of [KaTeX](https://github.com/KaTeX/KaTeX), providing fast mathematical typesetting capabilities, not limited to Javascript environments.
+> Fast, fully configurable KaTeX rendering from Rust with drop-in WebAssembly bindings.
 
-## Project Introduction
+KaTeX-rs is a Rust re-implementation of the
+[KaTeX](https://github.com/KaTeX/KaTeX) rendering engine. It converts LaTeX math
+into HTML and MathML and is designed for server-side rendering, command-line
+tools, and WebAssembly targets. The project currently tracks KaTeX commit
+[9fb63136e680715ad83c119366f6f697105d2c55](https://github.com/KaTeX/KaTeX/commit/9fb63136e680715ad83c119366f6f697105d2c55).
 
-KaTeX-rs is a working in progress Rust port of KaTeX (a fast mathematical typesetting library). It converts LaTeX mathematical expressions into HTML and MathML formats, supporting server-side rendering, command-line tools, and WebAssembly environments.
+## Highlights
 
-This project is based on KaTeX's commit [9fb63136e680715ad83c119366f6f697105d2c55](https://github.com/KaTeX/KaTeX/commit/9fb63136e680715ad83c119366f6f697105d2c55).
+- **Native rendering pipeline.** The `render_to_string` function turns LaTeX into
+  KaTeX-compatible HTML + MathML markup that can be embedded directly into web
+  pages or server-rendered responses.
+- **Fine-grained configuration.** Toggle display/inline layout, strictness and
+  trust modes, color and size options, equation numbering, custom macros, and
+  more through the `Settings` builder.
+- **WebAssembly bindings.** The `katex-wasm-binding` crate exports the canonical
+  `render` and `renderToString` entry points so the generated `pkg/katex.js`
+  bundle can replace KaTeX.js in existing JavaScript tooling without glue code.
+- **Spec-driven test suite.** Rust tests mirror the upstream KaTeX spec cases to
+  ensure parsing and rendering stay in lockstep with the JavaScript reference
+  implementation.
 
-- [x] Basic parsing and rendering
-- [x] Unit and integration tests
-- [x] Offline rendering tests
-- [x] Compatible with `no-std` and `wasm` target
-- [ ] Fully consistent with KaTeX result
+## Project status
 
-## Workspace Layout
+- [x] Core parsing, HTML, and MathML rendering
+- [x] Spec-aligned unit and integration tests
+- [x] Automated screenshot regression harness
+- [x] WebAssembly bindings with KaTeX-compatible API surface
+- [ ] Perfect visual parity with the latest KaTeX release (`FireFox` now works well; `Chrome` has minor layout differences)
 
-This repository is organised as a Cargo workspace. The core crate lives in [`crates/katex`](crates/katex), the WebAssembly bindings are packaged via [`crates/wasm-binding`](crates/wasm-binding), and supporting assets such as the screenshot tests remain at the repository root.
+## Quick start
 
-## How to Use
-
-Add `katex-rs` to your `Cargo.toml`:
+### Add the crate
 
 ```toml
 [dependencies]
 katex-rs = "0.1"
 ```
 
-Basic usage:
+### Render LaTeX to HTML + MathML
 
 ```rust
-use katex::{KatexContext, Settings, render_to_string};
+use katex::{render_to_string, KatexContext, Settings};
 
 fn main() -> Result<(), katex::ParseError> {
+    // The context caches fonts, macros, and environments – reuse it between renders.
     let ctx = KatexContext::default();
+
+    // Start with the default configuration and tweak as needed.
     let settings = Settings::default();
 
     let html = render_to_string(&ctx, r"x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}", &settings)?;
-    println!("{}", html);
+    println!("{html}");
     Ok(())
 }
 ```
 
-For display mode (block math):
+Configure display mode, numbering, colors, macros, and trust checks through the
+builder API:
 
 ```rust
-use katex::{KatexContext, Settings, render_to_string};
+use std::collections::HashMap;
+use katex::{render_to_string, KatexContext, Settings, StrictMode, StrictSetting, TrustSetting};
 
 fn main() -> Result<(), katex::ParseError> {
     let ctx = KatexContext::default();
+
+    let mut macros = HashMap::new();
+    macros.insert(String::from("\\RR"), String::from("\\mathbb{R}"));
+
     let settings = Settings::builder()
         .display_mode(true)
+        .fleqn(true)
+        .leqno(true)
+        .macros(macros)
+        .strict(StrictSetting::Mode(StrictMode::Warn))
+        .trust(TrustSetting::Bool(true))
+        .color_is_text_color(true)
         .build();
 
-    let html = render_to_string(&ctx, r"\sum_{i=1}^{n} x_i", &settings)?;
-    println!("{}", html);
+    let html = render_to_string(&ctx, r"\\RR_{>0}", &settings)?;
+    println!("{html}");
     Ok(())
 }
 ```
 
-### Feature Flags
+### Use the WebAssembly build
 
-- `backtrace`: Enables backtrace support for better error diagnostics
-- `wasm`: Enables WebAssembly support
-
-## Prerequisites for development
-
-For development, ensure you have fully checked out the repository with all submodules and Git LFS files:
-```
-git lfs install && git lfs pull
-git submodule update --init --recursive
-```
-
-For testing, you will need to have `node` and `npm` installed and available in your `PATH`.
-You also need nightly Rust toolchain for some linting and testing features.
-`wasm-pack` would automatically install required toolchain for wasm target.
-
-Install `wasm-pack` and `cargo-nextest` (for running tests) either via the script:
-```bash
-rustup default nightly
-curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
-curl https://drager.github.io/wasm-pack/installer/init.sh -sSf | sh
-```
-
-(Or with cargo if you prefer but it's very slow)
-```bash
-cargo install --locked cargo-nextest
-cargo install wasm-pack
-```
-
-### Const Data Extraction
-
-The `crates/katex/data` directory contains the JSON files extracted from the original KaTeX repository. They are kept here to simplify crate compilation. You can regenerate them using the Rust-based xtask workflow:
+Install the npm package and invoke the familiar KaTeX API surface:
 
 ```bash
-git submodule update --init --recursive
-cargo +nightly xtask extract-data
+npm install katex-rs
 ```
 
-The command requires the nightly toolchain (to compile the `xtask` crate) and the upstream KaTeX submodule checkout.
+```ts
+import katex from "katex-rs";
 
-## Testing and Linting
-
-For formatting, you can use:
-
-```bash
-cargo fmt --all
+const html = katex.renderToString("\\int_0^\\infty e^{-x^2} dx", {
+  displayMode: true,
+  trust: true,
+});
 ```
 
-For linting, you will need nightly Rust toolchain. You can run the linter with:
+The WASM bundle exposes the same `render`/`renderToString` signatures as
+KaTeX.js, accepts plain JavaScript option objects, and throws matching error
+types for easy drop-in replacement.【F:crates/wasm-binding/src/lib.rs†L5-L116】【F:crates/wasm-binding/src/lib.rs†L299-L358】
 
-```bash
-cargo clippy --all-targets --all-features
-```
+## Development & reproducibility
 
-### Unit tests
-```bash
-cargo nextest run --no-fail-fast
-```
+A reproducible workflow – including repository hydration, tooling installation,
+and verification commands – is documented in
+[`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md). The quick-reference
+checklist is:
 
-### Screenshot tests
+1. Hydrate the KaTeX submodule and Git LFS assets (`git submodule update --init --recursive`).
+2. Install Rust (stable + nightly), Node.js, `wasm-pack`, and `cargo-nextest`.
+3. Run formatting, Clippy, and the Nextest-powered test suite.
+4. Use `cargo xtask screenshotter` for browser-based regression tests and
+   `cargo bench --bench perf` for Criterion benchmarks.
 
-Use the `xtask` runner to build the WebAssembly package, host the static test
-assets, and drive browsers via WebDriver. By default the harness targets Safari
-(on macOS hosts), Firefox, and Google Chrome (chromedriver and friends are
-launched automatically when available). Install chromedriver and geckodriver as
-needed. Safari is supported on macOS hosts when `safaridriver` is available and
-WebDriver has been enabled (`safaridriver --enable`). You can also pass
-`--webdriver` to reuse an existing endpoint. Run:
+Refer to [`docs/BENCHMARK.md`](docs/BENCHMARK.md) and
+[`docs/FLAMEGRAPH.md`](docs/FLAMEGRAPH.md) for deeper performance workflows.
 
-```bash
-cargo xtask screenshotter
-```
+## Repository layout
 
-See `cargo xtask screenshotter --help` for additional flags such as filtering
-the dataset, skipping the Wasm rebuild, or changing browsers (for example,
-`--browser firefox` or `--browser chrome,firefox,safari`). Use `--safaridriver`
-to point to a custom binary path when needed. The diff tolerance can be tuned
-with `--tolerance strict|normal|tolerant`, `strict` enforces pixel-perfect matches, and `tolerant` allows minor rendering drift during broader refactors while still flagging
-significant mismatches and writing diff composites for the latter.
+The repository is organised as a Cargo workspace:
 
-The harness consumes stylesheets and fonts from the upstream KaTeX submodule.
-When the compiled assets are missing (or `--build always` is provided) the
-runner executes `yarn install --frozen-lockfile` and `yarn build` inside the
-submodule to produce `dist/katex.min.css` and its fonts, which are then served
-through the same `/tests/screenshotter/katex.min.css` route used by the legacy
-JavaScript harness. WebAssembly artifacts are loaded directly from
-`crates/wasm-binding/pkg` rather than being copied into the test directory; they are
-rebuilt automatically when `katex.js` is missing. Ensure Yarn is installed and
-fetch the submodule via `git submodule update --init --recursive` before running
-the screenshots. To speed up runs, the Rust harness only keeps artifacts for
-cases with differences or tolerance notes; perfect matches clear any prior files
-from `artifacts/screenshots/new` and `artifacts/screenshots/diff`.
-
-On Linux hosts without browser tooling installed, install the browsers,
-matching WebDrivers, and `wasm-pack` before running the harness:
-
-```bash
-# Google Chrome stable
-wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
-
-# ChromeDriver matching the installed build (replace CHROME_BUILD if needed)
-CHROME_BUILD="$(google-chrome --version | awk '{print $3}' | cut -d. -f1-4)"
-wget "https://storage.googleapis.com/chrome-for-testing-public/${CHROME_BUILD}/linux64/chromedriver-linux64.zip"
-unzip chromedriver-linux64.zip
-sudo install -m755 chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
-
-# Firefox and geckodriver (update versions as required)
-wget -O firefox.tar.xz "https://download.mozilla.org/?product=firefox-latest&os=linux64&lang=en-US"
-sudo tar -xf firefox.tar.xz -C /opt
-sudo ln -sf /opt/firefox/firefox /usr/local/bin/firefox
-
-wget https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz
-tar -xf geckodriver-v0.36.0-linux64.tar.gz
-sudo install -m755 geckodriver /usr/local/bin/geckodriver
-
-# wasm-pack (installs to ~/.cargo/bin)
-curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-```
-
-Adjust the download URLs when newer browser builds are released.
-
-### Performance profiling
-
-Use the `xtask` helper to capture flamegraphs for the native, wasm, and
-JavaScript harnesses. Detailed instructions and baseline measurements live in
-[`docs/FLAMEGRAPH.md`](docs/FLAMEGRAPH.md).
-
-## Compatibility
-
-- **Rust**: 1.70+ (Testing and Linting needs nightly)
-- **WebAssembly**: Supports all modern browsers
-- **KaTeX**: Fully compatible with the original KaTeX JavaScript version
+- [`crates/katex`](crates/katex) – core renderer crate exported on crates.io.
+- [`crates/wasm-binding`](crates/wasm-binding) – WebAssembly bindings that mirror
+  KaTeX’s JavaScript API.
+- [`xtask`](xtask) – developer tooling for screenshot tests, flamegraphs, and
+  other automation.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+KaTeX-rs is available under the MIT License. See [LICENSE](LICENSE) for details.

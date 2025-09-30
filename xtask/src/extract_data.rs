@@ -182,7 +182,7 @@ fn extract_field_docs(contents: &str) -> BTreeMap<String, String> {
                 continue;
             }
 
-            let inline_comment = trimmed.split_once("//").map(|x| x.1);
+            let inline_comment = trimmed.split_once("//").map(|x| x.1.trim());
 
             let doc_text = match (current_doc.is_empty(), inline_comment) {
                 (false, Some(comment)) => {
