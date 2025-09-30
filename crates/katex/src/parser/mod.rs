@@ -938,12 +938,13 @@ impl<'a> Parser<'a> {
         while let next_token = self.fetch()?
             && next_token.text != "EOF"
         {
-            let test_str = format!("{}{}", str, next_token.text);
-            if !validator(&test_str) {
+            let valid_length = str.len();
+            str.push_str(next_token.text.as_str());
+            if !validator(&str) {
+                str.truncate(valid_length);
                 break;
             }
             last_token = next_token.clone();
-            str = test_str;
             self.consume();
         }
 
@@ -1182,6 +1183,7 @@ impl<'a> Parser<'a> {
         optional: bool,
     ) -> Result<Option<ParseNode>, ParseError> {
         match arg_type {
+            Some(ArgType::Original) | None => self.parse_argument_group(optional, None),
             Some(ArgType::Color) => self.parse_color_group(optional),
             Some(ArgType::Size) => {
                 let size = self.parse_size_group(optional)?;
@@ -1229,7 +1231,6 @@ impl<'a> Parser<'a> {
                     ))
                 }
             }
-            Some(ArgType::Original) | None => self.parse_argument_group(optional, None),
         }
     }
 
@@ -1581,7 +1582,6 @@ impl<'a> Parser<'a> {
         name: &str, // For error reporting.
     ) -> Result<ParseNode, ParseError> {
         let symbol_token = self.fetch()?.clone();
-        let symbol = symbol_token.text.to_owned_string();
         self.consume();
         self.consume_spaces()?; // ignore spaces before sup/subscript argument
 
@@ -1595,7 +1595,7 @@ impl<'a> Parser<'a> {
             || {
                 Err(ParseError::with_token(
                     ParseErrorKind::ExpectedGroupAfterSymbol {
-                        symbol: symbol.clone(),
+                        symbol: symbol_token.text.to_owned_string(),
                     },
                     &symbol_token,
                 ))

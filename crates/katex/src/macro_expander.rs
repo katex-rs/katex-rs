@@ -403,12 +403,11 @@ impl<'a> MacroContextInterface<'a> for MacroExpander<'a> {
 
     fn expand_macro_as_text(&mut self, name: &str) -> Result<Option<String>, ParseError> {
         self.expand_macro(name)?.map_or(Ok(None), |tokens| {
-            Ok(Some(
-                tokens
-                    .into_iter()
-                    .map(|t| String::from(t.text))
-                    .collect::<String>(),
-            ))
+            let mut s = String::new();
+            for t in tokens {
+                s.push_str(t.text.as_str());
+            }
+            Ok(Some(s))
         })
     }
 

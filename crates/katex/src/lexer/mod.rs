@@ -13,6 +13,7 @@ use crate::namespace::KeyMap;
 use crate::types::{
     LexerInterface, ParseError, ParseErrorKind, Settings, SourceLocation, Token, TokenText,
 };
+use crate::utils::AdvanceWhile as _;
 use alloc::sync::Arc;
 
 /// Returns the byte index of the last character in the string `s`
@@ -38,54 +39,44 @@ const fn is_combining_mark(ch: char) -> bool {
     (ch as u32) >= 0x0300 && (ch as u32) <= 0x036F
 }
 
+#[inline]
+const fn is_ascii_space(b: u8) -> bool {
+    matches!(b, b' ' | b'\t' | b'\r' | b'\n')
+}
+
+#[inline]
 fn match_space(s: &str) -> Option<usize> {
-    let mut len = 0;
-    for c in s.chars() {
-        if matches!(c, ' ' | '\r' | '\n' | '\t') {
-            len += c.len_utf8();
-        } else {
-            break;
-        }
-    }
+    let mut it = s.as_bytes().iter();
+    let len = it.advance_while(is_ascii_space);
     (len > 0).then_some(len)
 }
 
-fn match_control_space(s: &str) -> Option<usize> {
-    let mut chars = s.chars();
+#[inline]
+const fn is_hspace(b: u8) -> bool {
+    matches!(b, b' ' | b'\r' | b'\t')
+}
+
+#[inline]
+fn match_control_space_after_bs(rest: &str) -> Option<usize> {
+    let mut it = rest.as_bytes().iter();
     let mut len = 0;
-    if chars.next()? != '\\' {
-        return None;
-    }
+
+    let b1 = *it.next()?;
     len += 1;
-    let next = chars.next()?;
-    len += next.len_utf8();
-    if next == '\n' {
-    } else if matches!(next, ' ' | '\r' | '\t') {
-        while let Some(c) = chars.clone().next() {
-            if matches!(c, ' ' | '\r' | '\t') {
-                chars.next();
-                len += c.len_utf8();
-            } else {
-                break;
-            }
-        }
-        if let Some(c) = chars.clone().next()
-            && c == '\n'
-        {
-            chars.next();
-            len += c.len_utf8();
+
+    if b1 == b'\n' {
+        // OK
+    } else if is_hspace(b1) {
+        len += it.advance_while(is_hspace);
+        if matches!(it.as_slice().first(), Some(&b'\n')) {
+            it.next();
+            len += 1;
         }
     } else {
         return None;
     }
-    while let Some(c) = chars.clone().next() {
-        if matches!(c, ' ' | '\r' | '\t') {
-            chars.next();
-            len += c.len_utf8();
-        } else {
-            break;
-        }
-    }
+
+    len += it.advance_while(is_hspace);
     Some(len)
 }
 
@@ -94,129 +85,148 @@ fn match_normal_char_with_accents(s: &str) -> Option<usize> {
     let first = chars.next()?;
     let mut len_b = first.len_utf8();
     let u = first as u32;
-    let in_range = |x: u32, a: u32, b: u32| x >= a && x <= b;
-    if in_range(u, 0x0021, 0x005B)
-        || in_range(u, 0x005D, 0x2027)
-        || in_range(u, 0x202A, 0xD7FF)
-        || in_range(u, 0xF900, 0xFFFF)
-    {
-        while let Some(c) = chars.clone().next() {
-            if is_combining_mark(c) {
-                chars.next();
-                len_b += c.len_utf8();
-            } else {
-                break;
-            }
-        }
-        return Some(len_b);
-    }
-    if u > 0xFFFF {
-        while let Some(c) = chars.clone().next() {
-            if is_combining_mark(c) {
-                chars.next();
-                len_b += c.len_utf8();
-            } else {
-                break;
-            }
+
+    if matches!(u, 0x0021..=0x005B | 0x005D..=0x2027 | 0x202A..=0xD7FF | 0xF900..) {
+        while let Some(c) = chars.next()
+            && is_combining_mark(c)
+        {
+            len_b += c.len_utf8();
         }
         return Some(len_b);
     }
     None
 }
 
-fn match_verb(s: &str, star: bool) -> Option<usize> {
-    let prefix = if star { "\\verb*" } else { "\\verb" };
-    let rest = s.strip_prefix(prefix)?;
-
-    let mut chars = rest.char_indices();
-    let (_, delim_char) = chars.next()?;
-    if !star && delim_char.is_ascii_alphabetic() {
-        return None;
-    }
-
-    for (i, c) in chars {
-        if matches!(c, '\n' | '\r') {
-            return None;
-        }
-        if c == delim_char {
-            return Some(prefix.len() + i + c.len_utf8());
-        }
-    }
-    None
-}
-
-fn match_control_word(s: &str) -> Option<usize> {
-    let mut chars = s.chars();
-    let mut len = 0;
-    if chars.next()? != '\\' {
-        return None;
-    }
-    len += 1;
-    let mut matched = false;
-    for c in chars {
-        if c.is_ascii_alphabetic() || c == '@' {
-            len += c.len_utf8();
-            matched = true;
-        } else {
-            break;
-        }
-    }
-    matched.then_some(len)
-}
-
-fn match_control_word_with_space(s: &str) -> Option<(usize, usize)> {
-    if let Some(len) = match_control_word(s) {
-        let rest = &s[len..];
-        if let Some(space_len) = match_space(rest) {
-            return Some((len, space_len));
-        }
-        return Some((len, 0));
-    }
-    None
-}
-
-fn match_control_symbol(s: &str) -> Option<usize> {
-    let mut chars = s.chars();
-    if chars.next()? != '\\' {
-        return None;
-    }
+#[inline]
+fn match_control_symbol_after_bs(rest: &str) -> Option<usize> {
+    let mut chars = rest.chars();
     let c = chars.next()?;
     let cu = c as u32;
     if (0xD800..=0xDFFF).contains(&cu) {
         return None;
     }
-    Some(1 + c.len_utf8())
+    Some(c.len_utf8())
 }
 
+#[inline]
+fn match_verb_after_bs(rest: &str) -> Option<(usize, bool)> {
+    let rest = rest.strip_prefix("verb")?;
+    let (star, rest, prefix_len) = rest
+        .strip_prefix('*')
+        .map_or_else(|| (false, rest, 4), |r| (true, r, 5));
+
+    let mut chars = rest.char_indices();
+    let (_, delim) = chars.next()?;
+    if !star && delim.is_ascii_alphabetic() {
+        return None;
+    }
+
+    for (i, c) in chars {
+        match c {
+            '\n' | '\r' => return None,
+            d if d == delim => return Some((prefix_len + i + d.len_utf8(), star)),
+            _ => {}
+        }
+    }
+    None
+}
+
+#[inline]
+const fn is_ascii_alpha_or_at(b: u8) -> bool {
+    matches!(b, b'A'..=b'Z' | b'a'..=b'z' | b'@')
+}
+
+#[inline]
+fn match_control_word_with_space_after_bs(rest: &str) -> Option<(usize, usize)> {
+    let mut it = rest.as_bytes().iter();
+    let n = it.advance_while(is_ascii_alpha_or_at);
+    if n == 0 {
+        return None;
+    }
+    let ws = it.advance_while(is_ascii_space);
+    Some((n, ws))
+}
+
+#[inline]
 fn exec(last_index: &mut usize, slice: &str) -> TokenMatch {
-    let (branch, mlen, skip) = if let Some(l) = match_space(slice) {
-        (BranchKind::Space, l, 0)
-    } else if let Some(l) = match_control_space(slice) {
-        (BranchKind::ControlSpace, l, 0)
-    } else if let Some(l) = match_normal_char_with_accents(slice) {
-        (BranchKind::NormalWithAccents, l, 0)
-    } else if let Some(l) = match_verb(slice, true) {
-        (BranchKind::VerbStar, l, 0)
-    } else if let Some(l) = match_verb(slice, false) {
-        (BranchKind::Verb, l, 0)
-    } else if let Some((l, s)) = match_control_word_with_space(slice) {
-        (BranchKind::ControlWordWhitespace, l + s, s)
-    } else if let Some(l) = match_control_symbol(slice) {
-        (BranchKind::ControlSymbol, l, 0)
-    } else {
-        // fallback
-        let Some(ch) = slice.chars().next() else {
+    debug_assert!(!slice.is_empty());
+    let bs = slice.as_bytes();
+    if is_ascii_space(bs[0]) {
+        if let Some(l) = match_space(slice) {
+            *last_index += l;
             return TokenMatch {
-                branch: BranchKind::Unknown,
-                mlen: 0,
+                branch: BranchKind::Space,
+                mlen: l,
                 skip: 0,
             };
-        };
-        (BranchKind::Unknown, ch.len_utf8(), 0)
-    };
+        }
+    }
 
-    *last_index += mlen;
-    TokenMatch { branch, mlen, skip }
+    if bs[0] == b'\\' {
+        let rest = &slice[1..];
+
+        if let Some(l) = match_control_space_after_bs(rest) {
+            let m = 1 + l;
+            *last_index += m;
+            return TokenMatch {
+                branch: BranchKind::ControlSpace,
+                mlen: m,
+                skip: 0,
+            };
+        }
+
+        if let Some((l, star)) = match_verb_after_bs(rest) {
+            let m = 1 + l;
+            *last_index += m;
+            return TokenMatch {
+                branch: if star {
+                    BranchKind::VerbStar
+                } else {
+                    BranchKind::Verb
+                },
+                mlen: m,
+                skip: 0,
+            };
+        }
+
+        if let Some((l, s)) = match_control_word_with_space_after_bs(rest) {
+            let m = 1 + l + s;
+            *last_index += m;
+            return TokenMatch {
+                branch: BranchKind::ControlWordWhitespace,
+                mlen: m,
+                skip: s,
+            };
+        }
+
+        if let Some(l) = match_control_symbol_after_bs(rest) {
+            let m = 1 + l;
+            *last_index += m;
+            return TokenMatch {
+                branch: BranchKind::ControlSymbol,
+                mlen: m,
+                skip: 0,
+            };
+        }
+    }
+
+    if let Some(l) = match_normal_char_with_accents(slice) {
+        *last_index += l;
+        return TokenMatch {
+            branch: BranchKind::NormalWithAccents,
+            mlen: l,
+            skip: 0,
+        };
+    }
+
+    let m = slice.chars().next().map_or(0, |ch| ch.len_utf8());
+
+    *last_index += m;
+    TokenMatch {
+        branch: BranchKind::Unknown,
+        mlen: m,
+        skip: 0,
+    }
 }
 
 #[derive(PartialEq, Eq)]

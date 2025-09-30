@@ -1,8 +1,7 @@
-use core::fmt;
-use core::ops::Range;
-
 use alloc::borrow::ToOwned as _;
 use alloc::sync::Arc;
+use core::ops::Range;
+use core::ptr;
 
 use crate::types::{ErrorLocationProvider, SourceLocation};
 
@@ -116,24 +115,11 @@ impl From<Arc<str>> for TokenText {
     }
 }
 
-impl fmt::Display for TokenText {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.as_str())
-    }
-}
-
-impl From<TokenText> for String {
-    fn from(value: TokenText) -> Self {
-        match value {
-            TokenText::Slice { source, range } => source[range].to_owned(),
-            TokenText::Owned(text) => text.as_ref().to_owned(),
-            TokenText::Static(text) => text.to_owned(),
-        }
-    }
-}
-
 impl PartialEq<&str> for TokenText {
     fn eq(&self, other: &&str) -> bool {
+        if matches!(self, Self::Static(s) if ptr::eq(s, other)) {
+            return true;
+        }
         self.as_str() == *other
     }
 }
@@ -207,23 +193,8 @@ impl Token {
         }
     }
 
-    /// Creates a new token borrowing from the provided input slice.
-    #[must_use]
-    pub const fn from_slice(
-        input: Arc<str>,
-        start: usize,
-        end: usize,
-        loc: Option<SourceLocation>,
-    ) -> Self {
-        Self {
-            text: TokenText::slice(input, start, end),
-            loc,
-            noexpand: None,
-            treat_as_relax: None,
-        }
-    }
-
     /// Returns the token text as a string slice.
+    #[inline]
     #[must_use]
     pub fn text(&self) -> &str {
         self.text.as_str()

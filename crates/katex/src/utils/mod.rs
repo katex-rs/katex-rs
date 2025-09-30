@@ -3,6 +3,7 @@
 //! and helper operations.
 
 use core::fmt;
+use core::slice;
 
 /// Converts a camelCase string to hyphen-case.
 ///
@@ -216,6 +217,33 @@ pub fn set_panic_hook() {
     // https://github.com/rustwasm/console_error_panic_hook#readme
     #[cfg(feature = "wasm")]
     console_error_panic_hook::set_once();
+}
+
+/// Helper trait to advance an iterator while a predicate holds.
+pub trait AdvanceWhile<'a, T> {
+    /// Advances the iterator while the predicate returns true.
+    fn advance_while(&mut self, pred: T) -> usize
+    where
+        T: Fn(u8) -> bool;
+}
+
+impl<'a, T> AdvanceWhile<'a, T> for slice::Iter<'a, u8> {
+    #[inline]
+    fn advance_while(&mut self, pred: T) -> usize
+    where
+        T: Fn(u8) -> bool,
+    {
+        let mut n = 0;
+        while let Some(&b) = self.as_slice().first() {
+            if pred(b) {
+                self.next();
+                n += 1;
+            } else {
+                break;
+            }
+        }
+        n
+    }
 }
 
 #[cfg(test)]
