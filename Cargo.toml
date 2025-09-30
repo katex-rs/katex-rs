@@ -7,7 +7,7 @@ resolver = "3"
 edition = "2024"
 publish = false
 license = "MIT"
-version = "0.1.2"
+version = "0.1.3"
 repository = "https://github.com/katex-rs/katex-rs"
 
 
