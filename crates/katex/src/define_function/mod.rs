@@ -45,13 +45,11 @@ pub type FunctionHandler = for<'name, 'parser, 'token> fn(
 
 /// Type alias for functions that build HTML DOM nodes from mathematical parse
 /// nodes.
-pub type HtmlBuilder =
-    fn(node: &ParseNode, options: &Options, ctx: &KatexContext) -> Result<HtmlDomNode, ParseError>;
+pub type HtmlBuilder = fn(&ParseNode, &Options, &KatexContext) -> Result<HtmlDomNode, ParseError>;
 
 /// Type alias for functions that build MathML DOM nodes from mathematical parse
 /// nodes.
-pub type MathMLBuilder =
-    fn(node: &ParseNode, options: &Options, ctx: &KatexContext) -> Result<MathDomNode, ParseError>;
+pub type MathMLBuilder = fn(&ParseNode, &Options, &KatexContext) -> Result<MathDomNode, ParseError>;
 
 /// Configuration structure defining properties and parsing behavior for LaTeX
 /// mathematical functions.

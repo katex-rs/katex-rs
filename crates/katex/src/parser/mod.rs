@@ -1362,7 +1362,7 @@ impl<'a> Parser<'a> {
             ));
         }
 
-        let (args, opt_args) = self.parse_arguments(func_name, func_data)?;
+        let (args, opt_args) = self.parse_arguments(func_name, func_data.as_ref())?;
         let node =
             self.call_function(func_name, args, opt_args, Some(&token), break_on_token_text)?;
         Ok(Some(node))

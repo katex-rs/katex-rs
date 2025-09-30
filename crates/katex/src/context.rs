@@ -3,6 +3,7 @@
 use crate::FontMetricsData;
 use crate::font_metrics::MetricMap;
 use crate::namespace::KeyMap;
+use alloc::sync::Arc;
 
 use crate::{
     define_environment,
@@ -29,7 +30,7 @@ pub struct KatexContext {
     /// All registered functions
     /// `Parser` requires this dictionary
     #[cfg_attr(feature = "wasm", wasm_bindgen(skip))]
-    pub functions: KeyMap<String, FunctionSpec>,
+    pub functions: KeyMap<String, Arc<FunctionSpec>>,
     /// Corresponds to _htmlGroupBuilders in defineFunction.js
     /// All HTML builders. Should be only used in the `define*` and the
     /// `build*ML` functions.
@@ -47,7 +48,7 @@ pub struct KatexContext {
     /// Corresponds to _environments in defineEnvironment.js
     /// All registered environments.
     #[cfg_attr(feature = "wasm", wasm_bindgen(skip))]
-    pub environments: KeyMap<String, EnvSpec>,
+    pub environments: KeyMap<String, Arc<EnvSpec>>,
     /// Font metrics data for character measurements
     #[cfg_attr(feature = "wasm", wasm_bindgen(skip))]
     pub font_metrics: FontMetricsData,
@@ -56,7 +57,7 @@ pub struct KatexContext {
 impl KatexContext {
     /// Set default values of functions
     pub fn define_function(&mut self, spec: FunctionDefSpec) {
-        let data = FunctionSpec {
+        let data = Arc::new(FunctionSpec {
             node_type: spec.node_type,
             num_args: spec.props.num_args,
             arg_types: spec.props.arg_types,
@@ -67,11 +68,11 @@ impl KatexContext {
             infix: spec.props.infix,
             primitive: spec.props.primitive,
             handler: spec.handler,
-        };
+        });
 
         // Register function names
         for name in spec.names {
-            self.functions.insert((*name).to_owned(), data.clone());
+            self.functions.insert((*name).to_owned(), Arc::clone(&data));
         }
 
         // Register builders if type is specified
@@ -98,18 +99,18 @@ impl KatexContext {
 
     /// Set default values of environments
     pub fn define_environment(&mut self, spec: EnvDefSpec) {
-        let data = EnvSpec {
+        let data = Arc::new(EnvSpec {
             node_type: spec.node_type,
             num_args: spec.props.num_args.unwrap_or(0),
             arg_types: spec.props.arg_types.clone(),
             allowed_in_text: spec.props.allowed_in_text.unwrap_or(false),
             num_optional_args: spec.props.num_optional_args.unwrap_or(0),
             handler: spec.handler,
-        };
+        });
 
         // Register environment names
         for name in spec.names {
-            self.environments.insert(name, data.clone());
+            self.environments.insert(name, Arc::clone(&data));
         }
 
         if let Some(html_builder) = spec.html_builder {
