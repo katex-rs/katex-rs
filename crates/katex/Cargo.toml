@@ -19,7 +19,6 @@ include = [
 
 [lib]
 name = "katex"
-crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 # Core dependencies
@@ -45,12 +44,6 @@ wasm = ["dep:wasm-bindgen", "dep:js-sys", "dep:web-sys", "dep:console_error_pani
 [[bench]]
 name = "perf"
 harness = false
-
-[target.'cfg(any(target_arch = "wasm32", target_arch = "wasm64"))'.dependencies]
-wasm-bindgen = { version = "0.2" }
-js-sys = { version = "0.3" }
-web-sys = { version = "0.3.77", features = ["Document", "DocumentFragment", "Node", "Element", "Window", "Text"] }
-console_error_panic_hook = { version = "0.1.7" }
 
 [build-dependencies]
 serde = { version = "1.0", features = ["derive"] }

@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/katex", "xtask"]
+members = ["crates/katex", "crates/wasm-binding", "xtask"]
 default-members = ["crates/katex"]
 resolver = "3"
 

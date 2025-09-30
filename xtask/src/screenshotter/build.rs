@@ -49,8 +49,8 @@ pub fn ensure_katex_dist_assets(root: &Utf8Path, mode: BuildMode) -> Result<()> 
 }
 
 pub fn ensure_wasm_artifacts(root: &Utf8Path, mode: BuildMode) -> Result<()> {
-    let katex_crate = root.join("crates/katex");
-    let pkg_dir = katex_crate.join("pkg");
+    let wasm_crate = root.join("crates/wasm-binding");
+    let pkg_dir = wasm_crate.join("pkg");
 
     let mut need_build = false;
     match mode {
@@ -69,11 +69,16 @@ pub fn ensure_wasm_artifacts(root: &Utf8Path, mode: BuildMode) -> Result<()> {
             if !pkg_dir.join("katex.js").exists() {
                 need_build = true;
             } else {
-                let src_meta = fs::metadata(katex_crate.join("src").as_std_path())?;
+                let binding_src_meta = fs::metadata(wasm_crate.join("src").as_std_path())?;
+                let katex_src_meta = fs::metadata(root.join("crates/katex/src").as_std_path())?;
                 let pkg_meta = fs::metadata(pkg_dir.as_std_path())?;
-                let src_mtime = src_meta.modified().unwrap_or(SystemTime::UNIX_EPOCH);
+                let binding_mtime = binding_src_meta
+                    .modified()
+                    .unwrap_or(SystemTime::UNIX_EPOCH);
+                let katex_mtime = katex_src_meta.modified().unwrap_or(SystemTime::UNIX_EPOCH);
+                let newest_src = binding_mtime.max(katex_mtime);
                 let pkg_mtime = pkg_meta.modified().unwrap_or(SystemTime::UNIX_EPOCH);
-                if src_mtime > pkg_mtime {
+                if newest_src > pkg_mtime {
                     need_build = true;
                 }
             }
@@ -88,7 +93,7 @@ pub fn ensure_wasm_artifacts(root: &Utf8Path, mode: BuildMode) -> Result<()> {
 
     let status = Command::new("wasm-pack")
         .args(["build", "--target", "web", "--no-opt", "--dev"])
-        .current_dir(katex_crate.as_std_path())
+        .current_dir(wasm_crate.as_std_path())
         .status()
         .context("failed to run wasm-pack build")?;
     if !status.success() {

@@ -218,18 +218,14 @@ fn run_wasm(args: WasmArgs) -> Result<()> {
     let root = workspace_root()?;
     ensure_dataset_available(&root)?;
 
-    let wasm_dir = root.join("crates/katex");
-    let perf_dir = wasm_dir.join("tests/perf");
+    let wasm_dir = root.join("crates/wasm-binding");
+    let perf_dir = root.join("crates/katex/tests/perf");
 
     if !args.skip_build {
         ensure_command_available("wasm-pack")?;
         let sh = Shell::new()?;
         sh.change_dir(&wasm_dir);
-        cmd!(
-            sh,
-            "wasm-pack build --release --target nodejs --features wasm"
-        )
-        .run()?;
+        cmd!(sh, "wasm-pack build --release --target nodejs").run()?;
     }
 
     if !args.skip_npm {

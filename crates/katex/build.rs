@@ -21,11 +21,6 @@ struct Symbol {
 }
 
 fn main() {
-    let arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
-    if arch.contains("wasm") {
-        println!("cargo:rustc-cfg=feature=\"wasm\"");
-    }
-
     println!("cargo:rerun-if-changed=data/font_metrics_data.json");
     println!("cargo:rerun-if-changed=data/symbols.json");
     println!("cargo:rerun-if-changed=data/sigmas_and_xis.json");

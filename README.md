@@ -21,7 +21,7 @@ This project is based on KaTeX's commit [9fb63136e680715ad83c119366f6f697105d2c5
 
 ## Workspace Layout
 
-This repository is organised as a Cargo workspace. The core crate lives in [`crates/katex`](crates/katex), while supporting assets such as the screenshot tests remain at the repository root.
+This repository is organised as a Cargo workspace. The core crate lives in [`crates/katex`](crates/katex), the WebAssembly bindings are packaged via [`crates/wasm-binding`](crates/wasm-binding), and supporting assets such as the screenshot tests remain at the repository root.
 
 ## How to Use
 
@@ -150,7 +150,7 @@ runner executes `yarn install --frozen-lockfile` and `yarn build` inside the
 submodule to produce `dist/katex.min.css` and its fonts, which are then served
 through the same `/tests/screenshotter/katex.min.css` route used by the legacy
 JavaScript harness. WebAssembly artifacts are loaded directly from
-`crates/katex/pkg` rather than being copied into the test directory; they are
+`crates/wasm-binding/pkg` rather than being copied into the test directory; they are
 rebuilt automatically when `katex.js` is missing. Ensure Yarn is installed and
 fetch the submodule via `git submodule update --init --recursive` before running
 the screenshots. To speed up runs, the Rust harness only keeps artifacts for

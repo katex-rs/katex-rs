@@ -25,7 +25,7 @@ pub async fn start_static_server(
     let katex_fonts = katex_dist_dir.join("fonts");
     let katex_additional_fonts = katex_dir.join("test/screenshotter/fonts");
     let khan_image = katex_dir.join("website/static/img/khan-academy.png");
-    let wasm_pkg_dir = root.join("crates/katex/pkg");
+    let wasm_pkg_dir = root.join("crates/wasm-binding/pkg");
     let assets_dir = root.join("xtask/assets");
 
     let test_page = assets_dir.join("screenshot.html");

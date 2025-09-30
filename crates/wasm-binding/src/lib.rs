@@ -1,33 +1,33 @@
+#![cfg(target_arch = "wasm32")]
+
 //! WebAssembly bindings that expose a KaTeX-compatible JavaScript API.
 //!
 //! The real KaTeX package for Node.js exports two primary entry points –
 //! `render` and `renderToString` – as plain JavaScript functions that accept a
-//! KaTeX-style options object.  Consumers expect to be able to call these
-//! functions directly without constructing intermediate Rust objects.  The
-//! previous bindings exported thin wrappers around [`Settings`], which made the
-//! WASM build awkward to use and required a bespoke shim in the screenshotter
-//! tests.
+//! KaTeX-style options object. Consumers expect to be able to call these
+//! functions directly without constructing intermediate Rust objects. The
+//! previous bindings exported thin wrappers around [`katex::types::Settings`],
+//! which made the WASM build awkward to use and required a bespoke shim in the
+//! screenshotter tests.
 //!
-//! This module mirrors the Node.js surface.  Options are accepted as plain
+//! This crate mirrors the Node.js surface. Options are accepted as plain
 //! JavaScript objects, `ParseError`s are thrown just like in KaTeX.js, and the
-//! exported names match the canonical camelCase spellings.  This allows the
+//! exported names match the canonical camelCase spellings. This allows the
 //! generated `pkg/katex.js` bundle to be dropped into existing KaTeX tooling –
 //! including the upstream screenshotter – without additional glue code.
+
+use std::sync::OnceLock;
 
 use js_sys::{Array, Object, Reflect};
 use wasm_bindgen::JsCast as _;
 use wasm_bindgen::prelude::*;
 
-use std::sync::OnceLock;
-
-use crate::macro_expander::MacroMap;
-use crate::macros::MacroDefinition;
-use crate::{
-    ParseError,
-    context::KatexContext,
-    core,
-    types::{OutputFormat, Settings, StrictMode, StrictSetting, TrustSetting},
-};
+use katex::ParseError;
+use katex::context::KatexContext;
+use katex::core;
+use katex::macro_expander::MacroMap;
+use katex::macros::MacroDefinition;
+use katex::types::{OutputFormat, Settings, StrictMode, StrictSetting, TrustSetting};
 
 /// Cached global [`KatexContext`].
 fn get_context() -> &'static KatexContext {
@@ -330,7 +330,6 @@ pub fn version() -> String {
 }
 
 /// Hook to install better panic messages in WASM.
-#[cfg(feature = "wasm")]
 #[wasm_bindgen(start)]
 pub fn start() {
     console_error_panic_hook::set_once();

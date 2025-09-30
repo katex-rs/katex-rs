@@ -82,8 +82,6 @@ pub mod types;
 pub mod unicode;
 pub mod units;
 pub mod utils;
-#[cfg(feature = "wasm")]
-pub mod wasm;
 /// Shared web context for DOM operation
 #[cfg(feature = "wasm")]
 pub mod web_context;

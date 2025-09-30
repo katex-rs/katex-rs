@@ -151,15 +151,15 @@ fn match_control_word_with_space_after_bs(rest: &str) -> Option<(usize, usize)> 
 fn exec(last_index: &mut usize, slice: &str) -> TokenMatch {
     debug_assert!(!slice.is_empty());
     let bs = slice.as_bytes();
-    if is_ascii_space(bs[0]) {
-        if let Some(l) = match_space(slice) {
-            *last_index += l;
-            return TokenMatch {
-                branch: BranchKind::Space,
-                mlen: l,
-                skip: 0,
-            };
-        }
+    if is_ascii_space(bs[0])
+        && let Some(l) = match_space(slice)
+    {
+        *last_index += l;
+        return TokenMatch {
+            branch: BranchKind::Space,
+            mlen: l,
+            skip: 0,
+        };
     }
 
     if bs[0] == b'\\' {
@@ -219,7 +219,7 @@ fn exec(last_index: &mut usize, slice: &str) -> TokenMatch {
         };
     }
 
-    let m = slice.chars().next().map_or(0, |ch| ch.len_utf8());
+    let m = slice.chars().next().map_or(0, char::len_utf8);
 
     *last_index += m;
     TokenMatch {
