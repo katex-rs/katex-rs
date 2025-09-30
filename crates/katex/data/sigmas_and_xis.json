@@ -6,19 +6,19 @@
       0.25
     ],
     "space": [
-      0,
-      0,
-      0
+      0.0,
+      0.0,
+      0.0
     ],
     "stretch": [
-      0,
-      0,
-      0
+      0.0,
+      0.0,
+      0.0
     ],
     "shrink": [
-      0,
-      0,
-      0
+      0.0,
+      0.0,
+      0.0
     ],
     "xHeight": [
       0.431,
@@ -26,14 +26,14 @@
       0.431
     ],
     "quad": [
-      1,
+      1.0,
       1.171,
       1.472
     ],
     "extraSpace": [
-      0,
-      0,
-      0
+      0.0,
+      0.0,
+      0.0
     ],
     "num1": [
       0.677,
@@ -146,9 +146,9 @@
       0.04
     ],
     "ptPerEm": [
-      10,
-      10,
-      10
+      10.0,
+      10.0,
+      10.0
     ],
     "doubleRuleSep": [
       0.2,
@@ -172,39 +172,40 @@
     ]
   },
   "fieldDocs": {
-    "slant": "sigma1",
-    "space": "sigma2",
-    "stretch": "sigma3",
-    "shrink": "sigma4",
-    "xHeight": "sigma5",
-    "quad": "sigma6",
-    "extraSpace": "sigma7",
-    "num1": "sigma8",
-    "num2": "sigma9",
-    "num3": "sigma10",
-    "denom1": "sigma11",
-    "denom2": "sigma12",
-    "sup1": "sigma13",
-    "sup2": "sigma14",
-    "sup3": "sigma15",
-    "sub1": "sigma16",
-    "sub2": "sigma17",
-    "supDrop": "sigma18",
-    "subDrop": "sigma19",
-    "delim1": "sigma20",
-    "delim2": "sigma21",
+    "// Two values from LaTeX source2e": "Two values from LaTeX source2e:",
+    "arrayRuleWidth": "The width of separator lines in {array} environments. From `\\showthe\\arrayrulewidth` in LaTeX. Equals 0.4 / ptPerEm.",
     "axisHeight": "sigma22",
-    "defaultRuleThickness": "These font metrics are extracted from TeX by using tftopl on cmex10.tfm; they correspond to the font parameters of the extension fonts (family 3). See the TeXbook, page 441. In AMSTeX, the extension fonts scale; to match cmex7, we'd use cmex7.tfm values for script and scriptscript values. xi8; cmex7: 0.049",
     "bigOpSpacing1": "xi9",
     "bigOpSpacing2": "xi10",
     "bigOpSpacing3": "xi11",
     "bigOpSpacing4": "xi12; cmex7: 0.611",
     "bigOpSpacing5": "xi13; cmex7: 0.143",
-    "sqrtRuleThickness": "The \\sqrt rule width is taken from the height of the surd character. Since we use the same font at all sizes, this thickness doesn't scale.",
-    "ptPerEm": "This value determines how large a pt is, for metrics which are defined in terms of pts. This value is also used in katex.scss; if you change it make sure the values match.",
+    "defaultRuleThickness": "These font metrics are extracted from TeX by using tftopl on cmex10.tfm; they correspond to the font parameters of the extension fonts (family 3). See the TeXbook, page 441. In AMSTeX, the extension fonts scale; to match cmex7, we'd use cmex7.tfm values for script and scriptscript values. xi8; cmex7: 0.049",
+    "delim1": "sigma20",
+    "delim2": "sigma21",
+    "denom1": "sigma11",
+    "denom2": "sigma12",
     "doubleRuleSep": "The space between adjacent `|` columns in an array definition. From `\\showthe\\doublerulesep` in LaTeX. Equals 2.0 / ptPerEm.",
-    "arrayRuleWidth": "The width of separator lines in {array} environments. From `\\showthe\\arrayrulewidth` in LaTeX. Equals 0.4 / ptPerEm.",
-    "fboxsep": "       3 pt / ptPerEm",
-    "fboxrule": "0.4 pt / ptPerEm"
+    "extraSpace": "sigma7",
+    "fboxrule": "0.4 pt / ptPerEm",
+    "fboxsep": "3 pt / ptPerEm",
+    "num1": "sigma8",
+    "num2": "sigma9",
+    "num3": "sigma10",
+    "ptPerEm": "This value determines how large a pt is, for metrics which are defined in terms of pts. This value is also used in katex.scss; if you change it make sure the values match.",
+    "quad": "sigma6",
+    "shrink": "sigma4",
+    "slant": "sigma1",
+    "space": "sigma2",
+    "sqrtRuleThickness": "The \\sqrt rule width is taken from the height of the surd character. Since we use the same font at all sizes, this thickness doesn't scale.",
+    "stretch": "sigma3",
+    "sub1": "sigma16",
+    "sub2": "sigma17",
+    "subDrop": "sigma19",
+    "sup1": "sigma13",
+    "sup2": "sigma14",
+    "sup3": "sigma15",
+    "supDrop": "sigma18",
+    "xHeight": "sigma5"
   }
 }

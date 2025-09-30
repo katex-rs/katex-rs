@@ -96,13 +96,14 @@ cargo install wasm-pack
 
 ### Const Data Extraction
 
-The `crates/katex/data` directory contains the JSON files extracted with scripts from the original KaTeX repository. They are kept here to simplify crate compilation. You can regenerate them with the scripts in `./utils` if needed.
+The `crates/katex/data` directory contains the JSON files extracted from the original KaTeX repository. They are kept here to simplify crate compilation. You can regenerate them using the Rust-based xtask workflow:
 
 ```bash
-node utils/extract_font_metric.cjs
-node utils/extract_sigmas_and_xis.cjs
-node utils/extract_symbols.js
+git submodule update --init --recursive
+cargo +nightly xtask extract-data
 ```
+
+The command requires the nightly toolchain (to compile the `xtask` crate) and the upstream KaTeX submodule checkout.
 
 ## Testing and Linting
 

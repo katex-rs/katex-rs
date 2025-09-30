@@ -1,5 +1,6 @@
 #![feature(portable_simd)]
 
+mod extract_data;
 mod flamegraph;
 mod screenshotter;
 
@@ -24,6 +25,8 @@ enum Command {
     Flamegraph(flamegraph::FlamegraphArgs),
     /// Run the browser-based screenshotter tests using WebDriver.
     Screenshotter(screenshotter::ScreenshotterArgs),
+    /// Regenerate JSON data extracted from the upstream KaTeX repository.
+    ExtractData(extract_data::ExtractDataArgs),
 }
 
 fn main() -> Result<()> {
@@ -32,5 +35,6 @@ fn main() -> Result<()> {
     match cli.command {
         Command::Flamegraph(args) => flamegraph::run(args),
         Command::Screenshotter(args) => screenshotter::run(args),
+        Command::ExtractData(args) => extract_data::run(args),
     }
 }
