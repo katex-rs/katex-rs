@@ -1,5 +1,3 @@
-#![feature(portable_simd)]
-
 mod extract_data;
 mod flamegraph;
 mod screenshotter;

@@ -67,7 +67,7 @@ pub fn assemble_sup_sub(
         .is_some_and(|sub| sub.is_character_box().unwrap_or(false));
 
     // Build superscript if present
-    let sup = if let Some(sup_group) = super_group {
+    let superscript_layout = if let Some(sup_group) = super_group {
         let elem = build_html::build_group(
             ctx,
             sup_group,
@@ -87,7 +87,7 @@ pub fn assemble_sup_sub(
     };
 
     // Build subscript if present
-    let sub = if let Some(sub_group) = sub_group {
+    let subscript_layout = if let Some(sub_group) = sub_group {
         let elem = build_html::build_group(
             ctx,
             sub_group,
@@ -107,19 +107,19 @@ pub fn assemble_sup_sub(
     };
 
     // Create the final layout based on sup/sub combination
-    let has_sub = sub.is_some();
+    let has_sub = subscript_layout.is_some();
 
-    let final_group = match (sup, sub, base) {
-        (Some(sup), Some(sub), base) => {
+    let final_group = match (superscript_layout, subscript_layout, base) {
+        (Some(super_segment), Some(sub_segment), base) => {
             // Both superscript and subscript
             let SupSubElem {
                 elem: super_elem,
                 kern: super_kern,
-            } = sup;
+            } = super_segment;
             let SupSubElem {
                 elem: sub_elem,
                 kern: sub_kern,
-            } = sub;
+            } = sub_segment;
 
             let sub_height = sub_elem.height();
             let sub_depth = sub_elem.depth();
@@ -171,12 +171,12 @@ pub fn assemble_sup_sub(
                 options,
             )?
         }
-        (None, Some(sub), base) => {
+        (None, Some(sub_segment), base) => {
             // Only subscript
             let SupSubElem {
                 elem: sub_elem,
                 kern: sub_kern,
-            } = sub;
+            } = sub_segment;
             let top = base_height - base_shift;
 
             make_v_list(
@@ -208,12 +208,12 @@ pub fn assemble_sup_sub(
                 options,
             )?
         }
-        (Some(sup), None, base) => {
+        (Some(super_segment), None, base) => {
             // Only superscript
             let SupSubElem {
                 elem: sup_elem,
                 kern: sup_kern,
-            } = sup;
+            } = super_segment;
             let bottom = base_depth + base_shift;
 
             make_v_list(

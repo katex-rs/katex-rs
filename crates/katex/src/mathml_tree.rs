@@ -20,10 +20,29 @@ use strum::AsRefStr;
 #[cfg(feature = "wasm")]
 use wasm_bindgen::JsCast as _;
 #[cfg(feature = "wasm")]
+use wasm_bindgen::UnwrapThrowExt as _;
+#[cfg(feature = "wasm")]
 use web_sys;
 
 fn map_fmt(result: fmt::Result) -> Result<(), ParseError> {
     result.map_err(ParseError::from)
+}
+
+#[cfg(feature = "wasm")]
+fn set_attribute(element: &web_sys::Element, name: &str, value: &str) {
+    element.set_attribute(name, value).unwrap_throw();
+}
+
+#[cfg(feature = "wasm")]
+fn append_child(parent: &web_sys::Element, child: &web_sys::Node) {
+    parent.append_child(child).unwrap_throw();
+}
+
+#[cfg(feature = "wasm")]
+fn create_element(ctx: &WebContext, name: &str) -> web_sys::Element {
+    ctx.document
+        .create_element_ns(Some("http://www.w3.org/1998/Math/MathML"), name)
+        .unwrap_throw()
 }
 
 /// MathML node types used in KaTeX
@@ -265,23 +284,17 @@ impl VirtualNode for MathNode {
     fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
         use wasm_bindgen::JsCast as _;
 
-        let element = ctx
-            .document
-            .create_element_ns(
-                Some("http://www.w3.org/1998/Math/MathML"),
-                self.node_type.as_ref(),
-            )
-            .unwrap();
+        let element = create_element(ctx, self.node_type.as_ref());
 
         // Set attributes
         for (key, value) in &self.attributes {
-            element.set_attribute(key, value).unwrap();
+            set_attribute(&element, key, value);
         }
 
         // Set classes
         if !self.classes.is_empty() {
             let class_str = create_class(&self.classes);
-            element.set_attribute("class", &class_str).unwrap();
+            set_attribute(&element, "class", &class_str);
         }
 
         // Add children, combining consecutive TextNodes
@@ -295,18 +308,18 @@ impl VirtualNode for MathNode {
                     // Combine them
                     let combined_text = format!("{}{}", text_node.text, next_text_node.text);
                     let text_node = ctx.document.create_text_node(&combined_text);
-                    element.append_child(&text_node).unwrap();
+                    append_child(&element, &text_node);
                     i += 2; // Skip the next one
                     continue;
                 }
             }
             // Normal case
             let child_node = self.children[i].to_node(ctx);
-            element.append_child(&child_node).unwrap();
+            append_child(&element, &child_node);
             i += 1;
         }
 
-        element.dyn_into::<web_sys::Node>().unwrap()
+        element.unchecked_into::<web_sys::Node>()
     }
 }
 
@@ -333,8 +346,7 @@ impl VirtualNode for TextNode {
     fn to_node(&self, ctx: &WebContext) -> web_sys::Node {
         ctx.document
             .create_text_node(&self.text)
-            .dyn_into::<web_sys::Node>()
-            .unwrap()
+            .unchecked_into::<web_sys::Node>()
     }
 }
 
@@ -381,20 +393,14 @@ impl VirtualNode for SpaceNode {
 
         self.character.as_ref().map_or_else(
             || {
-                let element = ctx
-                    .document
-                    .create_element_ns(Some("http://www.w3.org/1998/Math/MathML"), "mspace")
-                    .unwrap();
-                element
-                    .set_attribute("width", &make_em(self.width))
-                    .unwrap();
-                element.dyn_into::<web_sys::Node>().unwrap()
+                let element = create_element(ctx, "mspace");
+                set_attribute(&element, "width", &make_em(self.width));
+                element.unchecked_into::<web_sys::Node>()
             },
             |character| {
                 ctx.document
                     .create_text_node(character)
-                    .dyn_into::<web_sys::Node>()
-                    .unwrap()
+                    .unchecked_into::<web_sys::Node>()
             },
         )
     }

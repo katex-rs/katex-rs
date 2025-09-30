@@ -29,6 +29,14 @@ use crate::screenshotter::viewport::{
 };
 use crate::screenshotter::webdriver::{ensure_output_dirs, start_webdriver};
 
+struct BrowserRunConfig<'a> {
+    args: &'a ScreenshotterArgs,
+    wait_ms: u64,
+    browser: BrowserKind,
+    server_url: &'a str,
+    compare_settings: CompareSettings,
+}
+
 pub fn run(mut args: ScreenshotterArgs) -> Result<()> {
     let logger = Logger::new();
 
@@ -109,11 +117,13 @@ pub fn run(mut args: ScreenshotterArgs) -> Result<()> {
                 logger_clone.clone(),
                 root_clone.clone(),
                 &cases_clone,
-                &args,
-                wait_ms,
-                browser,
-                &server_url,
-                compare_settings_clone,
+                BrowserRunConfig {
+                    args: &args,
+                    wait_ms,
+                    browser,
+                    server_url: &server_url,
+                    compare_settings: compare_settings_clone,
+                },
             )
             .await
             {
@@ -135,12 +145,15 @@ async fn run_browser(
     logger: Logger,
     root: Utf8PathBuf,
     cases: &[TestCase],
-    args: &ScreenshotterArgs,
-    wait_ms: u64,
-    browser: BrowserKind,
-    server_url: &str,
-    compare_settings: CompareSettings,
+    config: BrowserRunConfig<'_>,
 ) -> Result<()> {
+    let BrowserRunConfig {
+        args,
+        wait_ms,
+        browser,
+        server_url,
+        compare_settings,
+    } = config;
     let (driver, child, webdriver_url) = start_webdriver(args, browser).await?;
     logger.info(format!(
         "Connected to {} WebDriver at {webdriver_url}",

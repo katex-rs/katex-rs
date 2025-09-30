@@ -12,6 +12,8 @@ use crate::types::{CssStyle, ParseErrorKind};
 #[cfg(feature = "wasm")]
 use crate::web_context::WebContext;
 #[cfg(feature = "wasm")]
+use wasm_bindgen::UnwrapThrowExt as _;
+#[cfg(feature = "wasm")]
 use web_sys;
 
 /// Base virtual DOM node interface used in both DOM tree and MathML tree
@@ -141,10 +143,10 @@ impl<ChildType: VirtualNode + Clone + 'static> VirtualNode for DocumentFragment<
 
         for child in &self.children {
             let node = child.to_node(ctx);
-            fragment.append_child(&node).unwrap();
+            fragment.append_child(&node).unwrap_throw();
         }
 
-        fragment.dyn_into::<web_sys::Node>().unwrap()
+        fragment.dyn_into::<web_sys::Node>().unwrap_throw()
     }
 }
 

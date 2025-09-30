@@ -57,7 +57,7 @@ pub fn define_environment(ctx: &mut KatexContext) {
             }
 
             // begin...end is similar to left...right
-            let Some(env) = parser.ctx.environments.get(&env_name) else {
+            let Some(env_spec) = parser.ctx.environments.get(&env_name) else {
                 return Err(ParseError::new(ParseErrorKind::NoSuchEnvironment {
                     name: env_name.clone(),
                 }));
@@ -66,26 +66,26 @@ pub fn define_environment(ctx: &mut KatexContext) {
             // Build the environment object. Arguments and other information will
             // be made available to the begin and end methods using properties.
             let (args, opt_args) =
-                parser.parse_arguments(&format!("\\begin{{{env_name}}}"), env.as_ref())?;
+                parser.parse_arguments(&format!("\\begin{{{env_name}}}"), env_spec.as_ref())?;
             let env_context = EnvContext {
                 mode: parser.mode,
                 parser,
                 env_name: env_name.clone(),
             };
-            let result = (env.handler)(env_context, args, opt_args)?;
+            let result = (env_spec.handler)(env_context, args, opt_args)?;
             parser.expect("\\end", false)?;
             let end_name_token = parser.next_token.clone();
-            let Some(ParseNode::Environment(end)) = parser.parse_function(None, None)? else {
+            let Some(ParseNode::Environment(end_node)) = parser.parse_function(None, None)? else {
                 return Err(ParseError::new(
                     ParseErrorKind::ExpectedEnvironmentAfterEnd {
                         found: format!("{end_name_token:?}"),
                     },
                 ));
             };
-            if end.name != env_name {
+            if end_node.name != env_name {
                 return Err(ParseError::new(ParseErrorKind::MismatchedEnvironmentEnd {
                     begin: env_name,
-                    end: end.name,
+                    end: end_node.name,
                 }));
             }
             Ok(result)

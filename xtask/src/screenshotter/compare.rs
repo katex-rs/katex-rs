@@ -1,4 +1,3 @@
-use std::simd::{LaneCount, Simd, SupportedLaneCount, num::SimdFloat};
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
@@ -6,9 +5,6 @@ use image::{ColorType, ImageBuffer, ImageEncoder, Rgba, RgbaImage, codecs::png::
 
 use crate::screenshotter::args::{CompareTolerance, DIFF_DIR};
 use crate::screenshotter::models::{BaselineEntry, MismatchSeverity, Screenshot};
-
-const LANE_COUNT: usize = 16;
-type F32s = Simd<f32, LANE_COUNT>;
 
 #[derive(Copy, Clone, Debug)]
 pub struct CompareSettings {
@@ -246,10 +242,7 @@ struct SimilarityResult {
     score: f64,
 }
 
-fn web_element_ssim(actual: &RgbaImage, baseline: &RgbaImage) -> SimilarityResult
-where
-    LaneCount<LANE_COUNT>: SupportedLaneCount,
-{
+fn web_element_ssim(actual: &RgbaImage, baseline: &RgbaImage) -> SimilarityResult {
     let patch = 8u32;
     let width = actual.width();
     let height = actual.height();
@@ -327,10 +320,7 @@ fn compute_patch_stats(
     origin_y: u32,
     patch_w: u32,
     patch_h: u32,
-) -> PatchStats
-where
-    LaneCount<LANE_COUNT>: SupportedLaneCount,
-{
+) -> PatchStats {
     let mut actual_buf = Vec::with_capacity((patch_w * patch_h) as usize);
     let mut baseline_buf = Vec::with_capacity((patch_w * patch_h) as usize);
 
@@ -358,38 +348,14 @@ where
     let mut sum_yy = 0.0f64;
     let mut sum_xy = 0.0f64;
 
-    let len = actual_buf.len();
-    let mut index = 0;
-
-    while index + LANE_COUNT <= len {
-        let a_chunk: [f32; LANE_COUNT] = actual_buf[index..index + LANE_COUNT]
-            .try_into()
-            .expect("chunk has exact lanes");
-        let b_chunk: [f32; LANE_COUNT] = baseline_buf[index..index + LANE_COUNT]
-            .try_into()
-            .expect("chunk has exact lanes");
-
-        let a_simd = F32s::from_array(a_chunk);
-        let b_simd = F32s::from_array(b_chunk);
-
-        sum_x += a_simd.reduce_sum() as f64;
-        sum_y += b_simd.reduce_sum() as f64;
-        sum_xx += (a_simd * a_simd).reduce_sum() as f64;
-        sum_yy += (b_simd * b_simd).reduce_sum() as f64;
-        sum_xy += (a_simd * b_simd).reduce_sum() as f64;
-
-        index += LANE_COUNT;
-    }
-
-    while index < len {
-        let ax = actual_buf[index] as f64;
-        let bx = baseline_buf[index] as f64;
+    for (&ax, &bx) in actual_buf.iter().zip(baseline_buf.iter()) {
+        let ax = ax as f64;
+        let bx = bx as f64;
         sum_x += ax;
         sum_y += bx;
         sum_xx += ax * ax;
         sum_yy += bx * bx;
         sum_xy += ax * bx;
-        index += 1;
     }
 
     let patch_w = patch_w as usize;
@@ -423,7 +389,7 @@ where
         sum_yy,
         sum_xy,
         gradient,
-        count: len,
+        count: actual_buf.len(),
     }
 }
 
@@ -486,32 +452,20 @@ fn build_highlight_view(actual: &RgbaImage, baseline: &RgbaImage) -> RgbaImage {
     let actual_raw = actual.as_raw();
     let baseline_raw = baseline.as_raw();
 
-    let inv_255 = Simd::splat(1.0 / 255.0);
-
     for (dst, (a, b)) in tinted
         .chunks_exact_mut(4)
         .zip(actual_raw.chunks_exact(4).zip(baseline_raw.chunks_exact(4)))
     {
-        let a_simd = Simd::from_array([a[0] as f32, a[1] as f32, a[2] as f32, a[3] as f32]);
-        let b_simd = Simd::from_array([b[0] as f32, b[1] as f32, b[2] as f32, b[3] as f32]);
-
-        let diff = (a_simd - b_simd).abs() * inv_255;
-        let weight = (diff * Simd::from_array([1.0, 1.0, 1.0, 0.0]))
-            .reduce_max()
-            .clamp(0.0, 1.0);
+        let diff_r = ((a[0] as f32 - b[0] as f32).abs()) / 255.0;
+        let diff_g = ((a[1] as f32 - b[1] as f32).abs()) / 255.0;
+        let diff_b = ((a[2] as f32 - b[2] as f32).abs()) / 255.0;
+        let weight = diff_r.max(diff_g).max(diff_b).clamp(0.0, 1.0);
 
         if weight > 0.0 {
-            let scale =
-                Simd::from_array([1.0 - weight, 1.0 - weight * 0.9, 1.0 - weight * 0.9, 0.0]);
-            let highlight = Simd::from_array([255.0 * weight, 0.0, 0.0, 255.0]);
-            let tinted_simd = a_simd * scale + highlight;
-            let tinted_arr = tinted_simd.to_array();
-            dst.copy_from_slice(&[
-                tinted_arr[0].clamp(0.0, 255.0) as u8,
-                tinted_arr[1].clamp(0.0, 255.0) as u8,
-                tinted_arr[2].clamp(0.0, 255.0) as u8,
-                255,
-            ]);
+            let tinted_r = (a[0] as f32 * (1.0 - weight) + 255.0 * weight).clamp(0.0, 255.0);
+            let tinted_g = (a[1] as f32 * (1.0 - weight * 0.9)).clamp(0.0, 255.0);
+            let tinted_b = (a[2] as f32 * (1.0 - weight * 0.9)).clamp(0.0, 255.0);
+            dst.copy_from_slice(&[tinted_r as u8, tinted_g as u8, tinted_b as u8, 255]);
         } else {
             dst.copy_from_slice(&[a[0], a[1], a[2], 255]);
         }

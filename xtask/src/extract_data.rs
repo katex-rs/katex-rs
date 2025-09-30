@@ -182,10 +182,7 @@ fn extract_field_docs(contents: &str) -> BTreeMap<String, String> {
                 continue;
             }
 
-            let inline_comment = trimmed
-                .splitn(2, "//")
-                .nth(1)
-                .map(|comment| comment.trim().to_string());
+            let inline_comment = trimmed.split_once("//").map(|x| x.1);
 
             let doc_text = match (current_doc.is_empty(), inline_comment) {
                 (false, Some(comment)) => {
@@ -194,12 +191,12 @@ fn extract_field_docs(contents: &str) -> BTreeMap<String, String> {
                         if !parts.is_empty() {
                             parts.push(' ');
                         }
-                        parts.push_str(&comment);
+                        parts.push_str(comment);
                     }
                     parts
                 }
                 (false, None) => current_doc.join(" "),
-                (true, Some(comment)) => comment,
+                (true, Some(comment)) => comment.to_string(),
                 (true, None) => {
                     current_doc.clear();
                     continue;

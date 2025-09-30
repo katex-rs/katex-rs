@@ -3,6 +3,7 @@ use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 use std::sync::Arc;
 
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
@@ -81,7 +82,7 @@ impl RawTestCase {
 struct PreparedCase {
     name: &'static str,
     tex: Arc<str>,
-    settings: Arc<Settings>,
+    settings: Rc<Settings>,
 }
 
 fn load_cases() -> Result<Vec<PreparedCase>, Box<dyn Error>> {
@@ -108,7 +109,7 @@ fn load_cases() -> Result<Vec<PreparedCase>, Box<dyn Error>> {
             Ok(PreparedCase {
                 name,
                 tex: Arc::<str>::from(case.tex),
-                settings: Arc::new(build_settings(case.display_mode, &case.macros)),
+                settings: Rc::new(build_settings(case.display_mode, &case.macros)),
             })
         })
         .collect()
@@ -153,7 +154,7 @@ fn bench_rendering(c: &mut Criterion) {
     {
         let ctx = Arc::clone(&ctx);
         let tex_for_case = Arc::clone(&tex);
-        let settings_for_case = Arc::clone(&settings);
+        let settings_for_case = Rc::clone(&settings);
 
         // Ensure rendering succeeds once before measuring performance.
         render_to_string(
@@ -166,7 +167,7 @@ fn bench_rendering(c: &mut Criterion) {
         group.bench_function(name, move |b| {
             let ctx = Arc::clone(&ctx);
             let tex = Arc::clone(&tex);
-            let settings = Arc::clone(&settings);
+            let settings = Rc::clone(&settings);
 
             b.iter(|| {
                 let rendered = render_to_string(ctx.as_ref(), tex.as_ref(), settings.as_ref())
