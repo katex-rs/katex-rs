@@ -63,8 +63,8 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
         with:
           components: clippy
 
@@ -93,7 +93,7 @@ jobs:
           lfs: true
 
       - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@nightly
 
       - name: Cache cargo registry
         uses: actions/cache@v4
@@ -139,7 +139,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Run doc tests
-        run: cargo test --doc --all-features --workspace || echo "Doc tests completed with some failures (expected)"
+        run: cargo test --doc --all-features --workspace
 
   browser-test:
     name: Browser Tests (Screenshots)
@@ -151,8 +151,8 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
         with:
           targets: wasm32-unknown-unknown
 
@@ -169,31 +169,28 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh || echo "wasm-pack install failed"
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Install system Firefox
+        uses: browser-actions/setup-firefox@v1
+
+      - name: Install Geckodriver
+        uses: browser-actions/setup-geckodriver@latest
+
+      - uses: actions/setup-node@v5
         with:
-          node-version: '22'
+          node-version: 22
 
-      - name: Install browser test dependencies
-        run: |
-          # Set environment variable to skip Puppeteer Chromium download in case of network issues
-          export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-          echo "Dependencies will be installed in the test run step"
+      - name: Setup yarn
+        run: corepack enable && corepack prepare yarn@stable --activate
 
-      - name: Install system Chrome/Chromium
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium-browser || sudo apt-get install -y google-chrome-stable || echo "Chrome installation failed"
+      - name: Install NPM dependencies for KaTeX
+        run: yarn install
+        working-directory: ./KaTeX
 
       - name: Run browser tests
         run: |
-          # Create test output directories
-          mkdir -p tests/screenshotter/new tests/screenshotter/diff
-          # Run the screenshot tests from project root as per README
-          pushd ./tests/screenshotter && npm install && popd
-          node tests/screenshotter/run.js --build=always --headless=old || echo "Browser tests completed with warnings/errors"
+          cargo xtask screenshotter --browser firefox
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4
@@ -201,6 +198,6 @@ jobs:
         with:
           name: browser-test-results
           path: |
-            tests/screenshotter/new/
-            tests/screenshotter/diff/
+            artifacts/screenshotter/new/
+            artifacts/screenshotter/diff/
           retention-days: 7

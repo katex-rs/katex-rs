@@ -38,17 +38,16 @@ pub async fn calibrate_browser_viewport(
             .await
             .map_err(anyhow::Error::from)?;
 
-        if matches!(browser, BrowserKind::Chrome) {
-            if let Err(err) = driver
+        if matches!(browser, BrowserKind::Chrome)
+            && let Err(err) = driver
                 .execute(
                     &format!("window.resizeTo({}, {});", width, height),
                     Vec::<serde_json::Value>::new(),
                 )
                 .await
                 .map_err(anyhow::Error::from)
-            {
-                logger.warn(format!("Failed to request Chrome resize: {err}"));
-            }
+        {
+            logger.warn(format!("Failed to request Chrome resize: {err}"));
         }
 
         let png = driver

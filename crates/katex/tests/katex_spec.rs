@@ -2389,7 +2389,7 @@ fn an_includegraphics_builder() {
 
     it("should produce mords", || {
         let built = get_built(img, &trust_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
+        assert!(built[0].classes().contains("mord"));
         Ok(())
     });
 
@@ -2436,7 +2436,7 @@ fn an_html_extension_builder() {
             panic!("Expected id attribute on first node");
         }
         // built[1] is \htmlClass{foo}{x} - should have class containing "foo"
-        assert!(built[1].classes().contains(&"foo".to_string()));
+        assert!(built[1].classes().contains("foo"));
         // built[2] is \htmlStyle{color: red;}{x} - should have style="color: red"
         if let Some(style) = built[2].attributes().unwrap().get("style") {
             assert!(style.contains("color: red"));
@@ -2484,44 +2484,44 @@ fn an_html_extension_builder() {
 fn a_bin_builder() {
     it("should create mbins normally", || {
         let built = get_built("x + y", &strict_settings())?;
-        assert!(built[2].classes().contains(&"mbin".to_string()));
+        assert!(built[2].classes().contains("mbin"));
         Ok(())
     });
 
     it("should create ords when at the beginning of lists", || {
         let built = get_built("+ x", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
-        assert!(!built[0].classes().contains(&"mbin".to_string()));
+        assert!(built[0].classes().contains("mord"));
+        assert!(!built[0].classes().contains("mbin"));
         Ok(())
     });
 
     it("should create ords after some other objects", || {
         let built = get_built("x + + 2", &strict_settings())?;
-        assert!(built[4].classes().contains(&"mord".to_string()));
+        assert!(built[4].classes().contains("mord"));
 
         let built = get_built("( + 2", &strict_settings())?;
-        assert!(built[2].classes().contains(&"mord".to_string()));
+        assert!(built[2].classes().contains("mord"));
 
         let built = get_built("= + 2", &strict_settings())?;
-        assert!(built[2].classes().contains(&"mord".to_string()));
+        assert!(built[2].classes().contains("mord"));
 
         let built = get_built(r"\sin + 2", &strict_settings())?;
-        assert!(built[2].classes().contains(&"mord".to_string()));
+        assert!(built[2].classes().contains("mord"));
 
         let built = get_built(", + 2", &strict_settings())?;
-        assert!(built[2].classes().contains(&"mord".to_string()));
+        assert!(built[2].classes().contains("mord"));
         Ok(())
     });
 
     it("should correctly interact with color objects", || {
         let built = get_built(r"\blue{x}+y", &strict_settings())?;
-        assert!(built[2].classes().contains(&"mbin".to_string()));
+        assert!(built[2].classes().contains("mbin"));
 
         let built = get_built(r"\blue{x+}+y", &strict_settings())?;
-        assert!(built[2].classes().contains(&"mbin".to_string()));
+        assert!(built[2].classes().contains("mbin"));
 
         let built = get_built(r"\blue{x+}+y", &strict_settings())?;
-        assert!(built[4].classes().contains(&"mord".to_string()));
+        assert!(built[4].classes().contains("mord"));
         Ok(())
     });
 }
@@ -2530,22 +2530,22 @@ fn a_bin_builder() {
 fn a_phantom_and_smash_builder() {
     it("should both build a mord", || {
         let built = get_built(r"\hphantom{a}", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
+        assert!(built[0].classes().contains("mord"));
 
         let built = get_built(r"a\hphantom{=}b", &strict_settings())?;
-        assert!(built[2].classes().contains(&"mord".to_string()));
+        assert!(built[2].classes().contains("mord"));
 
         let built = get_built(r"a\hphantom{+}b", &strict_settings())?;
-        assert!(built[2].classes().contains(&"mord".to_string()));
+        assert!(built[2].classes().contains("mord"));
 
         let built = get_built(r"\smash{a}", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
+        assert!(built[0].classes().contains("mord"));
 
         let built = get_built(r"\smash{=}", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
+        assert!(built[0].classes().contains("mord"));
 
         let built = get_built(r"a\smash{+}b", &strict_settings())?;
-        assert!(built[2].classes().contains(&"mord".to_string()));
+        assert!(built[2].classes().contains("mord"));
 
         Ok(())
     });
@@ -2626,13 +2626,13 @@ fn an_accent_builder() {
 
     it("should produce mords", || {
         let built = get_built(r"\vec x", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
+        assert!(built[0].classes().contains("mord"));
         let built = get_built(r"\vec +", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
-        assert!(!built[0].classes().contains(&"mbin".to_string()));
+        assert!(built[0].classes().contains("mord"));
+        assert!(!built[0].classes().contains("mbin"));
         let built = get_built(r"\vec )^2", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
-        assert!(!built[0].classes().contains(&"mclose".to_string()));
+        assert!(built[0].classes().contains("mord"));
+        assert!(!built[0].classes().contains("mclose"));
         Ok(())
     });
 }
@@ -2649,13 +2649,13 @@ fn a_stretchy_and_shifty_accent_builder() {
 
     it("should produce mords", || {
         let built = get_built(r"\widehat{AB}", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
+        assert!(built[0].classes().contains("mord"));
         let built = get_built(r"\widehat +", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
-        assert!(!built[0].classes().contains(&"mbin".to_string()));
+        assert!(built[0].classes().contains("mord"));
+        assert!(!built[0].classes().contains("mbin"));
         let built = get_built(r"\widehat )^2", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
-        assert!(!built[0].classes().contains(&"mclose".to_string()));
+        assert!(built[0].classes().contains("mord"));
+        assert!(!built[0].classes().contains("mclose"));
         Ok(())
     });
 }
@@ -2671,15 +2671,15 @@ fn a_stretchy_and_non_shifty_accent_builder() {
 
     it("should produce mords", || {
         let built = get_built(r"\overrightarrow{AB}", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
+        assert!(built[0].classes().contains("mord"));
 
         let built = get_built(r"\overrightarrow +", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
-        assert!(!built[0].classes().contains(&"mbin".to_string()));
+        assert!(built[0].classes().contains("mord"));
+        assert!(!built[0].classes().contains("mbin"));
 
         let built = get_built(r"\overrightarrow )^2", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
-        assert!(!built[0].classes().contains(&"mclose".to_string()));
+        assert!(built[0].classes().contains("mord"));
+        assert!(!built[0].classes().contains("mclose"));
 
         Ok(())
     });
@@ -2752,18 +2752,18 @@ fn an_extensible_arrow_builder() {
 
     it("should produce mrell", || {
         let built = get_built(r"\xrightarrow x", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mrel".to_string()));
+        assert!(built[0].classes().contains("mrel"));
 
         let built = get_built(r"\xrightarrow [under]{over}", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mrel".to_string()));
+        assert!(built[0].classes().contains("mrel"));
 
         let built = get_built(r"\xrightarrow +", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mrel".to_string()));
-        assert!(!built[0].classes().contains(&"mbin".to_string()));
+        assert!(built[0].classes().contains("mrel"));
+        assert!(!built[0].classes().contains("mbin"));
 
         let built = get_built(r"\xrightarrow )^2", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mrel".to_string()));
-        assert!(!built[0].classes().contains(&"mclose".to_string()));
+        assert!(built[0].classes().contains("mrel"));
+        assert!(!built[0].classes().contains("mclose"));
 
         Ok(())
     });
@@ -2804,18 +2804,18 @@ fn a_horizontal_brace_builder() {
 
     it("should produce mords", || {
         let built = get_built(r"\overbrace x", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
+        assert!(built[0].classes().contains("mord"));
 
         let built = get_built(r"\overbrace{x}^2", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
+        assert!(built[0].classes().contains("mord"));
 
         let built = get_built(r"\overbrace +", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
-        assert!(!built[0].classes().contains(&"mbin".to_string()));
+        assert!(built[0].classes().contains("mord"));
+        assert!(!built[0].classes().contains("mbin"));
 
         let built = get_built(r"\overbrace )^2", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
-        assert!(!built[0].classes().contains(&"mclose".to_string()));
+        assert!(built[0].classes().contains("mord"));
+        assert!(!built[0].classes().contains("mclose"));
 
         Ok(())
     });
@@ -2848,15 +2848,15 @@ fn a_boxed_builder() {
 
     it("should produce mords", || {
         let built = get_built(r"\boxed x", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
+        assert!(built[0].classes().contains("mord"));
 
         let built = get_built(r"\boxed +", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
-        assert!(!built[0].classes().contains(&"mbin".to_string()));
+        assert!(built[0].classes().contains("mord"));
+        assert!(!built[0].classes().contains("mbin"));
 
         let built = get_built(r"\boxed )^2", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
-        assert!(!built[0].classes().contains(&"mclose".to_string()));
+        assert!(built[0].classes().contains("mord"));
+        assert!(!built[0].classes().contains("mclose"));
 
         Ok(())
     });
@@ -2905,7 +2905,7 @@ fn a_colorbox_builder() {
 
     it("should produce mords", || {
         let built = get_built(r"\colorbox{red}{a b}", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
+        assert!(built[0].classes().contains("mord"));
         Ok(())
     });
 }
@@ -2946,7 +2946,7 @@ fn a_fcolorbox_builder() {
 
     it("should produce mords", || {
         let built = get_built(r"\fcolorbox{blue}{yellow}{a b}", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
+        assert!(built[0].classes().contains("mord"));
         Ok(())
     });
 }
@@ -2988,15 +2988,15 @@ fn a_strike_through_builder() {
 
     it("should produce mords", || {
         let built = get_built(r"\cancel x", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
+        assert!(built[0].classes().contains("mord"));
 
         let built = get_built(r"\cancel +", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
-        assert!(!built[0].classes().contains(&"mbin".to_string()));
+        assert!(built[0].classes().contains("mord"));
+        assert!(!built[0].classes().contains("mbin"));
 
         let built = get_built(r"\cancel )^2", &strict_settings())?;
-        assert!(built[0].classes().contains(&"mord".to_string()));
-        assert!(!built[0].classes().contains(&"mclose".to_string()));
+        assert!(built[0].classes().contains("mord"));
+        assert!(!built[0].classes().contains("mclose"));
 
         Ok(())
     });
@@ -4599,7 +4599,7 @@ fn leqno_and_fleqn_rendering_options() {
             let built = get_built(expr, &settings)?;
             // Check if the root span contains the class
             if let HtmlDomNode::DomSpan(span) = &built[0] {
-                assert!(!span.classes.contains(&opt.to_string()));
+                assert!(!span.classes.contains(opt));
             }
             Ok(())
         });
@@ -4614,7 +4614,7 @@ fn leqno_and_fleqn_rendering_options() {
             let built = get_built(expr, &settings)?;
             // Check if the root span contains the class
             if let HtmlDomNode::DomSpan(span) = &built[0] {
-                assert!(!span.classes.contains(&opt.to_string()));
+                assert!(!span.classes.contains(opt));
             }
             Ok(())
         });
@@ -4629,7 +4629,7 @@ fn leqno_and_fleqn_rendering_options() {
             let built = get_built(expr, &settings)?;
             // Check if the root span contains the class
             if let HtmlDomNode::DomSpan(span) = &built[0] {
-                assert!(span.classes.contains(&opt.to_string()));
+                assert!(span.classes.contains(opt));
             }
             Ok(())
         });

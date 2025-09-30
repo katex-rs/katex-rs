@@ -5,9 +5,11 @@ resolver = "3"
 
 [workspace.package]
 edition = "2024"
-
-[workspace.metadata]
+publish = false
+license = "MIT"
+version = "0.1.1"
 repository = "https://github.com/katex-rs/katex-rs"
+
 
 [profile.release]
 opt-level = "z"

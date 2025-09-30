@@ -546,7 +546,7 @@ pub fn get_parsed_trust(expr: &str) -> TestResult<Vec<ParseNode>> {
 pub fn get_built(expr: &str, settings: &Settings) -> TestResult<Vec<HtmlDomNode>> {
     let mut root_node = render_to_dom_tree(default_ctx(), expr, settings)?;
 
-    if root_node.classes.contains(&"katex-display".to_string()) {
+    if root_node.classes.contains("katex-display") {
         if let Some(HtmlDomNode::DomSpan(first_child)) = root_node.children.get_mut(0) {
             root_node = first_child.clone();
         } else {
@@ -563,7 +563,7 @@ pub fn get_built(expr: &str, settings: &Settings) -> TestResult<Vec<HtmlDomNode>
     for child in built_html.children.iter() {
         if let HtmlDomNode::DomSpan(span) = child {
             for grandchild in &span.children {
-                if !grandchild.classes().contains(&"strut".to_string()) {
+                if !grandchild.classes().contains("strut") {
                     children.push(grandchild.clone());
                 }
             }
@@ -626,14 +626,14 @@ pub fn assert_html_eq_unordered_styles(markup: &str, rendered: &str) {
     // separately style=\"...\"
     let style_regex = Regex::new(r#"style="([^"]*)""#).unwrap();
     // seperate the style attributes from the rest of the markup
-    let clean_markup = style_regex.replace_all(&markup, "style=\"\"");
-    let clean_rendered = style_regex.replace_all(&rendered, "style=\"\"");
+    let clean_markup = style_regex.replace_all(markup, "style=\"\"");
+    let clean_rendered = style_regex.replace_all(rendered, "style=\"\"");
     assert_eq!(clean_markup, clean_rendered);
 
     // Now compare the style attributes, both may occur multiple times, so we need
     // to find all
-    let mut markup_styles = style_regex.captures_iter(&markup);
-    let mut rendered_styles = style_regex.captures_iter(&rendered);
+    let mut markup_styles = style_regex.captures_iter(markup);
+    let mut rendered_styles = style_regex.captures_iter(rendered);
     loop {
         let caps_markup = markup_styles.next();
         let caps_rendered = rendered_styles.next();

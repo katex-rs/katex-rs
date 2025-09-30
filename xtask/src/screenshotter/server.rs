@@ -69,33 +69,31 @@ pub async fn start_static_server(
     let router = Router::new()
         .route_service(
             PAGE_PATH,
-            get_service(ServeFile::new(test_page.as_std_path().to_path_buf())),
+            get_service(ServeFile::new(test_page.as_std_path())),
         )
         .route_service(
             "/katex.min.css",
-            get_service(ServeFile::new(katex_css.as_std_path().to_path_buf())),
+            get_service(ServeFile::new(katex_css.as_std_path())),
         )
         .route_service(
             "/katex.min.js",
-            get_service(ServeFile::new(katex_min_js.as_std_path().to_path_buf())),
+            get_service(ServeFile::new(katex_min_js.as_std_path())),
         )
         .route_service(
             "/website/static/img/khan-academy.png",
-            get_service(ServeFile::new(khan_image.as_std_path().to_path_buf())),
+            get_service(ServeFile::new(khan_image.as_std_path())),
         )
         .nest_service(
             "/pkg",
-            get_service(ServeDir::new(wasm_pkg_dir.as_std_path().to_path_buf())),
+            get_service(ServeDir::new(wasm_pkg_dir.as_std_path())),
         )
         .nest_service(
             "/fonts",
-            get_service(ServeDir::new(katex_fonts.as_std_path().to_path_buf())),
+            get_service(ServeDir::new(katex_fonts.as_std_path())),
         )
         .nest_service(
             "/KaTeX/test/screenshotter/fonts/",
-            get_service(ServeDir::new(
-                katex_additional_fonts.as_std_path().to_path_buf(),
-            )),
+            get_service(ServeDir::new(katex_additional_fonts.as_std_path())),
         )
         .fallback_service(any(move |req: axum::http::Request<axum::body::Body>| {
             let logger = logger_clone.clone();
