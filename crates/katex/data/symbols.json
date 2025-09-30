@@ -3603,7 +3603,6 @@
     "mode": "math",
     "font": "main",
     "group": "spacing",
-    "replace": null,
     "name": "\\\\nobreak",
     "acceptUnicodeChar": false
   },
@@ -3611,7 +3610,6 @@
     "mode": "math",
     "font": "main",
     "group": "spacing",
-    "replace": null,
     "name": "\\\\allowbreak",
     "acceptUnicodeChar": false
   },
