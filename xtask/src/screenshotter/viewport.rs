@@ -1,4 +1,4 @@
-use anyhow::{Context, Result, bail, ensure};
+use color_eyre::eyre::{Context, Report, Result, bail, ensure};
 use image::GenericImageView;
 use indicatif::ProgressBar;
 use serde_json::json;
@@ -21,10 +21,7 @@ pub async fn calibrate_browser_viewport(
     logger.detail(None, format!("Calibrating {browser} viewport"));
 
     let calibration_url = viewport_calibration_data_url();
-    driver
-        .goto(&calibration_url)
-        .await
-        .map_err(anyhow::Error::from)?;
+    driver.goto(&calibration_url).await.map_err(Report::from)?;
 
     let mut target_width = VIEWPORT_WIDTH as i32;
     let mut target_height = VIEWPORT_HEIGHT as i32;
@@ -36,7 +33,7 @@ pub async fn calibrate_browser_viewport(
         driver
             .set_window_rect(0, 0, width, height)
             .await
-            .map_err(anyhow::Error::from)?;
+            .map_err(Report::from)?;
 
         if matches!(browser, BrowserKind::Chrome)
             && let Err(err) = driver
@@ -45,15 +42,12 @@ pub async fn calibrate_browser_viewport(
                     Vec::<serde_json::Value>::new(),
                 )
                 .await
-                .map_err(anyhow::Error::from)
+                .map_err(Report::from)
         {
             logger.warn(format!("Failed to request Chrome resize: {err}"));
         }
 
-        let png = driver
-            .screenshot_as_png()
-            .await
-            .map_err(anyhow::Error::from)?;
+        let png = driver.screenshot_as_png().await.map_err(Report::from)?;
         let (actual_width, actual_height) = png_dimensions(&png)?;
 
         if actual_width == VIEWPORT_WIDTH && actual_height == VIEWPORT_HEIGHT {
@@ -103,7 +97,7 @@ pub async fn configure_chrome_viewport(driver: &WebDriver) -> Result<()> {
             }),
         )
         .await
-        .map_err(anyhow::Error::from)?;
+        .map_err(Report::from)?;
 
     devtools
         .execute_cdp_with_params(
@@ -114,7 +108,7 @@ pub async fn configure_chrome_viewport(driver: &WebDriver) -> Result<()> {
             }),
         )
         .await
-        .map_err(anyhow::Error::from)?;
+        .map_err(Report::from)?;
 
     Ok(())
 }

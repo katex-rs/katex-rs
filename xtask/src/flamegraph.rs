@@ -4,9 +4,9 @@ use std::io::{BufReader, Cursor};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
-use anyhow::{Context, Result, anyhow, bail};
 use camino::{Utf8Path, Utf8PathBuf};
 use clap::{ArgAction, Args, Subcommand, ValueEnum};
+use color_eyre::eyre::{Context, ContextCompat, Result, bail, eyre};
 use inferno::collapse::Collapse;
 use inferno::collapse::perf::Folder as PerfFolder;
 use inferno::flamegraph::{Options, from_reader};
@@ -375,7 +375,7 @@ fn workspace_root() -> Result<Utf8PathBuf> {
     manifest_dir
         .parent()
         .map(|path| path.to_owned())
-        .ok_or_else(|| anyhow!("failed to determine workspace root"))
+        .ok_or_else(|| eyre!("failed to determine workspace root"))
 }
 
 fn ensure_dataset_available(root: &Utf8Path) -> Result<()> {

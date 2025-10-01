@@ -1,9 +1,9 @@
 use std::collections::BTreeMap;
 use std::fs;
 
-use anyhow::{Context, Result, bail};
 use camino::{Utf8Path, Utf8PathBuf};
 use clap::Args;
+use color_eyre::eyre::{Context, ContextCompat, Result, bail};
 use regex::Regex;
 use serde::Serialize;
 use serde_json::{Value, json};

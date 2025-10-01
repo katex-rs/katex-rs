@@ -1,5 +1,5 @@
-use anyhow::Result;
 use camino::Utf8Path;
+use color_eyre::eyre::Result;
 use tokio::fs as async_fs;
 
 pub async fn sync_artifact(path: &Utf8Path, contents: Option<&[u8]>) -> Result<()> {

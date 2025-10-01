@@ -2,8 +2,8 @@ use std::fs;
 use std::process::Command;
 use std::time::SystemTime;
 
-use anyhow::{Context, Result, bail};
 use camino::Utf8Path;
+use color_eyre::eyre::{Context, Result, bail};
 
 use crate::screenshotter::args::BuildMode;
 

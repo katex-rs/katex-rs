@@ -1,10 +1,10 @@
 use std::net::{Ipv4Addr, SocketAddr};
 
-use anyhow::{Result, bail};
 use axum::Router;
 use axum::http::StatusCode;
 use axum::routing::{any, get_service};
 use camino::Utf8Path;
+use color_eyre::eyre::{Result, bail};
 use tokio::net::TcpListener;
 use tokio::sync::oneshot;
 use tower_http::services::{ServeDir, ServeFile};

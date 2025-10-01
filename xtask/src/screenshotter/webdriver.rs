@@ -2,7 +2,7 @@ use std::net::Ipv4Addr;
 use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 
-use anyhow::{Context, Result, anyhow, bail};
+use color_eyre::eyre::{Context, Report, Result, bail, eyre};
 use thirtyfour::common::capabilities::chromium::ChromiumLikeCapabilities;
 use thirtyfour::common::capabilities::desiredcapabilities::CapabilitiesHelper;
 use thirtyfour::common::capabilities::firefox::FirefoxPreferences;
@@ -71,46 +71,39 @@ async fn connect_webdriver(url: &str, browser: BrowserKind, headless: bool) -> R
     let caps: Capabilities = match browser {
         BrowserKind::Chrome => {
             let mut caps = DesiredCapabilities::chrome();
-            caps.set_no_sandbox().map_err(anyhow::Error::from)?;
-            caps.set_disable_dev_shm_usage()
-                .map_err(anyhow::Error::from)?;
-            caps.set_disable_gpu().map_err(anyhow::Error::from)?;
+            caps.set_no_sandbox().map_err(Report::from)?;
+            caps.set_disable_dev_shm_usage().map_err(Report::from)?;
+            caps.set_disable_gpu().map_err(Report::from)?;
             if headless {
-                caps.add_arg("--headless=new")
-                    .map_err(anyhow::Error::from)?;
+                caps.add_arg("--headless=new").map_err(Report::from)?;
             }
             caps.add_arg(&format!(
                 "--window-size={},{}",
                 VIEWPORT_WIDTH, VIEWPORT_HEIGHT
             ))
-            .map_err(anyhow::Error::from)?;
-            caps.add_arg("--disable-infobars")
-                .map_err(anyhow::Error::from)?;
-            caps.add_arg("--no-first-run")
-                .map_err(anyhow::Error::from)?;
+            .map_err(Report::from)?;
+            caps.add_arg("--disable-infobars").map_err(Report::from)?;
+            caps.add_arg("--no-first-run").map_err(Report::from)?;
             caps.add_arg("--no-default-browser-check")
-                .map_err(anyhow::Error::from)?;
+                .map_err(Report::from)?;
             caps.add_arg("--force-device-scale-factor=1")
-                .map_err(anyhow::Error::from)?;
-            caps.add_arg("--hide-scrollbars")
-                .map_err(anyhow::Error::from)?;
-            caps.accept_insecure_certs(true)
-                .map_err(anyhow::Error::from)?;
+                .map_err(Report::from)?;
+            caps.add_arg("--hide-scrollbars").map_err(Report::from)?;
+            caps.accept_insecure_certs(true).map_err(Report::from)?;
             caps.into()
         }
         BrowserKind::Firefox => {
             let mut caps = DesiredCapabilities::firefox();
             if headless {
-                caps.set_headless().map_err(anyhow::Error::from)?;
+                caps.set_headless().map_err(Report::from)?;
             }
-            caps.accept_insecure_certs(true)
-                .map_err(anyhow::Error::from)?;
+            caps.accept_insecure_certs(true).map_err(Report::from)?;
 
             let mut prefs = FirefoxPreferences::new();
             prefs
                 .set("layout.css.devPixelsPerPx", "1.0")
-                .map_err(anyhow::Error::from)?;
-            caps.set_preferences(prefs).map_err(anyhow::Error::from)?;
+                .map_err(Report::from)?;
+            caps.set_preferences(prefs).map_err(Report::from)?;
 
             caps.into()
         }
@@ -121,8 +114,7 @@ async fn connect_webdriver(url: &str, browser: BrowserKind, headless: bool) -> R
                 );
             }
             let mut caps = DesiredCapabilities::safari();
-            caps.accept_insecure_certs(true)
-                .map_err(anyhow::Error::from)?;
+            caps.accept_insecure_certs(true).map_err(Report::from)?;
             caps.into()
         }
     };
@@ -139,9 +131,9 @@ async fn connect_webdriver(url: &str, browser: BrowserKind, headless: bool) -> R
     }
 
     if let Some(err) = last_err {
-        Err(anyhow!("failed to connect to WebDriver at {url}: {err}"))
+        Err(eyre!("failed to connect to WebDriver at {url}: {err}"))
     } else {
-        Err(anyhow!("failed to connect to WebDriver at {url}"))
+        Err(eyre!("failed to connect to WebDriver at {url}"))
     }
 }
 

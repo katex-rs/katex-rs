@@ -1,8 +1,8 @@
 use std::collections::{HashSet, VecDeque};
 use std::time::{Duration, Instant};
 
-use anyhow::{Context, Result, anyhow, bail};
 use camino::Utf8PathBuf;
+use color_eyre::eyre::{Context, Report, Result, bail, eyre};
 use indicatif::ProgressBar;
 use serde_json::Value as JsonValue;
 use thirtyfour::WebDriver;
@@ -171,7 +171,7 @@ async fn run_browser(
     }
 
     let base_url = format!("{server_url}{PAGE_PATH}");
-    driver.goto(&base_url).await.map_err(anyhow::Error::from)?;
+    driver.goto(&base_url).await.map_err(Report::from)?;
 
     wait_for_run_case(&driver, Duration::from_millis(args.timeout)).await?;
 
@@ -288,7 +288,7 @@ async fn run_browser(
                         let compare_res = spawn_blocking(move || run_compare_job(job)).await;
                         let compare_res = match compare_res {
                             Ok(result) => result,
-                            Err(err) => Err(anyhow!(err)),
+                            Err(err) => Err(eyre!(err)),
                         };
                         (meta, compare_res)
                     });
@@ -459,7 +459,7 @@ async fn process_next_compare(
     timings: &mut Vec<f64>,
 ) -> Result<()> {
     if let Some(join_result) = compare_tasks.join_next().await {
-        let (meta, outcome_result) = join_result.map_err(|err| anyhow!(err))?;
+        let (meta, outcome_result) = join_result.map_err(|err| eyre!(err))?;
         let CompareMeta {
             case_index,
             case_key,
@@ -571,7 +571,7 @@ async fn render_case(
     let run_result = driver
         .execute_async(RUN_CASE_SCRIPT, vec![case.payload.clone()])
         .await
-        .map_err(anyhow::Error::from)?
+        .map_err(Report::from)?
         .convert::<JsonValue>()?;
 
     if let Some(state) = run_result.get("state").and_then(JsonValue::as_str)
@@ -595,7 +595,7 @@ async fn render_case(
         let ready: bool = driver
             .execute("return window.__ready === true;", Vec::<JsonValue>::new())
             .await
-            .map_err(anyhow::Error::from)?
+            .map_err(Report::from)?
             .convert()?;
         if ready {
             break;
@@ -629,10 +629,7 @@ async fn capture_case_screenshot(
     driver: &WebDriver,
     browser: BrowserKind,
 ) -> Result<Screenshot> {
-    let raw_screenshot = driver
-        .screenshot_as_png()
-        .await
-        .map_err(anyhow::Error::from)?;
+    let raw_screenshot = driver.screenshot_as_png().await.map_err(Report::from)?;
     normalize_viewport_screenshot(logger, progress, &raw_screenshot, browser)
 }
 
@@ -645,7 +642,7 @@ async fn wait_for_run_case(driver: &WebDriver, timeout: Duration) -> Result<()> 
                 Vec::<JsonValue>::new(),
             )
             .await
-            .map_err(anyhow::Error::from)?
+            .map_err(Report::from)?
             .convert()?;
         if result {
             return Ok(());
@@ -657,7 +654,7 @@ async fn wait_for_run_case(driver: &WebDriver, timeout: Duration) -> Result<()> 
                     Vec::<JsonValue>::new(),
                 )
                 .await
-                .map_err(anyhow::Error::from)?
+                .map_err(Report::from)?
                 .convert()?;
             if let Some(status) = status {
                 bail!(

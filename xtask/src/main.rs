@@ -2,8 +2,8 @@ mod extract_data;
 mod flamegraph;
 mod screenshotter;
 
-use anyhow::Result;
 use clap::{Parser, Subcommand};
+use color_eyre::eyre::Result;
 
 #[derive(Parser)]
 #[command(
@@ -28,6 +28,8 @@ enum Command {
 }
 
 fn main() -> Result<()> {
+    color_eyre::install()?;
+
     let cli = Cli::parse();
 
     match cli.command {

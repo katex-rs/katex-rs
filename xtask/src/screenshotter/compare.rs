@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use anyhow::{Context, Result};
+use color_eyre::eyre::{Context, Result};
 use image::{ColorType, ImageBuffer, ImageEncoder, Rgba, RgbaImage, codecs::png::PngEncoder};
 
 use crate::screenshotter::args::{CompareTolerance, DIFF_DIR};
@@ -518,7 +518,7 @@ pub async fn preload_baselines(
     cases: &[crate::screenshotter::models::TestCase],
     browser: crate::screenshotter::args::BrowserKind,
 ) -> Result<std::collections::HashMap<String, BaselineEntry>> {
-    use anyhow::Context;
+    use color_eyre::eyre::Context as _;
     use futures::{StreamExt, stream::FuturesUnordered};
     use tokio::task::spawn_blocking;
 
@@ -552,7 +552,7 @@ pub async fn preload_baselines(
 
     let mut baselines = std::collections::HashMap::new();
     while let Some(result) = tasks.next().await {
-        let (key, maybe_entry) = result.map_err(anyhow::Error::from)??;
+        let (key, maybe_entry) = result.map_err(color_eyre::Report::from)??;
         if let Some(entry) = maybe_entry {
             baselines.insert(key, entry);
         }

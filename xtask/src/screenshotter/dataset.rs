@@ -1,7 +1,7 @@
 use std::fs;
 
-use anyhow::{Result, anyhow, bail};
 use camino::{Utf8Path, Utf8PathBuf};
+use color_eyre::eyre::{Result, bail, eyre};
 use serde_json::{Map as JsonMap, Value as JsonValue};
 use serde_yaml::Value as YamlValue;
 
@@ -13,7 +13,7 @@ pub fn workspace_root() -> Result<Utf8PathBuf> {
     manifest_dir
         .parent()
         .map(|path| path.to_owned())
-        .ok_or_else(|| anyhow!("failed to determine workspace root"))
+        .ok_or_else(|| eyre!("failed to determine workspace root"))
 }
 
 pub fn load_cases(root: &Utf8Path, args: &ScreenshotterArgs) -> Result<Vec<TestCase>> {
@@ -39,13 +39,13 @@ pub fn load_cases(root: &Utf8Path, args: &ScreenshotterArgs) -> Result<Vec<TestC
     let value: YamlValue = serde_yaml::from_str(&text)?;
     let mapping = value
         .as_mapping()
-        .ok_or_else(|| anyhow!("screenshotter dataset is not a mapping"))?;
+        .ok_or_else(|| eyre!("screenshotter dataset is not a mapping"))?;
 
     let mut cases = Vec::new();
     for (key, item) in mapping {
         let name = key
             .as_str()
-            .ok_or_else(|| anyhow!("case name is not a string"))?;
+            .ok_or_else(|| eyre!("case name is not a string"))?;
         cases.push(build_case_from_yaml_item(name, item)?);
     }
 
