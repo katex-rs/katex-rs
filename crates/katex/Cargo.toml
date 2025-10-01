@@ -66,6 +66,5 @@ regex = "1.11.3"
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 gag = "1.0.0"
 
-
-[lints.clippy]
-approx_constant = "allow"
+[lints]
+workspace = true
