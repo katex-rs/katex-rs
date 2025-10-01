@@ -1,4 +1,5 @@
 use std::fs;
+use std::io;
 use std::process::Command;
 use std::time::SystemTime;
 
@@ -25,17 +26,7 @@ pub fn ensure_katex_dist_assets(root: &Utf8Path, mode: BuildMode) -> Result<()> 
                 dist_dir
             );
         }
-        BuildMode::Always | BuildMode::Auto => {
-            ensure_command_available("yarn")?;
-            let status = Command::new("yarn")
-                .arg("build")
-                .current_dir(katex_dir.as_std_path())
-                .status()
-                .context("failed to run yarn build")?;
-            if !status.success() {
-                bail!("yarn build failed with status {status}");
-            }
-        }
+        BuildMode::Always | BuildMode::Auto => run_yarn_build(&katex_dir)?,
     }
 
     if !dist_css.exists() || !dist_fonts.exists() {
@@ -121,5 +112,38 @@ pub fn ensure_command_available(program: &str) -> Result<()> {
         Ok(status) if status.success() => Ok(()),
         Ok(status) => bail!("command `{program}` exited with status {status}"),
         Err(err) => bail!("failed to execute `{program}`: {err}"),
+    }
+}
+
+fn run_yarn_build(katex_dir: &Utf8Path) -> Result<()> {
+    let status = Command::new("yarn")
+        .arg("build")
+        .current_dir(katex_dir.as_std_path())
+        .status();
+
+    match status {
+        Ok(status) if status.success() => Ok(()),
+        Ok(status) => bail!("yarn build failed with status {status}"),
+        Err(err) if err.kind() == io::ErrorKind::NotFound => {
+            let corepack_cmd = if cfg!(windows) {
+                "corepack.cmd"
+            } else {
+                "corepack"
+            };
+
+            let status = Command::new(corepack_cmd)
+                .arg("yarn")
+                .arg("build")
+                .current_dir(katex_dir.as_std_path())
+                .status()
+                .context("failed to run corepack yarn build")?;
+
+            if status.success() {
+                Ok(())
+            } else {
+                bail!("corepack yarn build failed with status {status}");
+            }
+        }
+        Err(err) => bail!("failed to run yarn build: {err}"),
     }
 }

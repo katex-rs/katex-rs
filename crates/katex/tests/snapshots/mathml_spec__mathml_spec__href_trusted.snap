@@ -1,0 +1,5 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi href="http://example.org">α</mi></mrow><annotation encoding="application/x-tex">\href{http://example.org}{\alpha}</annotation></semantics></math>

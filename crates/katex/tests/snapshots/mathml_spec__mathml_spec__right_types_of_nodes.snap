@@ -1,0 +1,5 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>\sin</mo><mi>x</mi><mo>+</mo><mn>1</mn><mspace width="0.2778em"/><mtext>a</mtext></mrow><annotation encoding="application/x-tex">\sin{x}+1\;\text{a}</annotation></semantics></math>

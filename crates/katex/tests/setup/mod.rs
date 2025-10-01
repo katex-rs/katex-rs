@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 #[cfg(feature = "backtrace")]
 use std::backtrace::Backtrace;
 use std::{
@@ -17,7 +19,8 @@ use katex::{
     parse,
     parser::parse_node::{ParseNode, ParseNodeArrayTag},
     render_to_dom_tree, render_to_string,
-    tree::HtmlDomNode,
+    style::DISPLAY,
+    tree::{HtmlDomNode, VirtualNode as _},
     types::ParseErrorKind,
 };
 use regex::{Captures, Regex};
@@ -428,6 +431,17 @@ impl TestExpr<'_> {
         Ok(())
     }
 
+    pub fn parse_error(&self, settings: &Settings) -> TestResult<ParseError> {
+        let location = self.location();
+        match parse(self.ctx, &self.expr, settings) {
+            Ok(_) => Err(TestError::ExpectedParseFailure {
+                expression: self.expr.clone(),
+                location,
+            }),
+            Err(error) => Ok(error),
+        }
+    }
+
     pub fn to_build(&self, settings: &Settings) -> TestResult<()> {
         self.wrap_parse(render_to_dom_tree(self.ctx, &self.expr, settings))?;
         Ok(())
@@ -720,13 +734,32 @@ pub fn get_built(expr: &str, settings: &Settings) -> TestResult<Vec<HtmlDomNode>
 }
 
 pub fn build_mathml(expr: &str) -> TestResult<Span<HtmlDomNode>> {
-    let tree = get_parsed_strict(expr)?;
+    let settings = strict_settings();
+    build_mathml_with_settings(expr, &settings)
+}
+
+pub fn build_mathml_with_settings(
+    expr: &str,
+    settings: &Settings,
+) -> TestResult<Span<HtmlDomNode>> {
+    let tree = parse(default_ctx(), expr, settings).map_err(|source| TestError::Parse {
+        expression: expr.to_owned(),
+        location: TestLocation::UNKNOWN,
+        source,
+    })?;
+
+    let mut options = Options::default();
+    if settings.display_mode {
+        options = options.having_base_style(Some(DISPLAY));
+    }
+    options.max_size = settings.max_size;
+
     katex::build_mathml::build_mathml(
         default_ctx(),
         &tree,
         expr,
-        &Options::default(),
-        false,
+        &options,
+        settings.display_mode,
         false,
     )
     .map_err(|source| TestError::Parse {
@@ -734,6 +767,30 @@ pub fn build_mathml(expr: &str) -> TestResult<Span<HtmlDomNode>> {
         location: TestLocation::UNKNOWN,
         source,
     })
+}
+
+pub fn mathml_markup(expr: &str, settings: &Settings) -> TestResult<String> {
+    let span = build_mathml_with_settings(expr, settings)?;
+    let markup = if let Some(math_node) = span.children.iter().find_map(|child| match child {
+        HtmlDomNode::MathML(_) => Some(child),
+        HtmlDomNode::DomSpan(inner) if inner.classes.contains("katex-mathml") => inner
+            .children
+            .iter()
+            .find(|grandchild| matches!(grandchild, HtmlDomNode::MathML(_))),
+        _ => None,
+    }) {
+        math_node.to_markup()
+    } else {
+        span.to_markup()
+    }
+    .map_err(|source| TestError::Parse {
+        expression: expr.to_owned(),
+        location: TestLocation::UNKNOWN,
+        source,
+    })?;
+
+    let normalized = normalize_html_attributes(&normalize_style_attributes(&markup));
+    Ok(normalized)
 }
 
 pub fn render_to_string_strict(expr: &str) -> TestResult<String> {
@@ -850,9 +907,17 @@ pub fn normalize_html_attributes(markup: &str) -> String {
     tag_regex
         .replace_all(markup, |caps: &Captures<'_>| {
             let tag = &caps[1];
-            let attr_str = caps[2].trim();
+            let mut attr_str = caps[2].trim();
+            let self_closing = attr_str.ends_with('/');
+            if self_closing {
+                attr_str = attr_str[..attr_str.len() - 1].trim_end();
+            }
             if attr_str.is_empty() {
-                format!("<{tag}>")
+                if self_closing {
+                    format!("<{tag}/>")
+                } else {
+                    format!("<{tag}>")
+                }
             } else {
                 let mut attrs: Vec<(&str, &str)> = attr_regex
                     .captures_iter(attr_str)
@@ -869,7 +934,11 @@ pub fn normalize_html_attributes(markup: &str) -> String {
                     .map(|(name, value)| format!("{name}=\"{value}\""))
                     .collect::<Vec<_>>()
                     .join(" ");
-                format!("<{tag} {formatted}>")
+                if self_closing {
+                    format!("<{tag} {formatted}/>")
+                } else {
+                    format!("<{tag} {formatted}>")
+                }
             }
         })
         .to_string()

@@ -1,0 +1,5 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi><mrow><mi mathvariant="bold-italic">A</mi><mi mathvariant="bold-italic">x</mi><mn mathvariant="bold">2</mn><mi mathvariant="bold-italic">k</mi><mi mathvariant="bold-italic">ω</mi><mi mathvariant="bold">Ω</mi><mi mathvariant="bold">ı</mi><mo mathvariant="bold-italic">+</mo></mrow></mi></mrow><annotation encoding="application/x-tex">\boldsymbol{Ax2k\omega\Omega\imath+}</annotation></semantics></math>

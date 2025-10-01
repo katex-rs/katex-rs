@@ -1,0 +1,5 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>x</mi><mi>T</mi></msub></mrow><annotation encoding="application/x-tex">x_{\mathchoice{D}{T}{\sum_{k = 0}^{\infty} x^k}{SS}}</annotation></semantics></math>

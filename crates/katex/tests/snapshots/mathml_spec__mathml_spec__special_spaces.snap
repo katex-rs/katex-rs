@@ -1,0 +1,5 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mspace width="0.1667em"/><mspace width="0.1667em"/><mspace width="0.2222em"/><mspace width="0.2222em"/><mspace width="0.2222em"/><mspace width="0.2778em"/><mspace width="0.2778em"/><mspace width="-0.1667em"/><mspace width="-0.1667em"/><mspace width="-0.2222em"/><mspace width="-0.2778em"/><mspace width="0.0556em"/><mspace width="0.1667em"/><mspace width="0.2222em"/><mspace width="0.2778em"/><mspace width="-0.0556em"/><mspace width="-0.1667em"/><mspace width="-0.2222em"/><mspace width="-0.2778em"/></mrow><annotation encoding="application/x-tex">\,\thinspace\:\&gt;\medspace\;\thickspace\!\negthinspace\negmedspace\negthickspace\mkern1mu\mkern3mu\mkern4mu\mkern5mu\mkern-1mu\mkern-3mu\mkern-4mu\mkern-5mu</annotation></semantics></math>

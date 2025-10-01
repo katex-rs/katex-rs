@@ -1,0 +1,5 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>\sin</mo><mi>α</mi><mo>=</mo><mn>0.34</mn><mo>=</mo><msup><mn>.34</mn><mn>1</mn></msup></mrow><annotation encoding="application/x-tex">\sin{\alpha}=0.34=.34^1</annotation></semantics></math>

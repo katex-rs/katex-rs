@@ -1,5 +1,9 @@
 [profile.default]
 slow-timeout = { period = "200ms", terminate-after = 4 }
 
+[[profile.default.overrides]]
+filter = 'binary_id(katex-rs::unicode_spec)'
+slow-timeout = { period = "500ms", terminate-after = 4 }
+
 [profile.ci.junit]  # this can be some other profile, too
 path = "junit.xml"

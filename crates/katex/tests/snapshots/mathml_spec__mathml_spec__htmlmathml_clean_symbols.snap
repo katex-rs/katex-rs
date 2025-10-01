@@ -1,0 +1,5 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext>©</mtext><mi mathvariant="normal">≠</mi><mi mathvariant="normal">∉</mi><mover accent="true"><mn>2</mn><mo>˘</mo></mover><mn>258</mn><mtext>KaTeX</mtext></mrow><annotation encoding="application/x-tex">\copyright\neq\notin\u2258\KaTeX</annotation></semantics></math>

@@ -1,0 +1,6 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+assertion_line: 186
+expression: markup
+---
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable width="100%"><mtr><mtd width="50%"></mtd><mtd><mrow><mi>x</mi><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup></mrow></mtd><mtd width="50%"></mtd><mtd><mtext>(hi)</mtext></mtd></mtr></mtable><annotation encoding="application/x-tex">\tag{hi} x+y^2</annotation></semantics></math>

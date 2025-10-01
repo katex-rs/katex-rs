@@ -1,0 +1,5 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>M</mi><mo stretchy="false">)</mo><mspace linebreak="newline"></mspace><mi>b</mi><mi>i</mi><mi>g</mi><mo stretchy="false">(</mo><mi>M</mi><mspace linebreak="newline"></mspace><mi>b</mi><mi>i</mi><mi>g</mi><mo stretchy="false">)</mo><mspace linebreak="newline"></mspace><mi>B</mi><mi>i</mi><mi>g</mi><mo stretchy="false">(</mo><mi>M</mi><mspace linebreak="newline"></mspace><mi>B</mi><mi>i</mi><mi>g</mi><mo stretchy="false">)</mo><mspace linebreak="newline"></mspace><mi>b</mi><mi>i</mi><mi>g</mi><mi>g</mi><mo stretchy="false">(</mo><mi>M</mi><mspace linebreak="newline"></mspace><mi>b</mi><mi>i</mi><mi>g</mi><mi>g</mi><mo stretchy="false">)</mo><mspace linebreak="newline"></mspace><mi>B</mi><mi>i</mi><mi>g</mi><mi>g</mi><mo stretchy="false">(</mo><mi>M</mi><mspace linebreak="newline"></mspace><mi>B</mi><mi>i</mi><mi>g</mi><mi>g</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(M) \\big(M\\big) \\Big(M\\Big) \\bigg(M\\bigg) \\Bigg(M\\Bigg)</annotation></semantics></math>
