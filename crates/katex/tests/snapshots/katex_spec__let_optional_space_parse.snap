@@ -1,0 +1,39 @@
+---
+source: crates/katex/tests/katex_spec.rs
+assertion_line: 4360
+expression: "format!(\"{:#?}\", parsed)"
+---
+[
+    OrdGroup(
+        ParseNodeOrdGroup {
+            mode: Math,
+            loc: None,
+            body: [
+                Font(
+                    ParseNodeFont {
+                        mode: Math,
+                        loc: None,
+                        font: "mathbf",
+                        body: OrdGroup(
+                            ParseNodeOrdGroup {
+                                mode: Math,
+                                loc: None,
+                                body: [
+                                    MathOrd(
+                                        ParseNodeMathOrd {
+                                            mode: Math,
+                                            loc: None,
+                                            text: "a",
+                                        },
+                                    ),
+                                ],
+                                semisimple: None,
+                            },
+                        ),
+                    },
+                ),
+            ],
+            semisimple: None,
+        },
+    ),
+]

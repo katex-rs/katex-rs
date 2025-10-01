@@ -1,0 +1,156 @@
+---
+source: crates/katex/tests/katex_spec.rs
+expression: snapshot
+---
+[
+    DomSpan(
+        Span {
+            children: [
+                Symbol(
+                    SymbolNode {
+                        text: "x",
+                        height: 0.43056,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.02778,
+                        width: 0.57153,
+                        max_font_size: 1.0,
+                        classes: Owned(
+                            [
+                                "mord",
+                                "mathnormal",
+                            ],
+                        ),
+                        style: CssStyle,
+                    },
+                ),
+            ],
+            attributes: {
+                "id": "bar",
+            },
+            classes: Static(
+                "enclosing",
+            ),
+            height: 0.43056,
+            depth: 0.0,
+            width: None,
+            max_font_size: 1.0,
+            style: CssStyle,
+            is_middle: None,
+            italic: None,
+        },
+    ),
+    DomSpan(
+        Span {
+            children: [
+                Symbol(
+                    SymbolNode {
+                        text: "x",
+                        height: 0.43056,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.02778,
+                        width: 0.57153,
+                        max_font_size: 1.0,
+                        classes: Owned(
+                            [
+                                "mord",
+                                "mathnormal",
+                            ],
+                        ),
+                        style: CssStyle,
+                    },
+                ),
+            ],
+            attributes: {},
+            classes: Owned(
+                [
+                    "enclosing",
+                    "foo",
+                ],
+            ),
+            height: 0.43056,
+            depth: 0.0,
+            width: None,
+            max_font_size: 1.0,
+            style: CssStyle,
+            is_middle: None,
+            italic: None,
+        },
+    ),
+    DomSpan(
+        Span {
+            children: [
+                Symbol(
+                    SymbolNode {
+                        text: "x",
+                        height: 0.43056,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.02778,
+                        width: 0.57153,
+                        max_font_size: 1.0,
+                        classes: Owned(
+                            [
+                                "mord",
+                                "mathnormal",
+                            ],
+                        ),
+                        style: CssStyle,
+                    },
+                ),
+            ],
+            attributes: {
+                "style": "color: red;",
+            },
+            classes: Static(
+                "enclosing",
+            ),
+            height: 0.43056,
+            depth: 0.0,
+            width: None,
+            max_font_size: 1.0,
+            style: CssStyle,
+            is_middle: None,
+            italic: None,
+        },
+    ),
+    DomSpan(
+        Span {
+            children: [
+                Symbol(
+                    SymbolNode {
+                        text: "x",
+                        height: 0.43056,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.02778,
+                        width: 0.57153,
+                        max_font_size: 1.0,
+                        classes: Owned(
+                            [
+                                "mord",
+                                "mathnormal",
+                            ],
+                        ),
+                        style: CssStyle,
+                    },
+                ),
+            ],
+            attributes: {
+                "data-bar": "b",
+                "data-foo": "a",
+            },
+            classes: Static(
+                "enclosing",
+            ),
+            height: 0.43056,
+            depth: 0.0,
+            width: None,
+            max_font_size: 1.0,
+            style: CssStyle,
+            is_middle: None,
+            italic: None,
+        },
+    ),
+]

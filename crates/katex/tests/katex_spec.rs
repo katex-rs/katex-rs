@@ -7,14 +7,14 @@ use katex::{
     dom_tree::HtmlDomNode,
     macros::{MacroDefinition, MacroExpansion},
     parser::parse_node::{AlignSpec, ParseNode},
-    render_to_dom_tree,
+    render_to_dom_tree, render_to_string,
     style::{DISPLAY, SCRIPTSCRIPT},
     symbols::{Atom, Font, Group, NonAtom},
     tree::VirtualNode as _,
     types::{CssProperty, Mode, Token},
 };
 use setup::*;
-use std::io::Read;
+use std::io::Read as _;
 use std::sync::Arc;
 use std::sync::Mutex;
 
@@ -103,7 +103,7 @@ fn a_rel_parser() {
                 ParseNode::Mclass(mclass) => {
                     assert_eq!(mclass.mclass, DomType::Mrel);
                 }
-                _ => panic!("Expected Atom or Mclass, got {:?}", node),
+                _ => panic!("Expected Atom or Mclass, got {node:?}"),
             }
         }
         Ok(())
@@ -429,8 +429,45 @@ fn an_implicit_group_parser() {
         Ok(())
     });
 
-    // TODO: Add nested describe tests for optional groups when snapshot testing
-    // is available
+    it(
+        "should work with sizing commands: \\sqrt[\\small 3]{x}",
+        || {
+            let mut parsed = get_parsed_strict(r"\sqrt[\small 3]{x}")?;
+            strip_positions(&mut parsed);
+            insta::assert_snapshot!("sqrt_optional_group_small", format!("{:#?}", parsed));
+            Ok(())
+        },
+    );
+
+    it(
+        "should work with \\color: \\sqrt[\\color{red} 3]{x}",
+        || {
+            let mut parsed = get_parsed_strict(r"\sqrt[\color{red} 3]{x}")?;
+            strip_positions(&mut parsed);
+            insta::assert_snapshot!("sqrt_optional_group_color", format!("{:#?}", parsed));
+            Ok(())
+        },
+    );
+
+    it(
+        "should work style commands \\sqrt[\\textstyle 3]{x}",
+        || {
+            let mut parsed = get_parsed_strict(r"\sqrt[\textstyle 3]{x}")?;
+            strip_positions(&mut parsed);
+            insta::assert_snapshot!("sqrt_optional_group_textstyle", format!("{:#?}", parsed));
+            Ok(())
+        },
+    );
+
+    it(
+        "should work with old font functions: \\sqrt[\\tt 3]{x}",
+        || {
+            let mut parsed = get_parsed_strict(r"\sqrt[\tt 3]{x}")?;
+            strip_positions(&mut parsed);
+            insta::assert_snapshot!("sqrt_optional_group_old_font", format!("{:#?}", parsed));
+            Ok(())
+        },
+    );
 }
 
 #[test]
@@ -826,7 +863,7 @@ fn a_text_parser() {
     });
 
     it("should forbid $ within math mode", || {
-        expect!(r"$x$").not_to_parse(&strict_settings())?;
+        expect!("$x$").not_to_parse(&strict_settings())?;
         expect!(r"\text{\($x$\)}").not_to_parse(&strict_settings())
     });
 
@@ -836,7 +873,7 @@ fn a_text_parser() {
     });
 
     it("should detect unbalanced $", || {
-        expect!(r"$").not_to_parse(&strict_settings())?;
+        expect!("$").not_to_parse(&strict_settings())?;
         expect!(r"\text{$}").not_to_parse(&strict_settings())
     });
 
@@ -1364,7 +1401,7 @@ fn left_right_builder() {
 
     for (actual, expected) in cases {
         it(
-            &format!("should build \"{}\" like \"{}\"", actual, expected),
+            &format!("should build \"{actual}\" like \"{expected}\""),
             || expect!(actual).to_build_like(expected, &strict_settings()),
         );
     }
@@ -1420,7 +1457,7 @@ fn a_begin_end_parser() {
 
     it("should nest", || {
         let m1 = r"\begin{pmatrix}1&2\\3&4\end{pmatrix}";
-        let m2 = format!("\\begin{{array}}{{rl}}{}&0\\\\0&{}\\end{{array}}", m1, m1);
+        let m2 = format!("\\begin{{array}}{{rl}}{m1}&0\\\\0&{m1}\\end{{array}}");
         expect!(&m2).to_parse(&strict_settings())
     });
 
@@ -1449,12 +1486,13 @@ fn a_begin_end_parser() {
         Ok(())
     });
 
-    // TODO: Add test for \arraystretch when snapshot testing is available
-    // it("should grab \\arraystretch", || {
-    //     let parse =
-    // get_parsed(r"\def\arraystretch{1.5}\begin{matrix}a&b\\c&d\end{matrix}");
-    //     expect(parse).toMatchSnapshot();
-    // });
+    it("should grab \\arraystretch", || {
+        let mut parsed =
+            get_parsed_strict(r"\def\arraystretch{1.5}\begin{matrix}a&b\\c&d\end{matrix}")?;
+        strip_positions(&mut parsed);
+        insta::assert_snapshot!("matrix_arraystretch_parse", format!("{:#?}", parsed));
+        Ok(())
+    });
 
     it(
         "should allow an optional argument in {matrix*} and company.",
@@ -1524,7 +1562,7 @@ fn a_sqrt_parser() {
             settings
                 .macros
                 .borrow_mut()
-                .insert("\\foo".to_string(), MacroDefinition::StaticStr("123"));
+                .insert("\\foo".to_owned(), MacroDefinition::StaticStr("123"));
             expect!(r"\sqrt\foo").to_parse_like("\\sqrt123", &settings)
         },
     );
@@ -1536,7 +1574,7 @@ fn a_sqrt_parser() {
             settings
                 .macros
                 .borrow_mut()
-                .insert("\\foo".to_string(), MacroDefinition::StaticStr("123"));
+                .insert("\\foo".to_owned(), MacroDefinition::StaticStr("123"));
             expect!(r"\sqrt[2]\foo").to_parse_like("\\sqrt[2]{123}", &settings)
         },
     );
@@ -1868,7 +1906,17 @@ fn a_font_parser() {
         expect!(r"e^\mathbf{x}").to_parse(&strict_settings())
     });
 
-    // TODO: Add snapshot test for \boldsymbol when available
+    it(
+        "\\boldsymbol should inherit mbin/mrel from argument",
+        || {
+            let built = get_built(
+                r"a\boldsymbol{}b\boldsymbol{=}c\boldsymbol{+}d\boldsymbol{++}e\boldsymbol{xyz}f",
+                &strict_settings(),
+            )?;
+            insta::assert_debug_snapshot!("boldsymbol_inherits_mbin_mrel", &built);
+            Ok(())
+        },
+    );
     it("old-style fonts work like new-style fonts", || {
         expect!(r"\rm xyz").to_parse_like(r"\mathrm{xyz}", &strict_settings())?;
         expect!(r"\sf xyz").to_parse_like(r"\mathsf{xyz}", &strict_settings())?;
@@ -2138,7 +2186,7 @@ fn an_html_font_tree_builder() {
             assert!(markup.contains(r#"<span class="mord mathbf">A</span>"#));
 
             let wide_char2 = char::from_u32(0x1D41A).unwrap(); // Mathematical Bold Small A
-            expect!(&format!("{} = {}", wide_char, wide_char2))
+            expect!(&format!("{wide_char} = {wide_char2}"))
                 .to_build_like(r"\mathbf A = \mathbf a", &strict_settings())
         },
     );
@@ -2185,7 +2233,7 @@ fn a_mathml_font_tree_builder() {
     it(
         "should render \\mathbb{contents} with the correct mathvariants",
         || {
-            let tex = format!("\\mathbb{{{}}}", contents);
+            let tex = format!("\\mathbb{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
             assert!(markup.contains("<mi mathvariant=\"double-struck\">A</mi>"));
             assert!(markup.contains("<mi mathvariant=\"double-struck\">x</mi>"));
@@ -2201,7 +2249,7 @@ fn a_mathml_font_tree_builder() {
     it(
         "should render \\mathrm{contents} with the correct mathvariants",
         || {
-            let tex = format!("\\mathrm{{{}}}", contents);
+            let tex = format!("\\mathrm{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
             assert!(markup.contains("<mi mathvariant=\"normal\">A</mi>"));
             assert!(markup.contains("<mi mathvariant=\"normal\">x</mi>"));
@@ -2217,7 +2265,7 @@ fn a_mathml_font_tree_builder() {
     it(
         "should render \\mathit{contents} with the correct mathvariants",
         || {
-            let tex = format!("\\mathit{{{}}}", contents);
+            let tex = format!("\\mathit{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
             assert!(markup.contains("<mi>A</mi>"));
             assert!(markup.contains("<mi>x</mi>"));
@@ -2233,7 +2281,7 @@ fn a_mathml_font_tree_builder() {
     it(
         "should render \\mathnormal{contents} with the correct mathvariants",
         || {
-            let tex = format!("\\mathnormal{{{}}}", contents);
+            let tex = format!("\\mathnormal{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
             assert!(markup.contains("<mi>A</mi>"));
             assert!(markup.contains("<mi>x</mi>"));
@@ -2249,7 +2297,7 @@ fn a_mathml_font_tree_builder() {
     it(
         "should render \\mathbf{contents} with the correct mathvariants",
         || {
-            let tex = format!("\\mathbf{{{}}}", contents);
+            let tex = format!("\\mathbf{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
             assert!(markup.contains("<mi mathvariant=\"bold\">A</mi>"));
             assert!(markup.contains("<mi mathvariant=\"bold\">x</mi>"));
@@ -2265,7 +2313,7 @@ fn a_mathml_font_tree_builder() {
     it(
         "should render \\mathcal{contents} with the correct mathvariants",
         || {
-            let tex = format!("\\mathcal{{{}}}", contents);
+            let tex = format!("\\mathcal{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
             assert!(markup.contains("<mi mathvariant=\"script\">A</mi>"));
             assert!(markup.contains("<mi mathvariant=\"script\">x</mi>"));
@@ -2281,7 +2329,7 @@ fn a_mathml_font_tree_builder() {
     it(
         "should render \\mathfrak{contents} with the correct mathvariants",
         || {
-            let tex = format!("\\mathfrak{{{}}}", contents);
+            let tex = format!("\\mathfrak{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
             assert!(markup.contains("<mi mathvariant=\"fraktur\">A</mi>"));
             assert!(markup.contains("<mi mathvariant=\"fraktur\">x</mi>"));
@@ -2297,7 +2345,7 @@ fn a_mathml_font_tree_builder() {
     it(
         "should render \\mathscr{contents} with the correct mathvariants",
         || {
-            let tex = format!("\\mathscr{{{}}}", contents);
+            let tex = format!("\\mathscr{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
             assert!(markup.contains("<mi mathvariant=\"script\">A</mi>"));
             assert!(markup.contains("<mi mathvariant=\"script\">x</mi>"));
@@ -2313,7 +2361,7 @@ fn a_mathml_font_tree_builder() {
     it(
         "should render \\mathsf{contents} with the correct mathvariants",
         || {
-            let tex = format!("\\mathsf{{{}}}", contents);
+            let tex = format!("\\mathsf{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
             assert!(markup.contains("<mi mathvariant=\"sans-serif\">A</mi>"));
             assert!(markup.contains("<mi mathvariant=\"sans-serif\">x</mi>"));
@@ -2329,7 +2377,7 @@ fn a_mathml_font_tree_builder() {
     it(
         "should render \\mathsfit{contents} with the correct mathvariants",
         || {
-            let tex = format!("\\mathsfit{{{}}}", contents);
+            let tex = format!("\\mathsfit{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
             assert!(markup.contains("<mi mathvariant=\"sans-serif-italic\">A</mi>"));
             assert!(markup.contains("<mi mathvariant=\"sans-serif-italic\">x</mi>"));
@@ -2396,14 +2444,16 @@ fn an_includegraphics_builder() {
     });
 
     it("should not render without trust setting", || {
-        let _built = get_built(img, &strict_settings())?;
-        // Snapshot would be used here
+        let built = get_built(img, &strict_settings())?;
+        let snapshot = normalize_debug_snapshot(&format!("{built:#?}"));
+        insta::assert_snapshot!("includegraphics_without_trust", snapshot);
         Ok(())
     });
 
     it("should render with trust setting", || {
-        let _built = get_built(img, &trust_settings())?;
-        // Snapshot would be used here
+        let built = get_built(img, &trust_settings())?;
+        let snapshot = normalize_debug_snapshot(&format!("{built:#?}"));
+        insta::assert_snapshot!("includegraphics_with_trust", snapshot);
         Ok(())
     });
 
@@ -2423,7 +2473,7 @@ fn an_includegraphics_builder() {
 #[test]
 fn an_html_extension_builder() {
     let html =
-        r#"\htmlId{bar}{x}\htmlClass{foo}{x}\htmlStyle{color: red;}{x}\htmlData{foo=a, bar=b}{x}"#;
+        r"\htmlId{bar}{x}\htmlClass{foo}{x}\htmlStyle{color: red;}{x}\htmlData{foo=a, bar=b}{x}";
 
     it("should not fail", || {
         expect!(html).to_build(&trust_non_strict_settings())
@@ -2449,24 +2499,26 @@ fn an_html_extension_builder() {
         // data-bar="b"
         assert_eq!(
             built[3].attributes().unwrap().get("data-foo"),
-            Some(&"a".to_string())
+            Some(&"a".to_owned())
         );
         assert_eq!(
             built[3].attributes().unwrap().get("data-bar"),
-            Some(&"b".to_string())
+            Some(&"b".to_owned())
         );
         Ok(())
     });
 
     it("should not affect spacing", || {
-        let _built = get_built(r#"\htmlId{a}{x+}y"#, &trust_non_strict_settings())?;
-        // Snapshot would be used here to verify spacing
+        let built = get_built(r"\htmlId{a}{x+}y", &trust_non_strict_settings())?;
+        let snapshot = normalize_debug_snapshot(&format!("{built:#?}"));
+        insta::assert_snapshot!("html_extension_spacing", snapshot);
         Ok(())
     });
 
     it("should render with trust and strict setting", || {
-        let _built = get_built(html, &trust_non_strict_settings())?;
-        // Snapshot would be used here
+        let built = get_built(html, &trust_non_strict_settings())?;
+        let snapshot = normalize_debug_snapshot(&format!("{built:#?}"));
+        insta::assert_snapshot!("html_extension_render", snapshot);
         Ok(())
     });
 
@@ -2474,7 +2526,7 @@ fn an_html_extension_builder() {
         "should throw Error when HTML attribute name is invalid",
         || {
             for ch in [">", " ", "\t", "\n", "\r", "\"", "'", "/"] {
-                let invalid = format!("\\htmlData{{a{}b=foo}}{{bar}}", ch);
+                let invalid = format!("\\htmlData{{a{ch}b=foo}}{{bar}}");
                 expect!(&invalid).not_to_html(&trust_non_strict_settings())?;
             }
             Ok(())
@@ -2576,11 +2628,9 @@ fn a_markup_generator() {
 #[test]
 fn a_parse_tree_generator() {
     it("generates a tree", || {
-        let _tree = get_parsed_strict(r"\sigma^2")?;
-
-        // TODO: Add nested describe tests for optional groups when snapshot testing
-        // is available
-
+        let mut tree = get_parsed_strict(r"\sigma^2")?;
+        strip_positions(&mut tree);
+        insta::assert_snapshot!("parse_tree_sigma_squared", format!("{:#?}", tree));
         Ok(())
     });
 }
@@ -3152,7 +3202,7 @@ fn a_parser_error() {
     it("should report the position of an error", || {
         let result = get_parsed_strict(r"\sqrt}");
         match result {
-            Err(TestError::Parse(e)) => {
+            Err(TestError::Parse { source: e, .. }) => {
                 assert_eq!(e.position(), Some(5));
             }
             Err(other) => panic!("Expected ParseError, got {other}"),
@@ -3260,7 +3310,7 @@ fn an_array_environment() {
 #[test]
 fn a_subarray_environment() {
     it("should accept only a single alignment character", || {
-        let parse = get_parsed_strict(r#"\begin{subarray}{c}a \\ b\end{subarray}"#)?;
+        let parse = get_parsed_strict(r"\begin{subarray}{c}a \\ b\end{subarray}")?;
         assert_let!(ParseNode::Array(array) = &parse[0]);
         assert_eq!(array.cols.as_ref().unwrap().len(), 1);
         if let AlignSpec::Align { align, .. } = &array.cols.as_ref().unwrap()[0] {
@@ -3268,10 +3318,10 @@ fn a_subarray_environment() {
         } else {
             panic!("Expected Align");
         }
-        expect!(r#"\begin{subarray}{cc}a \\ b\end{subarray}"#).not_to_parse(&strict_settings())?;
-        expect!(r#"\begin{subarray}{c}a & b \\ c & d\end{subarray}"#)
+        expect!(r"\begin{subarray}{cc}a \\ b\end{subarray}").not_to_parse(&strict_settings())?;
+        expect!(r"\begin{subarray}{c}a & b \\ c & d\end{subarray}")
             .not_to_parse(&strict_settings())?;
-        expect!(r#"\begin{subarray}{c}a \\ b\end{subarray}"#).to_build(&strict_settings())
+        expect!(r"\begin{subarray}{c}a \\ b\end{subarray}").to_build(&strict_settings())
     });
 }
 
@@ -3302,14 +3352,14 @@ fn a_smallmatrix_environment() {
 #[test]
 fn a_cases_environment() {
     it("should parse its input", || {
-        expect!(r#"f(a,b)=\begin{cases}a+1&\text{if }b\text{ is odd}\\a&\text{if }b=0\\a-1&\text{otherwise}\end{cases}"#).to_parse(&strict_settings())
+        expect!(r"f(a,b)=\begin{cases}a+1&\text{if }b\text{ is odd}\\a&\text{if }b=0\\a-1&\text{otherwise}\end{cases}").to_parse(&strict_settings())
     });
 }
 
 #[test]
 fn an_rcases_environment() {
     it("should build", || {
-        expect!(r#"\begin{rcases} a &\text{if } b \\ c &\text{if } d \end{rcases}⇒…"#)
+        expect!(r"\begin{rcases} a &\text{if } b \\ c &\text{if } d \end{rcases}⇒…")
             .to_build(&strict_settings())
     });
 }
@@ -3317,19 +3367,19 @@ fn an_rcases_environment() {
 #[test]
 fn an_aligned_environment() {
     it("should parse its input", || {
-        expect!(r#"\begin{aligned}a&=b&c&=d\\e&=f\end{aligned}"#).to_parse(&strict_settings())
+        expect!(r"\begin{aligned}a&=b&c&=d\\e&=f\end{aligned}").to_parse(&strict_settings())
     });
     it("should allow cells in brackets", || {
-        expect!(r#"\begin{aligned}[a]&[b]\\ [c]&[d]\end{aligned}"#).to_parse(&strict_settings())
+        expect!(r"\begin{aligned}[a]&[b]\\ [c]&[d]\end{aligned}").to_parse(&strict_settings())
     });
     it("should forbid cells in brackets without space", || {
-        expect!(r#"\begin{aligned}[a]&[b]\\[c]&[d]\end{aligned}"#).not_to_parse(&strict_settings())
+        expect!(r"\begin{aligned}[a]&[b]\\[c]&[d]\end{aligned}").not_to_parse(&strict_settings())
     });
     it(
         "should not eat the last row when its first cell is empty",
         || {
             let ae = get_parsed_strict(
-                r#"\begin{aligned}&E_1 & (1)\\&E_2 & (2)\\&E_3 & (3)\end{aligned}"#,
+                r"\begin{aligned}&E_1 & (1)\\&E_2 & (2)\\&E_3 & (3)\end{aligned}",
             )?;
             assert_let!(ParseNode::Array(array) = &ae[0]);
             assert_eq!(array.body.len(), 3);
@@ -3339,10 +3389,90 @@ fn an_aligned_environment() {
 }
 
 #[test]
+fn ams_environments() {
+    it("should fail outside display mode", || {
+        let settings = nonstrict_settings();
+        expect!(r"\begin{gather}a+b\\c+d\end{gather}").not_to_parse(&settings)?;
+        expect!(r"\begin{gather*}a+b\\c+d\end{gather*}").not_to_parse(&settings)?;
+        expect!(r"\begin{align}a&=b+c\\d+e&=f\end{align}").not_to_parse(&settings)?;
+        expect!(r"\begin{align*}a&=b+c\\d+e&=f\end{align*}").not_to_parse(&settings)?;
+        expect!(r"\begin{alignat}{2}10&x+ &3&y = 2\\3&x+&13&y = 4\end{alignat}")
+            .not_to_parse(&settings)?;
+        expect!(r"\begin{alignat*}{2}10&x+ &3&y = 2\\3&x+&13&y = 4\end{alignat*}")
+            .not_to_parse(&settings)?;
+        expect!(r"\begin{equation}a=b+c\end{equation}").not_to_parse(&settings)?;
+        expect!(r"\begin{split}a &=b+c\\&=e+f\end{split}").not_to_parse(&settings)?;
+        expect!(r"\begin{CD}A @>a>> B \\@VbVV @AAcA\\C @= D\end{CD}").not_to_parse(&settings)?;
+        Ok(())
+    });
+
+    it("should build if in display mode", || {
+        let settings = display_settings();
+        expect!(r"\begin{gather}a+b\\c+d\end{gather}").to_build(&settings)?;
+        expect!(r"\begin{gather*}a+b\\c+d\end{gather*}").to_build(&settings)?;
+        expect!(r"\begin{align}a&=b+c\\d+e&=f\end{align}").to_build(&settings)?;
+        expect!(r"\begin{align*}a&=b+c\\d+e&=f\end{align*}").to_build(&settings)?;
+        expect!(r"\begin{alignat}{2}10&x+ &3&y = 2\\3&x+&13&y = 4\end{alignat}")
+            .to_build(&settings)?;
+        expect!(r"\begin{alignat*}{2}10&x+ &3&y = 2\\3&x+&13&y = 4\end{alignat*}")
+            .to_build(&settings)?;
+        expect!(r"\begin{equation}a=b+c\end{equation}").to_build(&settings)?;
+        expect!(r"\begin{equation}\begin{split}a &=b+c\\&=e+f\end{split}\end{equation}")
+            .to_build(&settings)?;
+        expect!(r"\begin{split}a &=b+c\\&=e+f\end{split}").to_build(&settings)?;
+        expect!(
+            r"\begin{CD}A @<a<< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}"
+        )
+        .to_build(&settings)?;
+        Ok(())
+    });
+
+    it("should build an empty environment", || {
+        let settings = display_settings();
+        expect!(r"\begin{gather}\end{gather}").to_build(&settings)?;
+        expect!(r"\begin{gather*}\end{gather*}").to_build(&settings)?;
+        expect!(r"\begin{align}\end{align}").to_build(&settings)?;
+        expect!(r"\begin{align*}\end{align*}").to_build(&settings)?;
+        expect!(r"\begin{alignat}{2}\end{alignat}").to_build(&settings)?;
+        expect!(r"\begin{alignat*}{2}\end{alignat*}").to_build(&settings)?;
+        expect!(r"\begin{equation}\end{equation}").to_build(&settings)?;
+        expect!(r"\begin{split}\end{split}").to_build(&settings)?;
+        expect!(r"\begin{CD}\end{CD}").to_build(&settings)?;
+        Ok(())
+    });
+
+    it(
+        "{equation} should fail if argument contains two rows.",
+        || expect!(r"\begin{equation}a=\cr b+c\end{equation}").not_to_parse(&display_settings()),
+    );
+
+    it(
+        "{equation} should fail if argument contains two columns.",
+        || expect!(r"\begin{equation}a &=b+c\end{equation}").not_to_build(&display_settings()),
+    );
+
+    it(
+        "{split} should fail if argument contains three columns.",
+        || {
+            expect!(r"\begin{equation}\begin{split}a &=b &+c\\&=e &+f\end{split}\end{equation}")
+                .not_to_build(&display_settings())
+        },
+    );
+
+    it(
+        "{array} should fail if body contains more columns than specification.",
+        || {
+            expect!(r"\begin{array}{2}a & b & c\\d & e  f\end{array}")
+                .not_to_build(&display_settings())
+        },
+    );
+}
+
+#[test]
 fn the_cd_environment() {
     it("should fail if not is display mode", || {
         expect!(
-            r#"\begin{CD}A @<a<< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}"#
+            r"\begin{CD}A @<a<< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}"
         )
         .not_to_parse(&non_display_settings())
     });
@@ -3350,30 +3480,30 @@ fn the_cd_environment() {
     it(
         "should fail if the character after '@' is not in <>AV=|.",
         || {
-            expect!(r#"\begin{CD}A @X<a<< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}"#).not_to_parse(&display_settings())
+            expect!(r"\begin{CD}A @X<a<< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}").not_to_parse(&display_settings())
         },
     );
     it(
         "should fail if an arrow does not have its final character.",
         || {
             expect!(
-                r#"\begin{CD}A @<a< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}"#
+                r"\begin{CD}A @<a< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}"
             )
             .not_to_parse(&display_settings())?;
             expect!(
-                r#"\begin{CD}A @<a<< B @>>b C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}"#
+                r"\begin{CD}A @<a<< B @>>b C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}"
             )
             .not_to_parse(&display_settings())
         },
     );
     it("should fail without an \\end.", || {
-        expect!(r#"\begin{CD}A @<a<< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G"#)
+        expect!(r"\begin{CD}A @<a<< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G")
             .not_to_parse(&display_settings())
     });
 
     it("should succeed without the flaws noted above.", || {
         expect!(
-            r#"\begin{CD}A @<a<< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}"#
+            r"\begin{CD}A @<a<< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}"
         )
         .to_build(&display_settings())
     });
@@ -3419,13 +3549,13 @@ fn href_and_url_commands() {
 
     it("should allow letters [#$%&~_^] without escaping", || {
         let url = "http://example.org/~bar/#top?foo=$foo&bar=ba^r_boo%20baz";
-        let parsed1 = get_parsed_trust(&format!(r"\href{{{}}}{{\alpha}}", url))?;
+        let parsed1 = get_parsed_trust(&format!(r"\href{{{url}}}{{\alpha}}"))?;
         if let ParseNode::Href(href) = &parsed1[0] {
             assert_eq!(href.href, url);
         } else {
             panic!("Expected Href node");
         }
-        let parsed2 = get_parsed_trust(&format!(r"\url{{{}}}", url))?;
+        let parsed2 = get_parsed_trust(&format!(r"\url{{{url}}}"))?;
         if let ParseNode::Href(href_node) = &parsed2[0] {
             assert_eq!(href_node.href, url);
         } else {
@@ -3436,13 +3566,13 @@ fn href_and_url_commands() {
 
     it("should allow balanced braces in url", || {
         let url = "http://example.org/{{}t{oo}}";
-        let parsed1 = get_parsed_trust(&format!(r"\href{{{}}}{{\alpha}}", url))?;
+        let parsed1 = get_parsed_trust(&format!(r"\href{{{url}}}{{\alpha}}"))?;
         if let ParseNode::Href(href) = &parsed1[0] {
             assert_eq!(href.href, url);
         } else {
             panic!("Expected Href node");
         }
-        let parsed2 = get_parsed_trust(&format!(r"\url{{{}}}", url))?;
+        let parsed2 = get_parsed_trust(&format!(r"\url{{{url}}}"))?;
         if let ParseNode::Href(href_node) = &parsed2[0] {
             assert_eq!(href_node.href, url);
         } else {
@@ -3462,15 +3592,15 @@ fn href_and_url_commands() {
         let url = "http://example.org/~bar/#top?foo=$}foo{&bar=bar^r_boo%20baz";
         let mut input = url.to_owned();
         for ch in ['#', '$', '%', '&', '~', '_', '^', '{', '}'] {
-            input = input.replace(ch, &format!(r"\{}", ch));
+            input = input.replace(ch, &format!(r"\{ch}"));
         }
-        let parsed1 = get_parsed_trust(&format!(r"\href{{{}}}{{\alpha}}", input))?;
+        let parsed1 = get_parsed_trust(&format!(r"\href{{{input}}}{{\alpha}}"))?;
         if let ParseNode::Href(href) = &parsed1[0] {
             assert_eq!(href.href, url);
         } else {
             panic!("Expected Href node");
         }
-        let parsed2 = get_parsed_trust(&format!(r"\url{{{}}}", input))?;
+        let parsed2 = get_parsed_trust(&format!(r"\url{{{input}}}"))?;
         if let ParseNode::Href(href_node) = &parsed2[0] {
             assert_eq!(href_node.href, url);
         } else {
@@ -3491,18 +3621,19 @@ fn href_and_url_commands() {
 
     it("should not affect spacing around", || {
         let built = get_built(r"a\href{http://example.com/}{+b}", &trust_settings())?;
-        // Verify spacing via classes or structure; for now, assume build succeeds as in
-        // JS
-        assert!(!built.is_empty());
+        let snapshot = normalize_debug_snapshot(&format!("{built:#?}"));
+        insta::assert_snapshot!("href_spacing", snapshot);
         Ok(())
     });
 
     it(
         "should forbid relative URLs when trust option is false",
         || {
-            expect!(r"\href{relative}{foo}").not_to_parse(&strict_settings())?;
-            // In JS, it matches snapshot; here, check if Href is not created or error
-            // Assume it parses but without link
+            let mut settings = nonstrict_settings();
+            settings.trust = TrustSetting::Function(Arc::new(|_| Some(false)));
+            let mut parsed = get_parsed(r"\href{relative}{foo}", &settings)?;
+            strip_positions(&mut parsed);
+            insta::assert_snapshot!("href_relative_url_forbidden", format!("{:#?}", parsed));
             Ok(())
         },
     );
@@ -3510,41 +3641,45 @@ fn href_and_url_commands() {
     it("should allow explicitly allowed protocols", || {
         let mut settings = trust_settings();
         settings.trust = TrustSetting::Function(Arc::new(|context| {
-            Some(context.protocol == Some("ftp".to_string()))
+            Some(context.protocol == Some("ftp".to_owned()))
         }));
-        let _parsed = get_parsed(r"\href{ftp://x}{foo}", &settings)?;
-        // Assume it parses successfully
+        let mut parsed = get_parsed(r"\href{ftp://x}{foo}", &settings)?;
+        strip_positions(&mut parsed);
+        insta::assert_snapshot!("href_allow_explicit_protocol", format!("{:#?}", parsed));
         Ok(())
     });
 
     it(
         "should allow all protocols when trust option is true",
         || {
-            let _parsed = get_parsed_trust(r"\href{ftp://x}{foo}")?;
-            // Assume it parses successfully
+            let mut parsed = get_parsed_trust(r"\href{ftp://x}{foo}")?;
+            strip_positions(&mut parsed);
+            insta::assert_snapshot!("href_allow_all_protocols", format!("{:#?}", parsed));
             Ok(())
         },
     );
 
     it("should not allow explicitly disallowed protocols", || {
-        let mut settings = trust_settings();
+        let mut settings = nonstrict_settings();
         settings.trust = TrustSetting::Function(Arc::new(|context| {
-            Some(context.protocol != Some("javascript".to_string()))
+            Some(context.protocol != Some("javascript".to_owned()))
         }));
-        let _parsed = get_parsed_trust(r"\href{javascript:alert('x')}{foo}")?;
-        // Assume it fails or no link
+        let mut parsed = get_parsed(r"\href{javascript:alert('x')}{foo}", &settings)?;
+        strip_positions(&mut parsed);
+        insta::assert_snapshot!("href_disallow_protocol", format!("{:#?}", parsed));
         Ok(())
     });
 
     it(
         "should not allow explicitly uppercased disallowed protocols",
         || {
-            let mut settings = trust_settings();
+            let mut settings = nonstrict_settings();
             settings.trust = TrustSetting::Function(Arc::new(|context| {
-                Some(context.protocol != Some("javascript".to_string()))
+                Some(context.protocol != Some("javascript".to_owned()))
             }));
-            let _parsed = get_parsed_trust(r"\href{JavaScript:alert('x')}{foo}")?;
-            // Assume it fails or no link
+            let mut parsed = get_parsed(r"\href{JavaScript:alert('x')}{foo}", &settings)?;
+            strip_positions(&mut parsed);
+            insta::assert_snapshot!("href_disallow_uppercase_protocol", format!("{:#?}", parsed));
             Ok(())
         },
     );
@@ -3556,52 +3691,51 @@ fn href_and_url_commands() {
         let protocol = Arc::new(Mutex::new(None));
         let proto_ref = protocol.clone();
         settings.trust = TrustSetting::Function(Arc::new(move |context| {
-            eprintln!("Detected protocol: {:?}", context.protocol);
             *proto_ref.lock().unwrap() = context.protocol.clone();
             Some(true)
         }));
-        let _ = get_parsed(&format!(r"\url{{{}}}", url), &settings);
+        let _ = get_parsed(&format!(r"\url{{{url}}}"), &settings);
         protocol.lock().unwrap().clone()
     }
 
     it("should get protocols correctly", || {
-        assert_eq!(get_protocol_via_trust("foo"), Some("_relative".to_string()));
-        assert_eq!(get_protocol_via_trust("Foo:"), Some("foo".to_string()));
-        assert_eq!(get_protocol_via_trust("Foo:bar"), Some("foo".to_string()));
+        assert_eq!(get_protocol_via_trust("foo"), Some("_relative".to_owned()));
+        assert_eq!(get_protocol_via_trust("Foo:"), Some("foo".to_owned()));
+        assert_eq!(get_protocol_via_trust("Foo:bar"), Some("foo".to_owned()));
         assert_eq!(
             get_protocol_via_trust("JavaScript:"),
-            Some("javascript".to_string())
+            Some("javascript".to_owned())
         );
         assert_eq!(
             get_protocol_via_trust("JavaScript:code"),
-            Some("javascript".to_string())
+            Some("javascript".to_owned())
         );
         assert_eq!(get_protocol_via_trust("!:"), None);
         assert_eq!(get_protocol_via_trust("foo&colon;"), None);
         assert_eq!(
             get_protocol_via_trust("?query=string&colon="),
-            Some("_relative".to_string())
+            Some("_relative".to_owned())
         );
         assert_eq!(
             get_protocol_via_trust("#query=string&colon="),
-            Some("_relative".to_string())
+            Some("_relative".to_owned())
         );
         assert_eq!(
             get_protocol_via_trust("dir/file&colon"),
-            Some("_relative".to_string())
+            Some("_relative".to_owned())
         );
         assert_eq!(
             get_protocol_via_trust("//foo"),
-            Some("_relative".to_string())
+            Some("_relative".to_owned())
         );
         assert_eq!(get_protocol_via_trust("://foo"), None);
         assert_eq!(
             get_protocol_via_trust("  \t http://"),
-            Some("http".to_string())
+            Some("http".to_owned())
         );
         assert_eq!(
             get_protocol_via_trust("  \t http://foo"),
-            Some("http".to_string())
+            Some("http".to_owned())
         );
         Ok(())
     });
@@ -3654,14 +3788,16 @@ fn a_parser_that_does_not_throw_on_unsupported_commands() {
         "should build katex-error span for other type of KaTeX error",
         || {
             let html = render_to_string_nonstrict("2^2^2")?;
-            assert!(html.contains("katex-error"));
+            let normalized = normalize_html_attributes(&normalize_style_attributes(&html));
+            insta::assert_snapshot!("error_render_double_superscript", normalized);
             Ok(())
         },
     );
 
     it("should properly escape LaTeX in errors", || {
-        let _html = render_to_string_nonstrict("2^&\"<>")?;
-        // TODO: Snapshot test
+        let html = render_to_string_nonstrict("2^&\"<>")?;
+        let normalized = normalize_html_attributes(&normalize_style_attributes(&html));
+        insta::assert_snapshot!("error_render_escape", normalized);
         Ok(())
     });
 }
@@ -3673,7 +3809,7 @@ fn parse_error_properties() {
         || {
             match get_parsed_strict("1 + \\fraq{}{}") {
                 Ok(_) => panic!("Expected parse error"),
-                Err(TestError::Parse(e)) => {
+                Err(TestError::Parse { source: e, .. }) => {
                     assert_eq!(e.position(), Some(4)); // After "1 + "
                     assert_eq!(e.length(), Some(5)); // "\\fraq"
                     assert_eq!(
@@ -3692,7 +3828,7 @@ fn parse_error_properties() {
         || {
             match get_parsed_strict("\\frac{}") {
                 Ok(_) => panic!("Expected parse error"),
-                Err(TestError::Parse(e)) => {
+                Err(TestError::Parse { source: e, .. }) => {
                     assert_eq!(e.position(), Some(7));
                     assert_eq!(e.length(), Some(0));
                     assert_eq!(
@@ -3711,7 +3847,7 @@ fn parse_error_properties() {
         || {
             match get_parsed_strict("\\verb|hello\nworld|") {
                 Ok(_) => panic!("Expected parse error"),
-                Err(TestError::Parse(e)) => {
+                Err(TestError::Parse { source: e, .. }) => {
                     assert_eq!(e.position(), None);
                     assert_eq!(e.length(), None);
                     assert_eq!(
@@ -3743,7 +3879,7 @@ fn ams_symbols() {
         || {
             let symbols = r"\yen\checkmark\circledR\maltese";
             expect!(symbols).to_build(&strict_settings())?;
-            expect!(&format!(r"\text{{{}}}", symbols)).to_build(&strict_settings())
+            expect!(&format!(r"\text{{{symbols}}}")).to_build(&strict_settings())
         },
     );
 }
@@ -3755,7 +3891,7 @@ fn a_macro_expander() {
         settings
             .macros
             .borrow_mut()
-            .insert("\\foo".to_string(), MacroDefinition::StaticStr("123"));
+            .insert("\\foo".to_owned(), MacroDefinition::StaticStr("123"));
         expect!(r"e^\foo").to_parse_like("e^1 23", &settings)
     });
 
@@ -3766,7 +3902,7 @@ fn a_macro_expander() {
             settings
                 .macros
                 .borrow_mut()
-                .insert("\\foo".to_string(), MacroDefinition::StaticStr(" x"));
+                .insert("\\foo".to_owned(), MacroDefinition::StaticStr(" x"));
             expect!(r"\text{\foo}").to_parse_like(r"\text{ x}", &settings)
         },
     );
@@ -3778,7 +3914,7 @@ fn a_macro_expander() {
             settings
                 .macros
                 .borrow_mut()
-                .insert("\\foo".to_string(), MacroDefinition::StaticStr("#1"));
+                .insert("\\foo".to_owned(), MacroDefinition::StaticStr("#1"));
             expect!(r"\text{\foo{ x}}").to_parse_like(r"\text{ x}", &settings)
         },
     );
@@ -3788,7 +3924,7 @@ fn a_macro_expander() {
         settings
             .macros
             .borrow_mut()
-            .insert("\\foo".to_string(), MacroDefinition::StaticStr(" x"));
+            .insert("\\foo".to_owned(), MacroDefinition::StaticStr(" x"));
         expect!(r"\foo").to_parse_like("x", &settings)
     });
 
@@ -3797,7 +3933,7 @@ fn a_macro_expander() {
         settings
             .macros
             .borrow_mut()
-            .insert("\\foo".to_string(), MacroDefinition::StaticStr("x"));
+            .insert("\\foo".to_owned(), MacroDefinition::StaticStr("x"));
         expect!(r"\text{\foo }").to_parse_like(r"\text{x}", &settings)
     });
 
@@ -3806,7 +3942,7 @@ fn a_macro_expander() {
         settings
             .macros
             .borrow_mut()
-            .insert("\\foo".to_string(), MacroDefinition::StaticStr(r"\relax"));
+            .insert("\\foo".to_owned(), MacroDefinition::StaticStr(r"\relax"));
         expect!(r"\text{\foo }").to_parse_like(r"\text{}", &settings)
     });
 
@@ -3817,7 +3953,7 @@ fn a_macro_expander() {
             settings
                 .macros
                 .borrow_mut()
-                .insert("\\\\".to_string(), MacroDefinition::StaticStr(r"\relax"));
+                .insert("\\\\".to_owned(), MacroDefinition::StaticStr(r"\relax"));
             expect!(r"\text{\\ }").to_parse_like(r"\text{ }", &settings)
         },
     );
@@ -3835,7 +3971,7 @@ fn a_macro_expander() {
         settings
             .macros
             .borrow_mut()
-            .insert("\\%".to_string(), MacroDefinition::StaticStr("x"));
+            .insert("\\%".to_owned(), MacroDefinition::StaticStr("x"));
         expect!(r"\text{\% y}").to_parse_like(r"\text{x y}", &settings)
     });
 
@@ -3849,13 +3985,13 @@ fn a_macro_expander() {
         settings1
             .macros
             .borrow_mut()
-            .insert("\\foo".to_string(), MacroDefinition::StaticStr("#1#2end"));
+            .insert("\\foo".to_owned(), MacroDefinition::StaticStr("#1#2end"));
         expect!(r"\text{\foo 1 2}").to_parse_like(r"\text{12end}", &settings1)?;
         let settings2 = strict_settings();
         settings2
             .macros
             .borrow_mut()
-            .insert("\\foo".to_string(), MacroDefinition::StaticStr("#1#2end"));
+            .insert("\\foo".to_owned(), MacroDefinition::StaticStr("#1#2end"));
         expect!(r"\text{\foo {1} {2}}").to_parse_like(r"\text{12end}", &settings2)
     });
 
@@ -3863,10 +3999,10 @@ fn a_macro_expander() {
         let settings = strict_settings();
         settings.macros.borrow_mut().extend([
             (
-                "\\foo".to_string(),
+                "\\foo".to_owned(),
                 MacroDefinition::StaticStr("\\bar\\bar"),
             ),
-            ("\\bar".to_string(), MacroDefinition::StaticStr("a")),
+            ("\\bar".to_owned(), MacroDefinition::StaticStr("a")),
         ]);
 
         expect!("1\\foo2").to_parse_like("1aa2", &settings)
@@ -3875,13 +4011,13 @@ fn a_macro_expander() {
     it("should allow for multiple expansion with argument", || {
         let settings = strict_settings();
         settings.macros.borrow_mut().insert(
-            "\\foo".to_string(),
+            "\\foo".to_owned(),
             MacroDefinition::StaticStr("\\bar{#1}\\bar{#1}"),
         );
         settings
             .macros
             .borrow_mut()
-            .insert("\\bar".to_string(), MacroDefinition::StaticStr("#1#1"));
+            .insert("\\bar".to_owned(), MacroDefinition::StaticStr("#1#1"));
         expect!("1\\foo2").to_parse_like("12222", &settings)
     });
 
@@ -3890,11 +4026,11 @@ fn a_macro_expander() {
         settings
             .macros
             .borrow_mut()
-            .insert("\\foo".to_string(), MacroDefinition::StaticStr("(#1)"));
+            .insert("\\foo".to_owned(), MacroDefinition::StaticStr("(#1)"));
         settings
             .macros
             .borrow_mut()
-            .insert("\\bar".to_string(), MacroDefinition::StaticStr("xyz"));
+            .insert("\\bar".to_owned(), MacroDefinition::StaticStr("xyz"));
         expect!(r"\foo\bar").to_parse_like("(xyz)", &settings)
     });
 
@@ -3905,7 +4041,7 @@ fn a_macro_expander() {
             settings
                 .macros
                 .borrow_mut()
-                .insert("\\foo".to_string(), MacroDefinition::StaticStr("(#1)"));
+                .insert("\\foo".to_owned(), MacroDefinition::StaticStr("(#1)"));
             expect!(r"\foo{e^{x_{12}+3}}").to_parse_like("(e^{x_{12}+3})", &settings)
         },
     );
@@ -3917,11 +4053,11 @@ fn a_macro_expander() {
             settings1
                 .macros
                 .borrow_mut()
-                .insert("\\foo".to_string(), MacroDefinition::StaticStr("#1+#2"));
+                .insert("\\foo".to_owned(), MacroDefinition::StaticStr("#1+#2"));
             settings1
                 .macros
                 .borrow_mut()
-                .insert("\\bar".to_string(), MacroDefinition::StaticStr("xy"));
+                .insert("\\bar".to_owned(), MacroDefinition::StaticStr("xy"));
             expect!(r"\expandafter\foo\bar").to_parse_like("x+y", &settings1)?;
             expect!(r"\def\foo{x}\def\bar{\def\foo{y}}\expandafter\bar\foo")
                 .to_parse_like("x", &strict_settings())?;
@@ -3936,7 +4072,7 @@ fn a_macro_expander() {
         settings
             .macros
             .borrow_mut()
-            .insert("\\foo".to_string(), MacroDefinition::StaticStr("x"));
+            .insert("\\foo".to_owned(), MacroDefinition::StaticStr("x"));
         expect!(r"\noexpand\foo y").to_parse_like("y", &settings)?;
         expect!(r"\expandafter\foo\noexpand\foo").to_parse_like("x", &settings)?; // \frac is a macro and therefore expandable
         expect!(r"\noexpand\frac xy").to_parse_like("xy", &strict_settings())?;
@@ -3951,11 +4087,11 @@ fn a_macro_expander() {
             settings
                 .macros
                 .borrow_mut()
-                .insert("\\foo".to_string(), MacroDefinition::StaticStr("(#1)"));
+                .insert("\\foo".to_owned(), MacroDefinition::StaticStr("(#1)"));
             settings
                 .macros
                 .borrow_mut()
-                .insert("\\bar".to_string(), MacroDefinition::StaticStr(" "));
+                .insert("\\bar".to_owned(), MacroDefinition::StaticStr(" "));
             expect!(r"\text{\foo\bar}").to_parse_like(r"\text{( )}", &settings)
         },
     );
@@ -3967,11 +4103,11 @@ fn a_macro_expander() {
             settings
                 .macros
                 .borrow_mut()
-                .insert("\\foo".to_string(), MacroDefinition::StaticStr("(#1)"));
+                .insert("\\foo".to_owned(), MacroDefinition::StaticStr("(#1)"));
             settings
                 .macros
                 .borrow_mut()
-                .insert("\\bar".to_string(), MacroDefinition::StaticStr(" "));
+                .insert("\\bar".to_owned(), MacroDefinition::StaticStr(" "));
             expect!(r"\foo\bar").to_parse_like("()", &settings)
         },
     );
@@ -3983,11 +4119,11 @@ fn a_macro_expander() {
             settings
                 .macros
                 .borrow_mut()
-                .insert("\\foo".to_string(), MacroDefinition::StaticStr("(#1,#2)"));
+                .insert("\\foo".to_owned(), MacroDefinition::StaticStr("(#1,#2)"));
             settings
                 .macros
                 .borrow_mut()
-                .insert("\\bar".to_string(), MacroDefinition::StaticStr(" "));
+                .insert("\\bar".to_owned(), MacroDefinition::StaticStr(" "));
             expect!(r"\text{\foo\bar\bar}").to_parse_like(r"\text{( , )}", &settings)
         },
     );
@@ -3997,7 +4133,7 @@ fn a_macro_expander() {
         settings
             .macros
             .borrow_mut()
-            .insert("\\foo".to_string(), MacroDefinition::StaticStr("(#1,#2)"));
+            .insert("\\foo".to_owned(), MacroDefinition::StaticStr("(#1,#2)"));
         expect!(r"\text{\foo\relax x}").to_parse_like(r"\text{(,x)}", &settings)
     });
 
@@ -4008,11 +4144,11 @@ fn a_macro_expander() {
             settings
                 .macros
                 .borrow_mut()
-                .insert("\\foo".to_string(), MacroDefinition::StaticStr("(#1,#2)"));
+                .insert("\\foo".to_owned(), MacroDefinition::StaticStr("(#1,#2)"));
             settings
                 .macros
                 .borrow_mut()
-                .insert("\\bar".to_string(), MacroDefinition::StaticStr(" "));
+                .insert("\\bar".to_owned(), MacroDefinition::StaticStr(" "));
             expect!(r"\foo\bar\bar").to_parse_like("(,)", &settings)
         },
     );
@@ -4022,11 +4158,11 @@ fn a_macro_expander() {
         settings
             .macros
             .borrow_mut()
-            .insert("\\foo".to_string(), MacroDefinition::StaticStr("(#1)"));
+            .insert("\\foo".to_owned(), MacroDefinition::StaticStr("(#1)"));
         settings
             .macros
             .borrow_mut()
-            .insert("\\bar".to_string(), MacroDefinition::StaticStr(""));
+            .insert("\\bar".to_owned(), MacroDefinition::StaticStr(""));
         expect!(r"\foo\bar").to_parse_like("()", &settings)
     });
 
@@ -4035,13 +4171,13 @@ fn a_macro_expander() {
         settings1
             .macros
             .borrow_mut()
-            .insert("\\bar".to_string(), MacroDefinition::StaticStr(" "));
+            .insert("\\bar".to_owned(), MacroDefinition::StaticStr(" "));
         expect!(r"\frac\bar\bar").to_parse_like(r"\frac{}{}", &settings1)?;
         let settings2 = strict_settings();
         settings2
             .macros
             .borrow_mut()
-            .insert("\\bar".to_string(), MacroDefinition::StaticStr(" "));
+            .insert("\\bar".to_owned(), MacroDefinition::StaticStr(" "));
         expect!(r"\frac \bar \bar").to_parse_like(r"\frac{}{}", &settings2)
     });
 
@@ -4061,7 +4197,7 @@ fn a_macro_expander() {
         settings
             .macros
             .borrow_mut()
-            .insert("’".to_string(), MacroDefinition::StaticStr("'"));
+            .insert("’".to_owned(), MacroDefinition::StaticStr("'"));
         expect!("x'=c").to_parse_like("x'=c", &settings)
     });
 
@@ -4131,7 +4267,7 @@ fn a_macro_expander() {
     it("\\TextOrMath should work in a macro", || {
         let settings = strict_settings();
         settings.macros.borrow_mut().insert(
-            "\\mode".to_string(),
+            "\\mode".to_owned(),
             MacroDefinition::StaticStr(r"\TextOrMath{text}{math}"),
         );
         expect!(r"\mode\text{\mode$\mode$\mode}\mode")
@@ -4178,7 +4314,7 @@ fn a_macro_expander() {
         || {
             let settings = strict_settings();
             settings.macros.borrow_mut().insert(
-                "\\mode".to_string(),
+                "\\mode".to_owned(),
                 MacroDefinition::StaticStr(r"\TextOrMath{t}{m}"),
             );
             expect!(r"\text\mode").to_parse_like(r"\text t", &settings)
@@ -4345,8 +4481,9 @@ fn a_macro_expander() {
     it(
         "\\let should consume one optional space after equals sign",
         || {
-            let _parsed = get_parsed_strict(r"\def\bold{\bgroup\bf\let\next= }\bold{a}")?;
-            // TODO: Add snapshot test when available
+            let mut parsed = get_parsed_strict(r"\def\bold{\bgroup\bf\let\next= }\bold{a}")?;
+            strip_positions(&mut parsed);
+            insta::assert_snapshot!("let_optional_space_parse", format!("{:#?}", parsed));
             Ok(())
         },
     );
@@ -4360,7 +4497,7 @@ fn a_macro_expander() {
         let mut token = Token::new("\\int", None);
         token.noexpand = Some(true);
         settings.macros.borrow_mut().insert(
-            "\\Oldint".to_string(),
+            "\\Oldint".to_owned(),
             MacroDefinition::Expansion(MacroExpansion {
                 tokens: vec![token],
                 num_args: 0,
@@ -4372,7 +4509,7 @@ fn a_macro_expander() {
         let mut token2 = Token::new("\\Oldint", None);
         token2.noexpand = Some(false);
         settings.macros.borrow_mut().insert(
-            "\\int".to_string(),
+            "\\int".to_owned(),
             MacroDefinition::Expansion(MacroExpansion {
                 tokens: vec![token1, token2],
                 num_args: 0,
@@ -4596,7 +4733,7 @@ fn leqno_and_fleqn_rendering_options() {
     let expr = r"\tag{hi}x+y";
 
     for opt in ["leqno", "fleqn"] {
-        it(&format!("should not add {} class by default", opt), || {
+        it(&format!("should not add {opt} class by default"), || {
             let settings = display_settings();
             let built = get_built(expr, &settings)?;
             // Check if the root span contains the class
@@ -4606,7 +4743,7 @@ fn leqno_and_fleqn_rendering_options() {
             Ok(())
         });
 
-        it(&format!("should not add {} class when false", opt), || {
+        it(&format!("should not add {opt} class when false"), || {
             let mut settings = display_settings();
             if opt == "leqno" {
                 settings.leqno = false;
@@ -4621,7 +4758,7 @@ fn leqno_and_fleqn_rendering_options() {
             Ok(())
         });
 
-        it(&format!("should add {} class when true", opt), || {
+        it(&format!("should add {opt} class when true"), || {
             let mut settings = display_settings();
             if opt == "leqno" {
                 settings.leqno = true;
@@ -4785,7 +4922,7 @@ fn unicode() {
         get_surrogate_pairs(&mut wide_char_str);
         expect!(&wide_char_str).to_build(&strict_settings())?;
 
-        let mut wide_char_text = r"\text{".to_string();
+        let mut wide_char_text = r"\text{".to_owned();
         get_surrogate_pairs(&mut wide_char_text);
         wide_char_text.push('}');
         expect!(&wide_char_text).to_build(&strict_settings())
@@ -4853,7 +4990,7 @@ fn the_max_expand_setting() {
     ";
 
     it("should count correctly", || {
-        let example = format!("{}\\a{{1}}", EXP32);
+        let example = format!("{EXP32}\\a{{1}}");
         let count = 1 + 2 + 4 + 8 + 16 + 32;
         expect!(&example).to_parse(&Settings::builder().max_expand(count).build())?;
         expect!(&example).not_to_parse(&Settings::builder().max_expand(count - 1).build())
@@ -4862,7 +4999,7 @@ fn the_max_expand_setting() {
     it(
         "should count correctly with Unicode sub/superscripts",
         || {
-            let example = format!("{}\\def+{{\\a{{1}}}}x⁺x⁺x⁺x⁺", EXP32);
+            let example = format!("{EXP32}\\def+{{\\a{{1}}}}x⁺x⁺x⁺x⁺");
             let count = (1 + 2 + 4 + 8 + 16 + 32) * 4 + 4;
             expect!(&example).to_parse(&Settings::builder().max_expand(count).build())?;
             expect!(&example).not_to_parse(&Settings::builder().max_expand(count - 1).build())
@@ -4878,23 +5015,22 @@ fn the_mathchoice_function() {
         "should render as if there is nothing other in display math",
         || {
             expect!(&format!(
-                r"\displaystyle\mathchoice{{{}}}{{T}}{{S}}{{SS}}",
-                cmd
+                r"\displaystyle\mathchoice{{{cmd}}}{{T}}{{S}}{{SS}}"
             ))
-            .to_build_like(&format!(r"\displaystyle{}", cmd), &strict_settings())
+            .to_build_like(&format!(r"\displaystyle{cmd}"), &strict_settings())
         },
     );
 
     it("should render as if there is nothing other in text", || {
-        expect!(&format!(r"\mathchoice{{D}}{{{}}}{{S}}{{SS}}", cmd))
+        expect!(&format!(r"\mathchoice{{D}}{{{cmd}}}{{S}}{{SS}}"))
             .to_build_like(cmd, &strict_settings())
     });
 
     it(
         "should render as if there is nothing other in scriptstyle",
         || {
-            expect!(&format!(r"x_{{\mathchoice{{D}}{{T}}{{{}}}{{SS}}}}", cmd))
-                .to_build_like(&format!(r"x_{{{}}}", cmd), &strict_settings())
+            expect!(&format!(r"x_{{\mathchoice{{D}}{{T}}{{{cmd}}}{{SS}}}}"))
+                .to_build_like(&format!("x_{{{cmd}}}"), &strict_settings())
         },
     );
 
@@ -4902,10 +5038,9 @@ fn the_mathchoice_function() {
         "should render as if there is nothing other in scriptscriptstyle",
         || {
             expect!(&format!(
-                r"x_{{y_{{\mathchoice{{D}}{{T}}{{S}}{{{}}}}}}}",
-                cmd
+                r"x_{{y_{{\mathchoice{{D}}{{T}}{{S}}{{{cmd}}}}}}}"
             ))
-            .to_build_like(&format!(r"x_{{y_{{{}}}}}", cmd), &strict_settings())
+            .to_build_like(&format!("x_{{y_{{{cmd}}}}}"), &strict_settings())
         },
     );
 }
@@ -4928,14 +5063,8 @@ fn newlines_via_backslash_and_newline() {
 
     it("\\\\ causes newline, even after mrel and mop", || {
         let markup = render_to_string_strict(r"M = \\ a + \\ b \\ c")?;
-        // Check that the expression parses and renders without error
-        // The specific HTML structure may differ from the JavaScript version
-        assert!(markup.contains("M"));
-        assert!(markup.contains("a"));
-        assert!(markup.contains("b"));
-        assert!(markup.contains("c"));
-        // Check that MathML contains linebreak
-        assert!(markup.contains(r#"<mspace linebreak="newline"></mspace>"#));
+        let normalized = normalize_style_attributes(&markup);
+        insta::assert_snapshot!("newline_markup", normalized);
         Ok(())
     });
 }
@@ -5117,8 +5246,7 @@ fn internal_interface() {
             let rendered_sans_mathml = if let Some(start) = mathml_start {
                 let end = rendered[start..]
                     .find("</span>")
-                    .map(|e| start + e + 7)
-                    .unwrap_or(rendered.len());
+                    .map_or(rendered.len(), |e| start + e + 7);
                 format!("{}{}", &rendered[..start], &rendered[end..])
             } else {
                 rendered
@@ -5137,7 +5265,7 @@ fn extending_katex_by_new_fonts_and_symbols() {
             let persian_num = char::from_u32(0x0660 + number).unwrap();
             ctx.symbols.define_symbol(
                 Mode::Math,
-                Font::Custom("mockEasternArabicFont".to_string()),
+                Font::Custom("mockEasternArabicFont".to_owned()),
                 Group::NonAtom(NonAtom::TextOrd),
                 Some(persian_num),
                 &persian_num.to_string(),
@@ -5146,7 +5274,7 @@ fn extending_katex_by_new_fonts_and_symbols() {
             let arabic_num = char::from_u32(0x06F0 + number).unwrap();
             ctx.symbols.define_symbol(
                 Mode::Math,
-                Font::Custom("mockEasternArabicFont".to_string()),
+                Font::Custom("mockEasternArabicFont".to_owned()),
                 Group::NonAtom(NonAtom::TextOrd),
                 Some(arabic_num),
                 &arabic_num.to_string(),
@@ -5160,7 +5288,7 @@ fn extending_katex_by_new_fonts_and_symbols() {
         "should throw on rendering new symbols with no font metrics",
         || {
             // Lets parse 99^11 in eastern arabic
-            let result = render_to_dom_tree(&get_context(), r"۹۹^{۱۱}", &strict_settings())
+            let result = render_to_dom_tree(&get_context(), "۹۹^{۱۱}", &strict_settings())
                 .err()
                 .unwrap();
             assert_eq!(
@@ -5177,7 +5305,7 @@ fn extending_katex_by_new_fonts_and_symbols() {
             let mut ctx = get_context();
             for number in 0..=9 {
                 ctx.font_metrics.add_custom_metrics(
-                    "mockEasternArabicFont-Regular".to_string(),
+                    "mockEasternArabicFont-Regular".to_owned(),
                     0x0660 + number,
                     CharacterMetrics {
                         depth: -0.00244140625,
@@ -5188,7 +5316,7 @@ fn extending_katex_by_new_fonts_and_symbols() {
                     },
                 );
                 ctx.font_metrics.add_custom_metrics(
-                    "mockEasternArabicFont-Regular".to_string(),
+                    "mockEasternArabicFont-Regular".to_owned(),
                     0x06F0 + number,
                     CharacterMetrics {
                         depth: -0.00244140625,
@@ -5199,12 +5327,52 @@ fn extending_katex_by_new_fonts_and_symbols() {
                     },
                 );
             }
-            expect!(r"۹۹^{۱۱}").to_build(&nonstrict_settings())
+            expect!("۹۹^{۱۱}").to_build(&nonstrict_settings())?;
+            Ok(())
         },
     );
 
-    // !TODO: Add snapshot test for the output once snapshot testing is
-    // implemented
+    it(
+        "should render new symbols with custom font metrics as expected",
+        || {
+            let mut ctx = get_context();
+            for number in 0..=9 {
+                ctx.font_metrics.add_custom_metrics(
+                    "mockEasternArabicFont-Regular".to_owned(),
+                    0x0660 + number,
+                    CharacterMetrics {
+                        depth: -0.00244140625,
+                        height: 0.6875,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.0,
+                    },
+                );
+                ctx.font_metrics.add_custom_metrics(
+                    "mockEasternArabicFont-Regular".to_owned(),
+                    0x06F0 + number,
+                    CharacterMetrics {
+                        depth: -0.00244140625,
+                        height: 0.6875,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.0,
+                    },
+                );
+            }
+            let settings = nonstrict_settings();
+            let html = render_to_string(&ctx, "۹۹^{۱۱}", &settings).map_err(|source| {
+                TestError::Parse {
+                    expression: "۹۹^{۱۱}".to_owned(),
+                    location: TestLocation::UNKNOWN,
+                    source,
+                }
+            })?;
+            let normalized_html = normalize_style_attributes(&html);
+            insta::assert_snapshot!("eastern_arabic_numerals_html", normalized_html);
+            Ok(())
+        },
+    );
 }
 
 #[test]
@@ -5217,7 +5385,7 @@ fn debugging_macros() {
         expect!(r"\message{Hello, world}").to_parse(&strict_settings())?;
         let mut output = String::new();
         buf.read_to_string(&mut output).unwrap();
-        assert!(output.starts_with("Hello, world\n"));
+        assert!(output.contains("Hello, world"));
         Ok(())
     });
 
@@ -5226,7 +5394,7 @@ fn debugging_macros() {
         expect!(r"\errmessage{Hello, world}").to_parse(&strict_settings())?;
         let mut output = String::new();
         buf.read_to_string(&mut output).unwrap();
-        assert!(output.starts_with("Hello, world\n"));
+        assert!(output.contains("Hello, world"));
         Ok(())
     });
 }

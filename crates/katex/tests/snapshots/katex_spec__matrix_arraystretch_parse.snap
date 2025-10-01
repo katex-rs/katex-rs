@@ -1,0 +1,165 @@
+---
+source: crates/katex/tests/katex_spec.rs
+expression: "format!(\"{:#?}\", parsed)"
+---
+[
+    Array(
+        ParseNodeArray {
+            mode: Math,
+            loc: None,
+            col_separation_type: None,
+            hskip_before_and_after: Some(
+                false,
+            ),
+            add_jot: None,
+            cols: Some(
+                [
+                    Align {
+                        align: "c",
+                        pregap: None,
+                        postgap: None,
+                    },
+                    Align {
+                        align: "c",
+                        pregap: None,
+                        postgap: None,
+                    },
+                ],
+            ),
+            arraystretch: 1.5,
+            body: [
+                [
+                    Styling(
+                        ParseNodeStyling {
+                            mode: Math,
+                            loc: None,
+                            style: Style {
+                                id: 2,
+                                size: 1,
+                                cramped: false,
+                            },
+                            body: [
+                                OrdGroup(
+                                    ParseNodeOrdGroup {
+                                        mode: Math,
+                                        loc: None,
+                                        body: [
+                                            MathOrd(
+                                                ParseNodeMathOrd {
+                                                    mode: Math,
+                                                    loc: None,
+                                                    text: "a",
+                                                },
+                                            ),
+                                        ],
+                                        semisimple: None,
+                                    },
+                                ),
+                            ],
+                        },
+                    ),
+                    Styling(
+                        ParseNodeStyling {
+                            mode: Math,
+                            loc: None,
+                            style: Style {
+                                id: 2,
+                                size: 1,
+                                cramped: false,
+                            },
+                            body: [
+                                OrdGroup(
+                                    ParseNodeOrdGroup {
+                                        mode: Math,
+                                        loc: None,
+                                        body: [
+                                            MathOrd(
+                                                ParseNodeMathOrd {
+                                                    mode: Math,
+                                                    loc: None,
+                                                    text: "b",
+                                                },
+                                            ),
+                                        ],
+                                        semisimple: None,
+                                    },
+                                ),
+                            ],
+                        },
+                    ),
+                ],
+                [
+                    Styling(
+                        ParseNodeStyling {
+                            mode: Math,
+                            loc: None,
+                            style: Style {
+                                id: 2,
+                                size: 1,
+                                cramped: false,
+                            },
+                            body: [
+                                OrdGroup(
+                                    ParseNodeOrdGroup {
+                                        mode: Math,
+                                        loc: None,
+                                        body: [
+                                            MathOrd(
+                                                ParseNodeMathOrd {
+                                                    mode: Math,
+                                                    loc: None,
+                                                    text: "c",
+                                                },
+                                            ),
+                                        ],
+                                        semisimple: None,
+                                    },
+                                ),
+                            ],
+                        },
+                    ),
+                    Styling(
+                        ParseNodeStyling {
+                            mode: Math,
+                            loc: None,
+                            style: Style {
+                                id: 2,
+                                size: 1,
+                                cramped: false,
+                            },
+                            body: [
+                                OrdGroup(
+                                    ParseNodeOrdGroup {
+                                        mode: Math,
+                                        loc: None,
+                                        body: [
+                                            MathOrd(
+                                                ParseNodeMathOrd {
+                                                    mode: Math,
+                                                    loc: None,
+                                                    text: "d",
+                                                },
+                                            ),
+                                        ],
+                                        semisimple: None,
+                                    },
+                                ),
+                            ],
+                        },
+                    ),
+                ],
+            ],
+            row_gaps: [
+                None,
+            ],
+            h_lines_before_row: [
+                [],
+                [],
+                [],
+            ],
+            tags: None,
+            leqno: None,
+            is_cd: None,
+        },
+    ),
+]

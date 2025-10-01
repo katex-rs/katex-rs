@@ -1,0 +1,5 @@
+---
+source: crates/katex/tests/katex_spec.rs
+expression: normalized
+---
+<span class="katex-error" style="color: #cc0000" title="KaTeX parse error: Double superscript at position 4: 2^2^̲2">2^2^2</span>

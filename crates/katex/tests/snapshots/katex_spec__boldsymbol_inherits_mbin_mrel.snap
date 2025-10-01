@@ -1,0 +1,464 @@
+---
+source: crates/katex/tests/katex_spec.rs
+assertion_line: 1878
+expression: "&built"
+---
+[
+    Symbol(
+        SymbolNode {
+            text: "a",
+            height: 0.43056,
+            depth: 0.0,
+            italic: 0.0,
+            skew: 0.0,
+            width: 0.52859,
+            max_font_size: 1.0,
+            classes: Owned(
+                [
+                    "mord",
+                    "mathnormal",
+                ],
+            ),
+            style: CssStyle,
+        },
+    ),
+    DomSpan(
+        Span {
+            children: [
+                DomSpan(
+                    Span {
+                        children: [],
+                        attributes: {},
+                        classes: Static(
+                            "mord",
+                        ),
+                        height: 0.0,
+                        depth: 0.0,
+                        width: None,
+                        max_font_size: 0.0,
+                        style: CssStyle,
+                        is_middle: None,
+                        italic: None,
+                    },
+                ),
+            ],
+            attributes: {},
+            classes: Static(
+                "mord",
+            ),
+            height: 0.0,
+            depth: 0.0,
+            width: None,
+            max_font_size: 0.0,
+            style: CssStyle,
+            is_middle: None,
+            italic: None,
+        },
+    ),
+    Symbol(
+        SymbolNode {
+            text: "b",
+            height: 0.69444,
+            depth: 0.0,
+            italic: 0.0,
+            skew: 0.0,
+            width: 0.42917,
+            max_font_size: 1.0,
+            classes: Owned(
+                [
+                    "mord",
+                    "mathnormal",
+                ],
+            ),
+            style: CssStyle,
+        },
+    ),
+    DomSpan(
+        Span {
+            children: [],
+            attributes: {},
+            classes: Static(
+                "mspace",
+            ),
+            height: 0.0,
+            depth: 0.0,
+            width: None,
+            max_font_size: 0.0,
+            style: CssStyle {
+                margin-right: "0.2778em",
+            },
+            is_middle: None,
+            italic: None,
+        },
+    ),
+    DomSpan(
+        Span {
+            children: [
+                DomSpan(
+                    Span {
+                        children: [
+                            Symbol(
+                                SymbolNode {
+                                    text: "=",
+                                    height: 0.39111,
+                                    depth: -0.10889,
+                                    italic: 0.0,
+                                    skew: 0.0,
+                                    width: 0.89444,
+                                    max_font_size: 1.0,
+                                    classes: Owned(
+                                        [
+                                            "mrel",
+                                            "mathbf",
+                                        ],
+                                    ),
+                                    style: CssStyle,
+                                },
+                            ),
+                        ],
+                        attributes: {},
+                        classes: Static(
+                            "mord",
+                        ),
+                        height: 0.39111,
+                        depth: 0.0,
+                        width: None,
+                        max_font_size: 1.0,
+                        style: CssStyle,
+                        is_middle: None,
+                        italic: None,
+                    },
+                ),
+            ],
+            attributes: {},
+            classes: Static(
+                "mrel",
+            ),
+            height: 0.39111,
+            depth: 0.0,
+            width: None,
+            max_font_size: 1.0,
+            style: CssStyle,
+            is_middle: None,
+            italic: None,
+        },
+    ),
+    DomSpan(
+        Span {
+            children: [],
+            attributes: {},
+            classes: Static(
+                "mspace",
+            ),
+            height: 0.0,
+            depth: 0.0,
+            width: None,
+            max_font_size: 0.0,
+            style: CssStyle {
+                margin-right: "0.2778em",
+            },
+            is_middle: None,
+            italic: None,
+        },
+    ),
+    Symbol(
+        SymbolNode {
+            text: "c",
+            height: 0.43056,
+            depth: 0.0,
+            italic: 0.0,
+            skew: 0.05556,
+            width: 0.43276,
+            max_font_size: 1.0,
+            classes: Owned(
+                [
+                    "mord",
+                    "mathnormal",
+                ],
+            ),
+            style: CssStyle,
+        },
+    ),
+    DomSpan(
+        Span {
+            children: [],
+            attributes: {},
+            classes: Static(
+                "mspace",
+            ),
+            height: 0.0,
+            depth: 0.0,
+            width: None,
+            max_font_size: 0.0,
+            style: CssStyle {
+                margin-right: "0.2222em",
+            },
+            is_middle: None,
+            italic: None,
+        },
+    ),
+    DomSpan(
+        Span {
+            children: [
+                DomSpan(
+                    Span {
+                        children: [
+                            Symbol(
+                                SymbolNode {
+                                    text: "+",
+                                    height: 0.63333,
+                                    depth: 0.13333,
+                                    italic: 0.0,
+                                    skew: 0.0,
+                                    width: 0.89444,
+                                    max_font_size: 1.0,
+                                    classes: Owned(
+                                        [
+                                            "mord",
+                                            "mathbf",
+                                        ],
+                                    ),
+                                    style: CssStyle,
+                                },
+                            ),
+                        ],
+                        attributes: {},
+                        classes: Static(
+                            "mord",
+                        ),
+                        height: 0.63333,
+                        depth: 0.13333,
+                        width: None,
+                        max_font_size: 1.0,
+                        style: CssStyle,
+                        is_middle: None,
+                        italic: None,
+                    },
+                ),
+            ],
+            attributes: {},
+            classes: Static(
+                "mbin",
+            ),
+            height: 0.63333,
+            depth: 0.13333,
+            width: None,
+            max_font_size: 1.0,
+            style: CssStyle,
+            is_middle: None,
+            italic: None,
+        },
+    ),
+    DomSpan(
+        Span {
+            children: [],
+            attributes: {},
+            classes: Static(
+                "mspace",
+            ),
+            height: 0.0,
+            depth: 0.0,
+            width: None,
+            max_font_size: 0.0,
+            style: CssStyle {
+                margin-right: "0.2222em",
+            },
+            is_middle: None,
+            italic: None,
+        },
+    ),
+    Symbol(
+        SymbolNode {
+            text: "d",
+            height: 0.69444,
+            depth: 0.0,
+            italic: 0.0,
+            skew: 0.16667,
+            width: 0.52049,
+            max_font_size: 1.0,
+            classes: Owned(
+                [
+                    "mord",
+                    "mathnormal",
+                ],
+            ),
+            style: CssStyle,
+        },
+    ),
+    DomSpan(
+        Span {
+            children: [],
+            attributes: {},
+            classes: Static(
+                "mspace",
+            ),
+            height: 0.0,
+            depth: 0.0,
+            width: None,
+            max_font_size: 0.0,
+            style: CssStyle {
+                margin-right: "0.2222em",
+            },
+            is_middle: None,
+            italic: None,
+        },
+    ),
+    DomSpan(
+        Span {
+            children: [
+                DomSpan(
+                    Span {
+                        children: [
+                            Symbol(
+                                SymbolNode {
+                                    text: "++",
+                                    height: 0.63333,
+                                    depth: 0.13333,
+                                    italic: 0.0,
+                                    skew: 0.0,
+                                    width: 0.89444,
+                                    max_font_size: 1.0,
+                                    classes: Owned(
+                                        [
+                                            "mord",
+                                            "mathbf",
+                                        ],
+                                    ),
+                                    style: CssStyle,
+                                },
+                            ),
+                        ],
+                        attributes: {},
+                        classes: Static(
+                            "mord",
+                        ),
+                        height: 0.63333,
+                        depth: 0.13333,
+                        width: None,
+                        max_font_size: 1.0,
+                        style: CssStyle,
+                        is_middle: None,
+                        italic: None,
+                    },
+                ),
+            ],
+            attributes: {},
+            classes: Static(
+                "mbin",
+            ),
+            height: 0.63333,
+            depth: 0.13333,
+            width: None,
+            max_font_size: 1.0,
+            style: CssStyle,
+            is_middle: None,
+            italic: None,
+        },
+    ),
+    DomSpan(
+        Span {
+            children: [],
+            attributes: {},
+            classes: Static(
+                "mspace",
+            ),
+            height: 0.0,
+            depth: 0.0,
+            width: None,
+            max_font_size: 0.0,
+            style: CssStyle {
+                margin-right: "0.2222em",
+            },
+            is_middle: None,
+            italic: None,
+        },
+    ),
+    Symbol(
+        SymbolNode {
+            text: "e",
+            height: 0.43056,
+            depth: 0.0,
+            italic: 0.0,
+            skew: 0.05556,
+            width: 0.46563,
+            max_font_size: 1.0,
+            classes: Owned(
+                [
+                    "mord",
+                    "mathnormal",
+                ],
+            ),
+            style: CssStyle,
+        },
+    ),
+    DomSpan(
+        Span {
+            children: [
+                DomSpan(
+                    Span {
+                        children: [
+                            Symbol(
+                                SymbolNode {
+                                    text: "xyz",
+                                    height: 0.44444,
+                                    depth: 0.19444,
+                                    italic: 0.04213,
+                                    skew: 0.0,
+                                    width: 0.65903,
+                                    max_font_size: 1.0,
+                                    classes: Owned(
+                                        [
+                                            "mord",
+                                            "boldsymbol",
+                                        ],
+                                    ),
+                                    style: CssStyle,
+                                },
+                            ),
+                        ],
+                        attributes: {},
+                        classes: Static(
+                            "mord",
+                        ),
+                        height: 0.44444,
+                        depth: 0.19444,
+                        width: None,
+                        max_font_size: 1.0,
+                        style: CssStyle,
+                        is_middle: None,
+                        italic: None,
+                    },
+                ),
+            ],
+            attributes: {},
+            classes: Static(
+                "mord",
+            ),
+            height: 0.44444,
+            depth: 0.19444,
+            width: None,
+            max_font_size: 1.0,
+            style: CssStyle,
+            is_middle: None,
+            italic: None,
+        },
+    ),
+    Symbol(
+        SymbolNode {
+            text: "f",
+            height: 0.69444,
+            depth: 0.19444,
+            italic: 0.10764,
+            skew: 0.16667,
+            width: 0.48959,
+            max_font_size: 1.0,
+            classes: Owned(
+                [
+                    "mord",
+                    "mathnormal",
+                ],
+            ),
+            style: CssStyle,
+        },
+    ),
+]

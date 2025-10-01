@@ -1,0 +1,5 @@
+---
+source: crates/katex/tests/katex_spec.rs
+expression: normalized
+---
+<span class="katex-error" style="color: #cc0000" title="KaTeX parse error: Expected group after &#x27;^&#x27; at position 2: 2^̲&amp;&quot;&lt;&gt;">2^&amp;&quot;&lt;&gt;</span>

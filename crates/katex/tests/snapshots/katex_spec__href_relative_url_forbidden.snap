@@ -1,0 +1,59 @@
+---
+source: crates/katex/tests/katex_spec.rs
+expression: "format!(\"{:#?}\", parsed)"
+---
+[
+    Color(
+        ParseNodeColor {
+            mode: Math,
+            loc: None,
+            color: "#cc0000",
+            body: [
+                Text(
+                    ParseNodeText {
+                        mode: Math,
+                        loc: None,
+                        body: [
+                            TextOrd(
+                                ParseNodeTextOrd {
+                                    mode: Text,
+                                    loc: None,
+                                    text: "\\",
+                                },
+                            ),
+                            TextOrd(
+                                ParseNodeTextOrd {
+                                    mode: Text,
+                                    loc: None,
+                                    text: "h",
+                                },
+                            ),
+                            TextOrd(
+                                ParseNodeTextOrd {
+                                    mode: Text,
+                                    loc: None,
+                                    text: "r",
+                                },
+                            ),
+                            TextOrd(
+                                ParseNodeTextOrd {
+                                    mode: Text,
+                                    loc: None,
+                                    text: "e",
+                                },
+                            ),
+                            TextOrd(
+                                ParseNodeTextOrd {
+                                    mode: Text,
+                                    loc: None,
+                                    text: "f",
+                                },
+                            ),
+                        ],
+                        font: None,
+                    },
+                ),
+            ],
+        },
+    ),
+]

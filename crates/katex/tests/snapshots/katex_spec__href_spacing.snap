@@ -1,0 +1,92 @@
+---
+source: crates/katex/tests/katex_spec.rs
+expression: "&built"
+---
+[
+    Symbol(
+        SymbolNode {
+            text: "a",
+            height: 0.43056,
+            depth: 0.0,
+            italic: 0.0,
+            skew: 0.0,
+            width: 0.52859,
+            max_font_size: 1.0,
+            classes: Owned(
+                [
+                    "mord",
+                    "mathnormal",
+                ],
+            ),
+            style: CssStyle,
+        },
+    ),
+    Anchor(
+        Anchor {
+            children: [
+                DomSpan(
+                    Span {
+                        children: [
+                            Symbol(
+                                SymbolNode {
+                                    text: "+",
+                                    height: 0.58333,
+                                    depth: 0.08333,
+                                    italic: 0.0,
+                                    skew: 0.0,
+                                    width: 0.77778,
+                                    max_font_size: 1.0,
+                                    classes: Owned(
+                                        [
+                                            "mord",
+                                        ],
+                                    ),
+                                    style: CssStyle,
+                                },
+                            ),
+                            Symbol(
+                                SymbolNode {
+                                    text: "b",
+                                    height: 0.69444,
+                                    depth: 0.0,
+                                    italic: 0.0,
+                                    skew: 0.0,
+                                    width: 0.42917,
+                                    max_font_size: 1.0,
+                                    classes: Owned(
+                                        [
+                                            "mord",
+                                            "mathnormal",
+                                        ],
+                                    ),
+                                    style: CssStyle,
+                                },
+                            ),
+                        ],
+                        attributes: {},
+                        classes: Static(
+                            "mord",
+                        ),
+                        height: 0.69444,
+                        depth: 0.08333,
+                        width: None,
+                        max_font_size: 1.0,
+                        style: CssStyle,
+                        is_middle: None,
+                        italic: None,
+                    },
+                ),
+            ],
+            attributes: {
+                "href": "http://example.com/",
+            },
+            classes: Owned(
+                [],
+            ),
+            height: 0.69444,
+            depth: 0.08333,
+            max_font_size: 1.0,
+            style: CssStyle,
+        },
+    ),
+]

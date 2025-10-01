@@ -1,0 +1,6 @@
+---
+source: crates/katex/tests/katex_spec.rs
+assertion_line: 5255
+expression: normalized_html
+---
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">۹</mi><msup><mi mathvariant="normal">۹</mi><mrow><mi mathvariant="normal">۱</mi><mi mathvariant="normal">۱</mi></mrow></msup></mrow><annotation encoding="application/x-tex">۹۹^{۱۱}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8442em;"></span><span class="mord">۹</span><span class="mord"><span class="mord">۹</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8442em;"><span style="margin-right:0.05em;top:-3.063em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">۱۱</span></span></span></span></span></span></span></span></span></span></span></span>

@@ -1,0 +1,22 @@
+---
+source: crates/katex/tests/katex_spec.rs
+expression: "&built"
+---
+[
+    Img(
+        Img {
+            src: "https://cdn.kastatic.org/images/apple-touch-icon-57x57-precomposed.new.png",
+            alt: "KA logo",
+            classes: Static(
+                "mord",
+            ),
+            height: 0.9,
+            depth: 0.0,
+            max_font_size: 0.0,
+            style: CssStyle {
+                height: "0.9em",
+                width: "0.9em",
+            },
+        },
+    ),
+]

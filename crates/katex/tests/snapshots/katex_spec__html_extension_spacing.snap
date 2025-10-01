@@ -1,0 +1,114 @@
+---
+source: crates/katex/tests/katex_spec.rs
+expression: "&built"
+---
+[
+    DomSpan(
+        Span {
+            children: [
+                Symbol(
+                    SymbolNode {
+                        text: "x",
+                        height: 0.43056,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.02778,
+                        width: 0.57153,
+                        max_font_size: 1.0,
+                        classes: Owned(
+                            [
+                                "mord",
+                                "mathnormal",
+                            ],
+                        ),
+                        style: CssStyle,
+                    },
+                ),
+                DomSpan(
+                    Span {
+                        children: [],
+                        attributes: {},
+                        classes: Static(
+                            "mspace",
+                        ),
+                        height: 0.0,
+                        depth: 0.0,
+                        width: None,
+                        max_font_size: 0.0,
+                        style: CssStyle {
+                            margin-right: "0.2222em",
+                        },
+                        is_middle: None,
+                        italic: None,
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "+",
+                        height: 0.58333,
+                        depth: 0.08333,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.77778,
+                        max_font_size: 1.0,
+                        classes: Owned(
+                            [
+                                "mbin",
+                            ],
+                        ),
+                        style: CssStyle,
+                    },
+                ),
+                DomSpan(
+                    Span {
+                        children: [],
+                        attributes: {},
+                        classes: Static(
+                            "mspace",
+                        ),
+                        height: 0.0,
+                        depth: 0.0,
+                        width: None,
+                        max_font_size: 0.0,
+                        style: CssStyle {
+                            margin-right: "0.2222em",
+                        },
+                        is_middle: None,
+                        italic: None,
+                    },
+                ),
+            ],
+            attributes: {
+                "id": "a",
+            },
+            classes: Static(
+                "enclosing",
+            ),
+            height: 0.58333,
+            depth: 0.08333,
+            width: None,
+            max_font_size: 1.0,
+            style: CssStyle,
+            is_middle: None,
+            italic: None,
+        },
+    ),
+    Symbol(
+        SymbolNode {
+            text: "y",
+            height: 0.43056,
+            depth: 0.19444,
+            italic: 0.03588,
+            skew: 0.05556,
+            width: 0.49028,
+            max_font_size: 1.0,
+            classes: Owned(
+                [
+                    "mord",
+                    "mathnormal",
+                ],
+            ),
+            style: CssStyle,
+        },
+    ),
+]

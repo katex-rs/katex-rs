@@ -1,0 +1,45 @@
+---
+source: crates/katex/tests/katex_spec.rs
+expression: "format!(\"{:#?}\", parsed)"
+---
+[
+    Href(
+        ParseNodeHref {
+            mode: Math,
+            loc: None,
+            href: "ftp://x",
+            body: [
+                OrdGroup(
+                    ParseNodeOrdGroup {
+                        mode: Math,
+                        loc: None,
+                        body: [
+                            MathOrd(
+                                ParseNodeMathOrd {
+                                    mode: Math,
+                                    loc: None,
+                                    text: "f",
+                                },
+                            ),
+                            MathOrd(
+                                ParseNodeMathOrd {
+                                    mode: Math,
+                                    loc: None,
+                                    text: "o",
+                                },
+                            ),
+                            MathOrd(
+                                ParseNodeMathOrd {
+                                    mode: Math,
+                                    loc: None,
+                                    text: "o",
+                                },
+                            ),
+                        ],
+                        semisimple: None,
+                    },
+                ),
+            ],
+        },
+    ),
+]

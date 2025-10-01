@@ -1,0 +1,300 @@
+---
+source: crates/katex/tests/katex_spec.rs
+expression: "&built"
+---
+[
+    DomSpan(
+        Span {
+            children: [
+                Symbol(
+                    SymbolNode {
+                        text: "\\",
+                        height: 0.75,
+                        depth: 0.25,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.5,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "i",
+                        height: 0.66786,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.27778,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "n",
+                        height: 0.43056,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.55556,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "c",
+                        height: 0.43056,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.44445,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "l",
+                        height: 0.69444,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.27778,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "u",
+                        height: 0.43056,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.55556,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "d",
+                        height: 0.69444,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.55556,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "e",
+                        height: 0.43056,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.44445,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "g",
+                        height: 0.43056,
+                        depth: 0.19444,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.5,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "r",
+                        height: 0.43056,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.39167,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "a",
+                        height: 0.43056,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.5,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "p",
+                        height: 0.43056,
+                        depth: 0.19444,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.55556,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "h",
+                        height: 0.69444,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.55556,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "i",
+                        height: 0.66786,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.27778,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "c",
+                        height: 0.43056,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.44445,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+                Symbol(
+                    SymbolNode {
+                        text: "s",
+                        height: 0.43056,
+                        depth: 0.0,
+                        italic: 0.0,
+                        skew: 0.0,
+                        width: 0.39445,
+                        max_font_size: 1.0,
+                        classes: Static(
+                            "mord",
+                        ),
+                        style: CssStyle {
+                            color: "#cc0000",
+                        },
+                    },
+                ),
+            ],
+            attributes: {},
+            classes: Const(
+                [
+                    "mord",
+                    "text",
+                ],
+            ),
+            height: 0.75,
+            depth: 0.25,
+            width: None,
+            max_font_size: 1.0,
+            style: CssStyle {
+                color: "#cc0000",
+            },
+            is_middle: None,
+            italic: None,
+        },
+    ),
+]

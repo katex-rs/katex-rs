@@ -2,6 +2,7 @@
 use std::backtrace::Backtrace;
 use std::{
     collections::HashSet,
+    fmt,
     panic::{UnwindSafe, catch_unwind},
     sync::OnceLock,
 };
@@ -19,7 +20,7 @@ use katex::{
     tree::HtmlDomNode,
     types::ParseErrorKind,
 };
-use regex::Regex;
+use regex::{Captures, Regex};
 use thiserror::Error;
 
 static DEFAULT_CONTEXT: OnceLock<KatexContext> = OnceLock::new();
@@ -35,23 +36,89 @@ pub struct TestExpr<'a> {
     pub code: &'static str,
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct TestLocation {
+    pub file: &'static str,
+    pub line: u32,
+    pub code: &'static str,
+}
+
+impl fmt::Display for TestLocation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.code.is_empty() {
+            write!(f, "{}:{}", self.file, self.line)
+        } else {
+            write!(f, "{}:{} ({})", self.file, self.line, self.code)
+        }
+    }
+}
+
+impl TestLocation {
+    pub const UNKNOWN: Self = Self {
+        file: "<unknown>",
+        line: 0,
+        code: "",
+    };
+}
+
 #[derive(Debug, Error)]
 pub enum TestError {
-    #[error(transparent)]
-    Parse(#[from] ParseError),
-    #[error("Expected parsing to fail for '{expression}'")]
-    ExpectedParseFailure { expression: String },
-    #[error("Expected building to fail for '{expression}'")]
-    ExpectedBuildFailure { expression: String },
-    #[error("DOM mismatch between '{left_expr}' and '{right_expr}':\n{left_dom}\n\n{right_dom}")]
-    DomMismatch {
-        left_expr: String,
-        right_expr: String,
-        left_dom: String,
-        right_dom: String,
+    #[error("Failed to parse '{expression}' at {location}: {source}")]
+    Parse {
+        expression: String,
+        location: TestLocation,
+        #[source]
+        source: ParseError,
     },
-    #[error("Expected HTML rendering to fail for '{expression}', but it succeeded: {html}")]
-    ExpectedHtmlFailure { expression: String, html: String },
+    #[error("Expected parsing to fail for '{expression}' at {location}")]
+    ExpectedParseFailure {
+        expression: String,
+        location: TestLocation,
+    },
+    #[error("Expected building to fail for '{expression}' at {location}")]
+    ExpectedBuildFailure {
+        expression: String,
+        location: TestLocation,
+    },
+    #[error("{0}")]
+    DomMismatch(Box<DomMismatchDetails>),
+    #[error(
+        "Expected HTML rendering to fail for '{expression}' at {location}, but it succeeded: {html}"
+    )]
+    ExpectedHtmlFailure {
+        expression: String,
+        location: TestLocation,
+        html: String,
+    },
+}
+
+#[derive(Debug)]
+pub struct DomMismatchDetails {
+    pub left_expr: String,
+    pub right_expr: String,
+    pub left_dom: String,
+    pub right_dom: String,
+    pub location: TestLocation,
+}
+
+impl fmt::Display for DomMismatchDetails {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "DOM mismatch at {} between '{}' and '{}':\n{}\n\n{}",
+            self.location, self.left_expr, self.right_expr, self.left_dom, self.right_dom
+        )
+    }
+}
+
+impl From<ParseError> for TestError {
+    fn from(source: ParseError) -> Self {
+        Self::Parse {
+            expression: "<unknown expression>".to_owned(),
+            location: TestLocation::UNKNOWN,
+            source,
+        }
+    }
 }
 
 pub type TestResult<T> = Result<T, TestError>;
@@ -323,14 +390,23 @@ fn strip_positions_single(node: &mut ParseNode) {
 
 impl TestExpr<'_> {
     pub fn to_parse(&self, settings: &Settings) -> TestResult<()> {
-        parse(self.ctx, &self.expr, settings)?;
+        self.wrap_parse(parse(self.ctx, &self.expr, settings))?;
         Ok(())
     }
 
     pub fn not_to_parse(self, settings: &Settings) -> TestResult<()> {
-        match parse(self.ctx, &self.expr, settings) {
+        let TestExpr {
+            expr,
+            ctx,
+            file,
+            line,
+            code,
+        } = self;
+        let location = TestLocation { file, line, code };
+        match parse(ctx, &expr, settings) {
             Ok(_) => Err(TestError::ExpectedParseFailure {
-                expression: self.expr,
+                expression: expr,
+                location,
             }),
             Err(_) => Ok(()),
         }
@@ -338,8 +414,8 @@ impl TestExpr<'_> {
 
     pub fn to_parse_like(&self, other: &str, settings: &Settings) -> TestResult<()> {
         // Compare parse trees for equivalence
-        let mut tree1 = parse(self.ctx, &self.expr, settings)?;
-        let mut tree2 = parse(self.ctx, other, settings)?;
+        let mut tree1 = self.wrap_parse(parse(self.ctx, &self.expr, settings))?;
+        let mut tree2 = self.wrap_parse_with_expr(other, parse(self.ctx, other, settings))?;
 
         strip_positions(&mut tree1);
         strip_positions(&mut tree2);
@@ -353,14 +429,23 @@ impl TestExpr<'_> {
     }
 
     pub fn to_build(&self, settings: &Settings) -> TestResult<()> {
-        render_to_dom_tree(self.ctx, &self.expr, settings)?;
+        self.wrap_parse(render_to_dom_tree(self.ctx, &self.expr, settings))?;
         Ok(())
     }
 
     pub fn not_to_build(self, settings: &Settings) -> TestResult<()> {
-        match render_to_dom_tree(self.ctx, &self.expr, settings) {
+        let TestExpr {
+            expr,
+            ctx,
+            file,
+            line,
+            code,
+        } = self;
+        let location = TestLocation { file, line, code };
+        match render_to_dom_tree(ctx, &expr, settings) {
             Ok(_) => Err(TestError::ExpectedBuildFailure {
-                expression: self.expr,
+                expression: expr,
+                location,
             }),
             Err(_) => Ok(()),
         }
@@ -368,32 +453,69 @@ impl TestExpr<'_> {
 
     pub fn to_build_like(&self, other: &str, settings: &Settings) -> TestResult<()> {
         // Compare rendered DOM trees for equivalence
-        let dom1 = render_to_dom_tree(self.ctx, &self.expr, settings)?;
-        let dom2 = render_to_dom_tree(self.ctx, other, settings)?;
+        let dom1 = self.wrap_parse(render_to_dom_tree(self.ctx, &self.expr, settings))?;
+        let dom2 =
+            self.wrap_parse_with_expr(other, render_to_dom_tree(self.ctx, other, settings))?;
 
         // Simple comparison - in a real implementation, we'd do proper DOM comparison
-        let dom1_debug = format!("{:?}", dom1);
-        let dom2_debug = format!("{:?}", dom2);
+        let dom1_debug = format!("{dom1:?}");
+        let dom2_debug = format!("{dom2:?}");
         if dom1_debug == dom2_debug {
             Ok(())
         } else {
-            Err(TestError::DomMismatch {
+            Err(TestError::DomMismatch(Box::new(DomMismatchDetails {
                 left_expr: self.expr.clone(),
                 right_expr: other.to_owned(),
                 left_dom: dom1_debug,
                 right_dom: dom2_debug,
-            })
+                location: self.location(),
+            })))
         }
     }
 
     pub fn not_to_html(self, settings: &Settings) -> TestResult<()> {
-        match render_to_string(self.ctx, &self.expr, settings) {
+        let TestExpr {
+            expr,
+            ctx,
+            file,
+            line,
+            code,
+        } = self;
+        let location = TestLocation { file, line, code };
+        match render_to_string(ctx, &expr, settings) {
             Ok(html) => Err(TestError::ExpectedHtmlFailure {
-                expression: self.expr,
+                expression: expr,
+                location,
                 html,
             }),
             Err(_) => Ok(()),
         }
+    }
+}
+
+impl TestExpr<'_> {
+    const fn location(&self) -> TestLocation {
+        TestLocation {
+            file: self.file,
+            line: self.line,
+            code: self.code,
+        }
+    }
+
+    fn wrap_parse<T>(&self, result: Result<T, ParseError>) -> TestResult<T> {
+        result.map_err(|source| TestError::Parse {
+            expression: self.expr.clone(),
+            location: self.location(),
+            source,
+        })
+    }
+
+    fn wrap_parse_with_expr<T>(&self, expr: &str, result: Result<T, ParseError>) -> TestResult<T> {
+        result.map_err(|source| TestError::Parse {
+            expression: expr.to_owned(),
+            location: self.location(),
+            source,
+        })
     }
 }
 
@@ -404,7 +526,7 @@ pub fn expect_impl(
     code: &'static str,
 ) -> TestExpr<'static> {
     TestExpr {
-        expr: expr.to_string(),
+        expr: expr.to_owned(),
         ctx: default_ctx(),
         file,
         line,
@@ -444,24 +566,24 @@ fn format_backtrace(bt_serialized: &Backtrace) -> String {
 }
 
 fn panic_with_error(desc: &str, error: TestError) -> ! {
-    match error {
-        TestError::Parse(parse_error) => panic_with_parse_error(desc, parse_error),
-        other => panic!("Test '{}' failed with Result::Err: {}", desc, other),
+    match &error {
+        TestError::Parse { source, .. } => panic_with_parse_error(desc, &error, source),
+        _ => panic!("Test '{desc}' failed with Result::Err: {error}"),
     }
 }
 
 #[cfg(feature = "backtrace")]
-fn panic_with_parse_error(desc: &str, error: ParseError) -> ! {
+fn panic_with_parse_error(desc: &str, test_error: &TestError, error: &ParseError) -> ! {
     let traces = format_backtrace(&error.backtrace);
     panic!(
         "Test '{}' failed with Result::Err: {}\nBacktrace:\n{}",
-        desc, error, traces
+        desc, test_error, traces
     );
 }
 
 #[cfg(not(feature = "backtrace"))]
-fn panic_with_parse_error(desc: &str, error: ParseError) -> ! {
-    panic!("Test '{}' failed with Result::Err: {}", desc, error);
+fn panic_with_parse_error(desc: &str, test_error: &TestError, _error: &ParseError) -> ! {
+    panic!("Test '{desc}' failed with Result::Err: {test_error}");
 }
 
 pub fn it<F>(desc: &str, test_fn: F)
@@ -479,15 +601,14 @@ where
         Ok(Err(e)) => panic_with_error(desc, e),
         Err(panic_payload) => {
             let msg = if let Some(s) = panic_payload.downcast_ref::<&str>() {
-                s.to_string()
+                (*s).to_owned()
             } else if let Some(s) = panic_payload.downcast_ref::<String>() {
                 s.clone()
             } else {
-                "<non-string panic payload>".to_string()
+                "<non-string panic payload>".to_owned()
             };
             panic!(
-                "Test '{}' panicked: {}\n(no ParseError backtrace, since this was a raw panic)",
-                desc, msg
+                "Test '{desc}' panicked: {msg}\n(no ParseError backtrace, since this was a raw panic)"
             );
         }
     }
@@ -530,37 +651,62 @@ pub fn non_display_settings() -> Settings {
 }
 
 pub fn get_parsed(expr: &str, settings: &Settings) -> TestResult<Vec<ParseNode>> {
-    parse(default_ctx(), expr, settings).map_err(Into::into)
+    parse(default_ctx(), expr, settings).map_err(|source| TestError::Parse {
+        expression: expr.to_owned(),
+        location: TestLocation::UNKNOWN,
+        source,
+    })
 }
 
 pub fn get_parsed_strict(expr: &str) -> TestResult<Vec<ParseNode>> {
     let settings = strict_settings();
-    parse(default_ctx(), expr, &settings).map_err(Into::into)
+    parse(default_ctx(), expr, &settings).map_err(|source| TestError::Parse {
+        expression: expr.to_owned(),
+        location: TestLocation::UNKNOWN,
+        source,
+    })
 }
 
 pub fn get_parsed_trust(expr: &str) -> TestResult<Vec<ParseNode>> {
     let settings = trust_settings();
-    parse(default_ctx(), expr, &settings).map_err(Into::into)
+    parse(default_ctx(), expr, &settings).map_err(|source| TestError::Parse {
+        expression: expr.to_owned(),
+        location: TestLocation::UNKNOWN,
+        source,
+    })
 }
 
 pub fn get_built(expr: &str, settings: &Settings) -> TestResult<Vec<HtmlDomNode>> {
-    let mut root_node = render_to_dom_tree(default_ctx(), expr, settings)?;
+    let mut root_node =
+        render_to_dom_tree(default_ctx(), expr, settings).map_err(|source| TestError::Parse {
+            expression: expr.to_owned(),
+            location: TestLocation::UNKNOWN,
+            source,
+        })?;
 
     if root_node.classes.contains("katex-display") {
         if let Some(HtmlDomNode::DomSpan(first_child)) = root_node.children.get_mut(0) {
             root_node = first_child.clone();
         } else {
-            return Err(ParseError::new(ParseErrorKind::ExpectedFirstChildDomSpan).into());
+            return Err(TestError::Parse {
+                expression: expr.to_owned(),
+                location: TestLocation::UNKNOWN,
+                source: ParseError::new(ParseErrorKind::ExpectedFirstChildDomSpan),
+            });
         }
     }
     let built_html = if let Some(HtmlDomNode::DomSpan(first_child)) = root_node.children.get_mut(1)
     {
         first_child
     } else {
-        return Err(ParseError::new(ParseErrorKind::ExpectedSecondChildDomSpan).into());
+        return Err(TestError::Parse {
+            expression: expr.to_owned(),
+            location: TestLocation::UNKNOWN,
+            source: ParseError::new(ParseErrorKind::ExpectedSecondChildDomSpan),
+        });
     };
     let mut children = Vec::new();
-    for child in built_html.children.iter() {
+    for child in &built_html.children {
         if let HtmlDomNode::DomSpan(span) = child {
             for grandchild in &span.children {
                 if !grandchild.classes().contains("strut") {
@@ -583,22 +729,38 @@ pub fn build_mathml(expr: &str) -> TestResult<Span<HtmlDomNode>> {
         false,
         false,
     )
-    .map_err(Into::into)
+    .map_err(|source| TestError::Parse {
+        expression: expr.to_owned(),
+        location: TestLocation::UNKNOWN,
+        source,
+    })
 }
 
 pub fn render_to_string_strict(expr: &str) -> TestResult<String> {
     let settings = strict_settings();
-    render_to_string(default_ctx(), expr, &settings).map_err(Into::into)
+    render_to_string(default_ctx(), expr, &settings).map_err(|source| TestError::Parse {
+        expression: expr.to_owned(),
+        location: TestLocation::UNKNOWN,
+        source,
+    })
 }
 
 pub fn render_to_string_nonstrict(expr: &str) -> TestResult<String> {
     let settings = nonstrict_settings();
-    render_to_string(default_ctx(), expr, &settings).map_err(Into::into)
+    render_to_string(default_ctx(), expr, &settings).map_err(|source| TestError::Parse {
+        expression: expr.to_owned(),
+        location: TestLocation::UNKNOWN,
+        source,
+    })
 }
 
 pub fn render_to_string_trust(expr: &str) -> TestResult<String> {
     let settings = trust_settings();
-    render_to_string(default_ctx(), expr, &settings).map_err(Into::into)
+    render_to_string(default_ctx(), expr, &settings).map_err(|source| TestError::Parse {
+        expression: expr.to_owned(),
+        location: TestLocation::UNKNOWN,
+        source,
+    })
 }
 
 #[macro_export]
@@ -643,12 +805,12 @@ pub fn assert_html_eq_unordered_styles(markup: &str, rendered: &str) {
         if let (Some(caps_markup), Some(caps_rendered)) = (caps_markup, caps_rendered) {
             let style_markup: HashSet<&str> = caps_markup[1]
                 .split(';')
-                .map(|s| s.trim())
+                .map(str::trim)
                 .filter(|s| !s.is_empty())
                 .collect();
             let style_rendered: HashSet<&str> = caps_rendered[1]
                 .split(';')
-                .map(|s| s.trim())
+                .map(str::trim)
                 .filter(|s| !s.is_empty())
                 .collect();
             assert_eq!(style_markup, style_rendered);
@@ -656,4 +818,89 @@ pub fn assert_html_eq_unordered_styles(markup: &str, rendered: &str) {
             panic!("Mismatch in style attributes between markup and rendered output");
         }
     }
+}
+
+/// Normalize style attribute values by sorting declarations for stable
+/// comparisons
+pub fn normalize_style_attributes(markup: &str) -> String {
+    let style_regex = Regex::new(r#"style="([^"]*)""#).unwrap();
+    style_regex
+        .replace_all(markup, |caps: &Captures<'_>| {
+            let had_trailing_semicolon = caps[1].trim_end().ends_with(';');
+            let mut styles: Vec<&str> = caps[1]
+                .split(';')
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .collect();
+            styles.sort_unstable();
+            let mut normalized = styles.join(";");
+            if had_trailing_semicolon && !normalized.is_empty() {
+                normalized.push(';');
+            }
+            format!("style=\"{normalized}\"")
+        })
+        .to_string()
+}
+
+/// Normalize attribute order within HTML tags for deterministic comparisons
+pub fn normalize_html_attributes(markup: &str) -> String {
+    let tag_regex = Regex::new("<([a-zA-Z0-9]+)([^>]*)>").unwrap();
+    let attr_regex = Regex::new(r#"([^\s"'=<>]+)="([^"]*)""#).unwrap();
+
+    tag_regex
+        .replace_all(markup, |caps: &Captures<'_>| {
+            let tag = &caps[1];
+            let attr_str = caps[2].trim();
+            if attr_str.is_empty() {
+                format!("<{tag}>")
+            } else {
+                let mut attrs: Vec<(&str, &str)> = attr_regex
+                    .captures_iter(attr_str)
+                    .map(|attr_caps| {
+                        (
+                            attr_caps.get(1).unwrap().as_str(),
+                            attr_caps.get(2).unwrap().as_str(),
+                        )
+                    })
+                    .collect();
+                attrs.sort_by(|a, b| a.0.cmp(b.0));
+                let formatted = attrs
+                    .into_iter()
+                    .map(|(name, value)| format!("{name}=\"{value}\""))
+                    .collect::<Vec<_>>()
+                    .join(" ");
+                format!("<{tag} {formatted}>")
+            }
+        })
+        .to_string()
+}
+
+/// Normalize debug output by sorting attribute entries for deterministic
+/// snapshots
+pub fn normalize_debug_snapshot(debug: &str) -> String {
+    let mut result = Vec::new();
+    let mut lines = debug.lines().peekable();
+
+    while let Some(line) = lines.next() {
+        if line.trim_end().ends_with("attributes: {") {
+            result.push(line.to_owned());
+            let mut attrs = Vec::new();
+            while let Some(next_line) = lines.peek() {
+                let trimmed = next_line.trim();
+                if trimmed == "}," || trimmed == "}" {
+                    break;
+                }
+                attrs.push(lines.next().unwrap().to_owned());
+            }
+            attrs.sort();
+            result.extend(attrs);
+            if let Some(closing) = lines.next() {
+                result.push(closing.to_owned());
+            }
+        } else {
+            result.push(line.to_owned());
+        }
+    }
+
+    result.join("\n")
 }

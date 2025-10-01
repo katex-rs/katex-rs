@@ -1,1 +1,3 @@
 data/*.json filter=gzip -text -diff merge=binary
+crates/katex/tests/snapshots/*.snap filter=gzip -text -diff merge=binary
+crates/katex/tests/snapshots/*.snap.new filter=gzip -text -diff merge=binary

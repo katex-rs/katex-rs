@@ -1,0 +1,59 @@
+---
+source: crates/katex/tests/katex_spec.rs
+expression: "format!(\"{:#?}\", parsed)"
+---
+[
+    Sqrt(
+        ParseNodeSqrt {
+            mode: Math,
+            loc: None,
+            body: OrdGroup(
+                ParseNodeOrdGroup {
+                    mode: Math,
+                    loc: None,
+                    body: [
+                        MathOrd(
+                            ParseNodeMathOrd {
+                                mode: Math,
+                                loc: None,
+                                text: "x",
+                            },
+                        ),
+                    ],
+                    semisimple: None,
+                },
+            ),
+            index: Some(
+                OrdGroup(
+                    ParseNodeOrdGroup {
+                        mode: Math,
+                        loc: None,
+                        body: [
+                            Styling(
+                                ParseNodeStyling {
+                                    mode: Math,
+                                    loc: None,
+                                    style: Style {
+                                        id: 2,
+                                        size: 1,
+                                        cramped: false,
+                                    },
+                                    body: [
+                                        TextOrd(
+                                            ParseNodeTextOrd {
+                                                mode: Math,
+                                                loc: None,
+                                                text: "3",
+                                            },
+                                        ),
+                                    ],
+                                },
+                            ),
+                        ],
+                        semisimple: None,
+                    },
+                ),
+            ),
+        },
+    ),
+]
