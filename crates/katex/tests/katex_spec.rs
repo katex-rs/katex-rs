@@ -1,3 +1,5 @@
+#![allow(clippy::non_ascii_literal)]
+
 mod setup;
 use katex::{
     CharacterMetrics, KatexContext, Settings, TrustSetting,

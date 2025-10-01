@@ -1,9 +1,30 @@
-use std::collections::{HashMap, HashSet};
-use std::env;
-use std::fs;
-use std::fs::File;
-use std::io::Write;
-use std::path::Path;
+extern crate alloc;
+
+use alloc::collections::{BTreeMap, BTreeSet};
+use core::{
+    error::Error as CoreError,
+    fmt::{self, Write as _},
+    iter::Peekable,
+};
+use std::{
+    env, fs,
+    fs::File,
+    io::{BufWriter, Write as _},
+    path::PathBuf,
+};
+
+type BuildResult<T> = Result<T, Box<dyn CoreError>>;
+
+#[derive(Debug)]
+struct BuildScriptError(String);
+
+impl fmt::Display for BuildScriptError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl CoreError for BuildScriptError {}
 
 #[path = "src/unicode/unicode_accents.rs"]
 mod unicode_accents;
@@ -20,24 +41,26 @@ struct Symbol {
     accept_unicode_char: bool,
 }
 
-fn main() {
+fn main() -> BuildResult<()> {
     println!("cargo:rerun-if-changed=data/font_metrics_data.json");
     println!("cargo:rerun-if-changed=data/symbols.json");
     println!("cargo:rerun-if-changed=data/sigmas_and_xis.json");
 
-    let out_dir = env::var("OUT_DIR").unwrap();
+    let out_dir = PathBuf::from(env::var("OUT_DIR")?);
 
-    // Generate sigmas and xis
-    generate_sigmas_and_xis(&out_dir);
+    let sigmas = generate_sigmas_and_xis()?;
+    write_file(out_dir.join("sigmas_and_xis_generated.rs"), &sigmas)?;
 
-    // Generate font metrics
-    generate_font_metrics(&out_dir);
+    let font_metrics = generate_font_metrics()?;
+    write_file(out_dir.join("font_metrics_data_phf.rs"), &font_metrics)?;
 
-    // Generate unicode symbols
-    generate_unicode_symbols(&out_dir);
+    let unicode_symbols = generate_unicode_symbols()?;
+    write_file(out_dir.join("unicode_symbols_phf.rs"), &unicode_symbols)?;
 
-    // Generate symbols
-    generate_symbols(&out_dir);
+    let symbols = generate_symbols()?;
+    write_file(out_dir.join("generated_symbols_data.rs"), &symbols)?;
+
+    Ok(())
 }
 
 // Function to convert camelCase to snake_case
@@ -47,117 +70,96 @@ fn to_snake_case(s: &str) -> String {
         if ch.is_uppercase() && i > 0 {
             result.push('_');
         }
-        result.push(ch.to_lowercase().next().unwrap());
+        if let Some(lower) = ch.to_lowercase().next() {
+            result.push(lower);
+        }
     }
     result
 }
 
-fn generate_sigmas_and_xis(out_dir: &str) {
-    let json_data =
-        fs::read_to_string("data/sigmas_and_xis.json").expect("Failed to read sigmas_and_xis.json");
+fn generate_sigmas_and_xis() -> BuildResult<String> {
+    let data = read_json("data/sigmas_and_xis.json")?;
+    let sigmas_and_xis = data
+        .get("sigmasAndXis")
+        .and_then(|value| value.as_object())
+        .ok_or_else(|| BuildScriptError("sigmasAndXis object".into()))?;
+    let field_docs = data
+        .get("fieldDocs")
+        .and_then(|value| value.as_object())
+        .ok_or_else(|| BuildScriptError("fieldDocs object".into()))?;
 
-    let data: serde_json::Value =
-        serde_json::from_str(&json_data).expect("Failed to parse sigmas_and_xis.json");
-
-    let sigmas_and_xis = data["sigmasAndXis"]
-        .as_object()
-        .expect("sigmasAndXis should be an object");
-
-    let field_docs = data["fieldDocs"]
-        .as_object()
-        .expect("fieldDocs should be an object");
-
-    // Generate Rust struct fields with documentation
-    let mut fields = Vec::new();
-    for (key, _value) in sigmas_and_xis {
+    let mut fields = String::new();
+    for (key, _) in sigmas_and_xis {
         let snake_key = to_snake_case(key);
-
-        let doc = if let Some(field_doc) = field_docs.get(key)
-            && let Some(doc_str) = field_doc.as_str()
-        {
-            format!("    /// {doc_str}\n")
-        } else {
-            String::new()
-        };
-
-        fields.push(format!("{doc}    pub {snake_key}: f64,"));
+        if let Some(doc) = field_docs.get(key).and_then(|value| value.as_str()) {
+            let _ = writeln!(&mut fields, "    /// {doc}");
+        }
+        let _ = writeln!(&mut fields, "    pub {snake_key}: f64,");
     }
-    fields.push("    /// CSS em per mu\n    pub css_em_per_mu: f64,".to_string());
+    let _ = writeln!(
+        &mut fields,
+        "    /// CSS em per mu\n    pub css_em_per_mu: f64,"
+    );
 
-    // Generate the const array
-    let mut const_items = Vec::new();
-    for size_index in 0..3 {
-        let mut field_values = Vec::new();
+    let mut consts = String::new();
+    let quad = sigmas_and_xis
+        .get("quad")
+        .and_then(|value| value.as_array())
+        .ok_or_else(|| BuildScriptError("quad should be an array".into()))?;
+
+    for index in 0..3 {
+        let _ = writeln!(&mut consts, "    FontMetrics {{");
         for (key, value) in sigmas_and_xis {
-            let snake_key = to_snake_case(key);
-            if let Some(array) = value.as_array()
-                && let Some(val) = array.get(size_index)
-            {
-                let formatted_value = if val.is_i64() {
-                    format!("{:.1}", val.as_f64().unwrap())
-                } else {
-                    val.to_string()
-                };
-                field_values.push(format!("        {snake_key}: {formatted_value},"));
-            }
+            let Some(values) = value.as_array() else {
+                continue;
+            };
+            let Some(entry) = values.get(index) else {
+                continue;
+            };
+            let formatted = if entry.is_i64() {
+                entry
+                    .as_f64()
+                    .map_or_else(|| entry.to_string(), |value| format!("{value:.1}"))
+            } else {
+                entry.to_string()
+            };
+            let snake = to_snake_case(key);
+            let _ = writeln!(&mut consts, "        {snake}: {formatted},");
         }
 
-        // Calculate css_em_per_mu
-        if let Some(quad_array) = sigmas_and_xis.get("quad")
-            && let Some(quad_val) = quad_array.as_array().unwrap().get(size_index)
-        {
-            let css_em_per_mu = quad_val.as_f64().unwrap() / 18.0;
-            field_values.push(format!("        css_em_per_mu: {css_em_per_mu},"));
-        }
-
-        const_items.push(format!(
-            "    FontMetrics {{\n{}\n    }}",
-            field_values.join("\n")
-        ));
+        let css_em_per_mu = quad
+            .get(index)
+            .and_then(serde_json::Value::as_f64)
+            .ok_or_else(|| BuildScriptError("quad entry should be a float".into()))?
+            / 18.0;
+        let _ = writeln!(&mut consts, "        css_em_per_mu: {css_em_per_mu},");
+        let _ = writeln!(&mut consts, "    }},");
     }
 
-    // Generate the full Rust code
-    let rust_code = format!(
+    Ok(format!(
         "// Auto-generated from KaTeX/src/fontMetrics.js
 // Do not edit manually
 
 #[derive(Debug, Clone)]
 /// Font metrics for a specific style size (text, script, scriptscript)
 pub struct FontMetrics {{
-{}
-}}
+{fields}}}
 
 /// Constant font metrics for textstyle, scriptstyle, and scriptscriptstyle
 pub const FONT_METRICS: [FontMetrics; 3] = [
-{}
-];
-",
-        fields.join("\n"),
-        const_items.join(",\n")
-    );
-
-    // Write to file
-    let dest_path = Path::new(out_dir).join("sigmas_and_xis_generated.rs");
-    let mut file = File::create(&dest_path).unwrap();
-    file.write_all(rust_code.as_bytes()).unwrap();
+{consts}];
+"
+    ))
 }
 
-fn generate_font_metrics(out_dir: &str) {
+fn generate_font_metrics() -> BuildResult<String> {
     use phf_codegen::Map as PhfMap;
-    use std::fs::File;
-    use std::io::Write;
-    use std::path::Path;
 
-    let dest_path = Path::new(out_dir).join("font_metrics_data_phf.rs");
+    let json_data = fs::read_to_string("data/font_metrics_data.json")?;
+    let font_metrics: BTreeMap<String, BTreeMap<String, Vec<f64>>> =
+        serde_json::from_str(&json_data)?;
 
-    let json_data = fs::read_to_string("data/font_metrics_data.json")
-        .expect("Failed to read font_metrics_data.json");
-
-    let font_metrics: HashMap<String, HashMap<String, Vec<f64>>> =
-        serde_json::from_str(&json_data).expect("Failed to parse JSON data");
-
-    let mut file = File::create(&dest_path).unwrap();
-
+    let mut output = String::new();
     let mut font_index = PhfMap::new();
 
     for (font_family, metrics) in font_metrics {
@@ -168,10 +170,9 @@ fn generate_font_metrics(out_dir: &str) {
         );
 
         let mut map = PhfMap::new();
-
         for (char_code_str, metrics_array) in metrics {
-            let char_code: u32 = char_code_str.parse().unwrap();
-            let field_str = metrics_array
+            let char_code: u32 = char_code_str.parse()?;
+            let values = metrics_array
                 .iter()
                 .map(|v| {
                     if v.fract() == 0.0 {
@@ -182,58 +183,44 @@ fn generate_font_metrics(out_dir: &str) {
                 })
                 .collect::<Vec<_>>()
                 .join(", ");
-
-            let value = format!("CharacterMetrics::new({field_str})");
-
-            map.entry(char_code, value);
+            map.entry(char_code, format!("CharacterMetrics::new({values})"));
         }
 
-        writeln!(
-            &mut file,
+        let _ = writeln!(
+            &mut output,
             "/// Font metrics for the {font_family} font family"
-        )
-        .unwrap();
-
-        writeln!(
-            &mut file,
-            "#[allow(clippy::expect_used)]\n#[allow(clippy::approx_constant)]\npub const {}_METRICS: phf::Map<u32, CharacterMetrics> = {};",
+        );
+        let _ = writeln!(
+            &mut output,
+            "#[allow(clippy::expect_used)]\n#[allow(clippy::approx_constant)]\npub const {}_METRICS: phf::Map<u32, CharacterMetrics> = {};\n",
             font_name.to_uppercase(),
             map.build()
-        )
-        .unwrap();
-
-        writeln!(&mut file).unwrap();
+        );
     }
 
-    writeln!(
-        &mut file,
+    let _ = writeln!(
+        &mut output,
         "/// Mapping of font family names to their corresponding metrics maps"
-    )
-    .unwrap();
-    writeln!(
-        &mut file,
+    );
+    let _ = writeln!(
+        &mut output,
         "#[allow(clippy::expect_used)]\n#[allow(clippy::non_ascii_literal)]\npub const FONT_METRICS_INDEX: phf::Map<&'static str, &'static phf::Map<u32, CharacterMetrics>> = \n{};\n",
         font_index.build()
-    )
-    .unwrap();
+    );
+
+    Ok(output)
 }
 
-/// Generate a mapping of normalized Unicode symbols to their component parts
-///
-/// This function creates combinations of base letters with Unicode combining
-/// accents, normalizes them using NFC normalization, and returns a mapping
-/// from the normalized single character to the original component string.
-fn generate_unicode_symbols(out_dir: &str) {
+#[allow(clippy::unnecessary_wraps)]
+fn generate_unicode_symbols() -> BuildResult<String> {
     use phf_codegen::Map as PhfMap;
 
-    let dest_path = Path::new(out_dir).join("unicode_symbols_phf.rs");
-    let mut file = File::create(&dest_path).expect("Failed to create unicode_symbols_phf.rs");
-
     let accents: Vec<char> = UNICODE_ACCENTS.keys().copied().collect();
+    let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\u{3b1}\u{3b2}\u{3b3}\u{3b4}\u{3b5}\u{3f5}\u{3b6}\u{3b7}\u{3b8}\u{3d1}\u{3b9}\u{3ba}\u{3bb}\u{3bc}\u{3bd}\u{3be}\u{3bf}\u{3c0}\u{3d6}\u{3c1}\u{3f1}\u{3c2}\u{3c3}\u{3c4}\u{3c5}\u{3c6}\u{3d5}\u{3c7}\u{3c8}\u{3c9}\u{393}\u{394}\u{398}\u{39b}\u{39e}\u{3a0}\u{3a3}\u{3a5}\u{3a6}\u{3a8}\u{3a9}";
 
-    let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZαβγδεϵζηθϑικλμνξοπϖρϱςστυφϕχψωΓΔΘΛΞΠΣΥΦΨΩ";
-    let mut seen = HashSet::new();
+    let mut seen = BTreeSet::new();
     let mut map = PhfMap::<char>::new();
+
     for letter in letters.chars() {
         for accent in &accents {
             let combined = format!("{letter}{accent}");
@@ -248,7 +235,6 @@ fn generate_unicode_symbols(out_dir: &str) {
                     continue;
                 }
 
-                // Use (accent2, accent) order to match KaTeX's behavior
                 let combined2 = format!("{letter}{accent2}{accent}");
                 if let Some(normalized) = normalize_to_single_char(&combined2)
                     && seen.insert(normalized)
@@ -259,19 +245,43 @@ fn generate_unicode_symbols(out_dir: &str) {
         }
     }
 
-    writeln!(
-        &mut file,
-        "/// Mapping of normalized Unicode symbols to their component parts"
-    )
-    .unwrap();
-
-    writeln!(
-        &mut file,
-        "/// Unicode symbols map for Modifier tone letters\n\
-         #[allow(clippy::expect_used)]\n#[allow(clippy::non_ascii_literal)]\npub const UNICODE_SYMBOLS: phf::Map<char, &str> = \n{};\n",
+    Ok(format!(
+        "/// Mapping of normalized Unicode symbols to their component parts
+/// Unicode symbols map for Modifier tone letters
+#[allow(clippy::expect_used)]
+#[allow(clippy::non_ascii_literal)]
+pub const UNICODE_SYMBOLS: phf::Map<char, &str> = \n{};\n",
         map.build()
-    )
-    .unwrap();
+    ))
+}
+
+fn generate_symbols() -> BuildResult<String> {
+    let json_data = fs::read_to_string("data/symbols.json")?;
+    let symbol_data: Vec<Symbol> = serde_json::from_str(&json_data)?;
+
+    let (math_symbols, text_symbols): (Vec<Symbol>, Vec<Symbol>) =
+        symbol_data.into_iter().partition(|s| s.mode == "math");
+
+    let mut output = String::new();
+    let _ = writeln!(&mut output, "// Auto-generated file - do not edit manually");
+    let _ = writeln!(&mut output, "// Generated from data/symbols.json\n");
+    let _ = writeln!(&mut output, "/// Populate math symbols from JSON data");
+    write_symbols(&mut output, &math_symbols, "POPULATE_MATH_SYMBOLS")?;
+    let _ = writeln!(&mut output, "/// Populate text symbols from JSON data");
+    write_symbols(&mut output, &text_symbols, "POPULATE_TEXT_SYMBOLS")?;
+
+    Ok(output)
+}
+
+fn write_file(path: PathBuf, contents: &str) -> BuildResult<()> {
+    let mut writer = BufWriter::new(File::create(path)?);
+    writer.write_all(contents.as_bytes())?;
+    Ok(())
+}
+
+fn read_json(path: &str) -> BuildResult<serde_json::Value> {
+    let contents = fs::read_to_string(path)?;
+    Ok(serde_json::from_str(&contents)?)
 }
 
 fn escape_as_unicode(s: &str) -> String {
@@ -286,58 +296,50 @@ fn escape_as_unicode(s: &str) -> String {
         .collect::<String>()
 }
 
-fn parse_unicode_escape<I>(iter: &mut std::iter::Peekable<I>) -> Option<String>
+fn parse_unicode_escape<I>(iter: &mut Peekable<I>) -> Option<String>
 where
     I: Iterator<Item = char> + Clone,
 {
     let mut lookahead = iter.clone();
-    if lookahead.peek() != Some(&'\\') {
+    if lookahead.next()? != '\\' {
         return None;
     }
-    lookahead.next(); // consume '\'
-    if lookahead.peek() != Some(&'u') {
+    if lookahead.next()? != 'u' {
         return None;
     }
-    lookahead.next(); // consume 'u'
 
-    if lookahead.peek() == Some(&'{') {
-        lookahead.next(); // consume '{'
-        let mut hex_digits = String::new();
+    if matches!(lookahead.peek(), Some('{')) {
+        lookahead.next();
+        let mut hex = String::new();
         while let Some(&c) = lookahead.peek() {
             if c == '}' {
                 break;
             }
             if c.is_ascii_hexdigit() {
-                hex_digits.push(c);
+                hex.push(c);
                 lookahead.next();
             } else {
                 return None;
             }
         }
-        if lookahead.peek() == Some(&'}') && !hex_digits.is_empty() {
-            lookahead.next(); // consume '}'
-            *iter = lookahead;
-            return Some(format!("\\u{{{}}}", hex_digits));
-        } else {
+        if hex.is_empty() || lookahead.next()? != '}' {
             return None;
         }
+        *iter = lookahead;
+        return Some(format!("\\u{{{hex}}}"));
     }
 
-    let mut hex_digits = String::new();
+    let mut hex = String::new();
     for _ in 0..4 {
-        if let Some(&c) = lookahead.peek() {
-            if c.is_ascii_hexdigit() {
-                hex_digits.push(c);
-                lookahead.next();
-            } else {
-                return None;
-            }
+        let c = lookahead.next()?;
+        if c.is_ascii_hexdigit() {
+            hex.push(c);
         } else {
             return None;
         }
     }
     *iter = lookahead;
-    Some(format!("\\u{{{}}}", hex_digits))
+    Some(format!("\\u{{{hex}}}"))
 }
 
 fn convert_unicode_escapes(s: &str) -> String {
@@ -346,79 +348,59 @@ fn convert_unicode_escapes(s: &str) -> String {
     while chars.peek().is_some() {
         if let Some(escaped) = parse_unicode_escape(&mut chars) {
             result.push_str(&escaped);
+        } else if let Some(next) = chars.next() {
+            result.push(next);
         } else {
-            result.push(chars.next().unwrap());
-        }
-    }
-    result
-}
-fn convert_name_unicode_escapes(s: &str) -> String {
-    let mut result = String::new();
-    let mut chars = s.chars().peekable();
-    while chars.peek().is_some() {
-        if let Some(escaped) = parse_unicode_escape(&mut chars) {
-            result.push_str(&escaped);
-        } else {
-            result.push(chars.next().unwrap());
+            break;
         }
     }
     result
 }
 
-/// Normalize a string using NFC normalization and return the single character
-/// if applicable
 fn normalize_to_single_char(s: &str) -> Option<char> {
-    use unicode_normalization::UnicodeNormalization;
+    use unicode_normalization::UnicodeNormalization as _;
 
     let normalized: String = s.chars().nfc().collect();
-
-    if normalized.chars().count() == 1 {
-        normalized.chars().next()
-    } else {
-        None
+    let mut chars = normalized.chars();
+    match (chars.next(), chars.next()) {
+        (Some(c), None) => Some(c),
+        _ => None,
     }
 }
 
-fn write_symbols(file: &mut File, symbols: &[Symbol], variant: &str) {
-    let mut char_dict = HashMap::new();
+fn write_symbols(buffer: &mut String, symbols: &[Symbol], variant: &str) -> BuildResult<()> {
+    let mut grouped: BTreeMap<(String, String, Option<String>), BTreeSet<String>> = BTreeMap::new();
+
     for symbol in symbols {
-        let char_info = (
+        let key = (
             symbol.font.clone(),
             symbol.group.clone(),
             symbol.replace.clone(),
         );
-        if !char_dict.contains_key(&char_info) {
-            char_dict.insert(char_info.clone(), HashSet::new());
-        }
-        if let Some(val) = char_dict.get_mut(&char_info) {
-            val.insert(symbol.name.clone());
-        }
-        if let Some(replace) = &symbol.replace
-            && symbol.accept_unicode_char
-            && let Some(val) = char_dict.get_mut(&char_info)
-        {
-            val.insert(replace.clone());
+        let entry = grouped.entry(key).or_default();
+        entry.insert(symbol.name.clone());
+
+        if let (true, Some(replace)) = (symbol.accept_unicode_char, &symbol.replace) {
+            entry.insert(replace.clone());
         }
     }
 
-    writeln!(
-        file,
+    let _ = writeln!(
+        buffer,
         "const {variant}_MAP: phf::Map<&str, CharInfo> = phf_map!("
-    )
-    .unwrap();
+    );
 
-    for (char_info, names) in char_dict {
-        let (font, group, replace) = char_info;
+    for ((font, group, replace), names) in grouped {
         let arm = names
             .into_iter()
-            .map(|s| convert_name_unicode_escapes(&s))
+            .map(|s| convert_unicode_escapes(&s))
             .collect::<Vec<_>>()
             .join("\" | \"");
 
         let font_str = match font.as_str() {
             "main" => "Font::Main",
             "ams" => "Font::Ams",
-            _ => panic!("Invalid font: {font}"),
+            _ => return Err(BuildScriptError(format!("Invalid font: {font}")).into()),
         };
 
         let group_str = match group.as_str() {
@@ -433,45 +415,22 @@ fn write_symbols(file: &mut File, symbols: &[Symbol], variant: &str) {
             "op" | "op-token" => "Group::NonAtom(NonAtom::OpToken)",
             "spacing" => "Group::NonAtom(NonAtom::Spacing)",
             "textord" => "Group::NonAtom(NonAtom::TextOrd)",
-            _ => panic!("Invalid group: {group}"),
+            _ => return Err(BuildScriptError(format!("Invalid group: {group}")).into()),
         };
 
         let replace_value = replace.as_ref().map_or_else(
-            || "None".to_string(),
-            |s| {
-                let converted = convert_unicode_escapes(s);
-                format!("Some(\'{converted}\')")
-            },
+            || "None".to_owned(),
+            |s| format!("Some(\'{}\')", convert_unicode_escapes(s)),
         );
 
-        writeln!(file, "    \"{arm}\" => CharInfo {{").unwrap();
-        writeln!(file, "        font: {font_str},").unwrap();
-        writeln!(file, "        group: {group_str},").unwrap();
-        writeln!(file, "        replace: {replace_value},").unwrap();
-        writeln!(file, "    }},").unwrap();
+        let _ = writeln!(buffer, "    \"{arm}\" => CharInfo {{");
+        let _ = writeln!(buffer, "        font: {font_str},");
+        let _ = writeln!(buffer, "        group: {group_str},");
+        let _ = writeln!(buffer, "        replace: {replace_value},");
+        let _ = writeln!(buffer, "    }},");
     }
 
-    writeln!(file, ");\n").unwrap();
-}
+    let _ = writeln!(buffer, ");\n");
 
-fn generate_symbols(out_dir: &str) {
-    let json_data = fs::read_to_string("data/symbols.json").expect("Failed to read symbols.json");
-
-    let symbol_data: Vec<Symbol> =
-        serde_json::from_str(&json_data).expect("Failed to parse symbols JSON");
-
-    let dest_path = Path::new(out_dir).join("generated_symbols_data.rs");
-    let mut file = File::create(&dest_path).expect("Failed to create generated_symbols_data.rs");
-
-    writeln!(&mut file, "// Auto-generated file - do not edit manually").unwrap();
-    writeln!(&mut file, "// Generated from data/symbols.json").unwrap();
-    writeln!(&mut file).unwrap();
-
-    let (math_symbols, text_symbols): (Vec<Symbol>, Vec<Symbol>) =
-        symbol_data.into_iter().partition(|s| s.mode == "math");
-
-    writeln!(&mut file, "/// Populate math symbols from JSON data").unwrap();
-    write_symbols(&mut file, &math_symbols, "POPULATE_MATH_SYMBOLS");
-    writeln!(&mut file, "/// Populate text symbols from JSON data").unwrap();
-    write_symbols(&mut file, &text_symbols, "POPULATE_TEXT_SYMBOLS");
+    Ok(())
 }

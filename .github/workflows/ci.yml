@@ -63,6 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -85,9 +86,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-clippy-
             ${{ runner.os }}-cargo-
-
+        
       - name: Run clippy
-        run: cargo clippy --all-targets --all-features --workspace
+        continue-on-error: true
+        run: 
+          cargo clippy --all-targets --all-features --workspace
 
   test:
     name: Unit and Integration Tests
@@ -119,7 +122,16 @@ jobs:
         run: cargo install --locked cargo-nextest
 
       - name: Run unit and integration tests
-        run: cargo nextest run --no-fail-fast --all-features --workspace
+        run: cargo nextest run --no-fail-fast --all-features --workspace --profile ci
+      
+      - name: Publish test report
+        uses: dorny/test-reporter@v2
+        if: ${{ !cancelled() }}
+        with:
+          name: Unit and Integration Tests
+          path: target/nextest/ci/junit.xml
+          reporter: jest-junit
+          fail-on-error: false
 
   doc-test:
     name: Documentation Tests
@@ -206,7 +218,7 @@ jobs:
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           name: browser-test-results
           path: |

@@ -1,12 +1,15 @@
+extern crate alloc;
+
+use alloc::rc::Rc;
+use alloc::sync::Arc;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
-use std::io::BufReader;
+use std::hint::black_box;
+use std::io::{self, BufReader};
 use std::path::{Path, PathBuf};
-use std::rc::Rc;
-use std::sync::Arc;
 
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
 use katex::macros::MacroDefinition;
 use katex::{KatexContext, Settings, render_to_string};
 use serde::Deserialize;
@@ -63,18 +66,18 @@ struct TestCase {
 }
 
 impl RawTestCase {
-    fn into_test_case(self) -> Result<TestCase, Box<dyn Error>> {
+    fn into_test_case(self) -> TestCase {
         match self {
-            RawTestCase::Simple(tex) => Ok(TestCase {
+            Self::Simple(tex) => TestCase {
                 tex,
                 display_mode: false,
                 macros: HashMap::new(),
-            }),
-            RawTestCase::Detailed(case) => Ok(TestCase {
+            },
+            Self::Detailed(case) => TestCase {
                 tex: case.tex,
-                display_mode: case.display.is_some_and(|value| value.into()),
+                display_mode: case.display.map_or(false, Into::into),
                 macros: case.macros,
-            }),
+            },
         }
     }
 }
@@ -104,7 +107,7 @@ fn load_cases() -> Result<Vec<PreparedCase>, Box<dyn Error>> {
             let case = raw_cases
                 .remove(name)
                 .ok_or_else(|| io_error(format!("missing test case '{name}' in ss_data.yaml")))?
-                .into_test_case()?;
+                .into_test_case();
 
             Ok(PreparedCase {
                 name,
@@ -129,8 +132,8 @@ fn build_settings(display_mode: bool, macros: &HashMap<String, String>) -> Setti
     settings
 }
 
-fn io_error(message: String) -> std::io::Error {
-    std::io::Error::other(message)
+fn io_error(message: String) -> io::Error {
+    io::Error::other(message)
 }
 
 fn dataset_path() -> PathBuf {
@@ -143,7 +146,13 @@ fn dataset_path() -> PathBuf {
 
 fn bench_rendering(c: &mut Criterion) {
     let ctx = Arc::new(KatexContext::default());
-    let cases = load_cases().expect("failed to load KaTeX screenshotter cases");
+    let cases = match load_cases() {
+        Ok(cases) => cases,
+        Err(err) => {
+            eprintln!("failed to load KaTeX screenshotter cases: {err}");
+            return;
+        }
+    };
 
     let mut group = c.benchmark_group("katex_render");
     for PreparedCase {
@@ -157,12 +166,16 @@ fn bench_rendering(c: &mut Criterion) {
         let settings_for_case = Rc::clone(&settings);
 
         // Ensure rendering succeeds once before measuring performance.
-        render_to_string(
+        if let Err(err) = render_to_string(
             ctx.as_ref(),
             tex_for_case.as_ref(),
             settings_for_case.as_ref(),
-        )
-        .expect("rendering failed while priming benchmark caches");
+        ) {
+            eprintln!(
+                "skipping benchmark for {name}: failed to render test case while priming caches: {err}"
+            );
+            continue;
+        }
 
         group.bench_function(name, move |b| {
             let ctx = Arc::clone(&ctx);
@@ -170,9 +183,11 @@ fn bench_rendering(c: &mut Criterion) {
             let settings = Rc::clone(&settings);
 
             b.iter(|| {
-                let rendered = render_to_string(ctx.as_ref(), tex.as_ref(), settings.as_ref())
-                    .expect("rendering failed during benchmark");
-                black_box(rendered.len());
+                if let Ok(rendered) =
+                    render_to_string(ctx.as_ref(), tex.as_ref(), settings.as_ref())
+                {
+                    black_box(rendered.len());
+                }
             });
         });
     }

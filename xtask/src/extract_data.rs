@@ -1,5 +1,6 @@
-use std::collections::BTreeMap;
-use std::fs;
+use std::collections::{BTreeMap, BTreeSet};
+use std::fs::File;
+use std::io::Write;
 
 use camino::{Utf8Path, Utf8PathBuf};
 use clap::Args;
@@ -16,33 +17,22 @@ pub fn run(_args: ExtractDataArgs) -> Result<()> {
     let katex_src = root.join("KaTeX").join("src");
     let output_dir = root.join("crates").join("katex").join("data");
 
-    fs::create_dir_all(&output_dir).context("failed to create data output directory")?;
+    std::fs::create_dir_all(&output_dir)
+        .with_context(|| format!("failed to create {}", output_dir))?;
 
-    let font_metrics = extract_font_metrics(&katex_src)?;
-    let font_metrics_path = output_dir.join("font_metrics_data.json");
-    fs::write(&font_metrics_path, &font_metrics)
-        .with_context(|| format!("failed to write {}", font_metrics_path))?;
-    println!(
-        "Successfully converted to JSON: {} ({} bytes)",
-        font_metrics_path,
-        font_metrics.len()
-    );
+    write_pretty_json(
+        output_dir.join("font_metrics_data.json"),
+        extract_font_metrics(&katex_src)?,
+    )?;
 
-    let sigmas_and_docs = extract_sigmas_and_xis(&katex_src)?;
-    let sigmas_path = output_dir.join("sigmas_and_xis.json");
-    fs::write(&sigmas_path, &sigmas_and_docs)
-        .with_context(|| format!("failed to write {}", sigmas_path))?;
-    println!(
-        "Successfully converted to JSON: {} ({} bytes)",
-        sigmas_path,
-        sigmas_and_docs.len()
-    );
+    write_pretty_json(
+        output_dir.join("sigmas_and_xis.json"),
+        extract_sigmas_and_xis(&katex_src)?,
+    )?;
 
-    let (symbols, symbol_count) = extract_symbols(&katex_src)?;
-    let symbols_path = output_dir.join("symbols.json");
-    fs::write(&symbols_path, &symbols)
-        .with_context(|| format!("failed to write {}", symbols_path))?;
-    println!("Extracted {} symbols to {}", symbol_count, symbols_path);
+    let (symbols, count) = extract_symbols(&katex_src)?;
+    write_pretty_json(output_dir.join("symbols.json"), &symbols)?;
+    println!("Extracted {} symbols", count);
 
     Ok(())
 }
@@ -55,184 +45,115 @@ fn project_root() -> Utf8PathBuf {
         .to_owned()
 }
 
-fn extract_font_metrics(katex_src: &Utf8Path) -> Result<String> {
+fn extract_font_metrics(katex_src: &Utf8Path) -> Result<Value> {
     let path = katex_src.join("fontMetricsData.js");
-    let contents = fs::read_to_string(&path).with_context(|| format!("failed to read {}", path))?;
+    let contents =
+        std::fs::read_to_string(&path).with_context(|| format!("failed to read {}", path))?;
 
-    let export_start = contents
-        .find("export default")
-        .context("could not find `export default` in fontMetricsData.js")?;
-    let brace_start = contents[export_start..]
-        .find('{')
-        .map(|idx| export_start + idx)
-        .context("could not locate start of font metrics object")?;
-    let object_source = extract_braced_block(&contents, brace_start)?;
-
-    let value: Value =
-        json5::from_str(&object_source).context("failed to parse font metrics object as JSON5")?;
-    serde_json::to_string_pretty(&value).context("failed to format font metrics JSON")
+    let object_source = extract_object_after(&contents, "export default")?;
+    json5::from_str(&object_source).context("failed to parse font metrics object as JSON5")
 }
 
-fn extract_sigmas_and_xis(katex_src: &Utf8Path) -> Result<String> {
+fn extract_sigmas_and_xis(katex_src: &Utf8Path) -> Result<Value> {
     let path = katex_src.join("fontMetrics.js");
-    let contents = fs::read_to_string(&path).with_context(|| format!("failed to read {}", path))?;
+    let contents =
+        std::fs::read_to_string(&path).with_context(|| format!("failed to read {}", path))?;
 
-    let marker = "const sigmasAndXis =";
-    let marker_start = contents
-        .find(marker)
-        .context("could not find sigmasAndXis declaration")?;
-    let brace_start = contents[marker_start..]
-        .find('{')
-        .map(|idx| marker_start + idx)
-        .context("could not locate start of sigmasAndXis object")?;
-    let object_source = extract_braced_block(&contents, brace_start)?;
-
+    let sigmas_source = extract_object_after(&contents, "const sigmasAndXis =")?;
     let sigmas: Value =
-        json5::from_str(&object_source).context("failed to parse sigmasAndXis object as JSON5")?;
+        json5::from_str(&sigmas_source).context("failed to parse sigmasAndXis object as JSON5")?;
 
-    let field_docs = extract_field_docs(&contents);
-
-    let output = json!({
+    Ok(json!({
         "sigmasAndXis": sigmas,
-        "fieldDocs": field_docs,
-    });
-
-    serde_json::to_string_pretty(&output).context("failed to format sigmasAndXis JSON")
+        "fieldDocs": extract_field_docs(&contents),
+    }))
 }
 
-fn extract_symbols(katex_src: &Utf8Path) -> Result<(String, usize)> {
+fn extract_symbols(katex_src: &Utf8Path) -> Result<(Vec<Symbol>, usize)> {
     let path = katex_src.join("symbols.js");
-    let contents = fs::read_to_string(&path).with_context(|| format!("failed to read {}", path))?;
+    let contents =
+        std::fs::read_to_string(&path).with_context(|| format!("failed to read {}", path))?;
 
     let regex = Regex::new(
         r#"defineSymbol\(\s*([A-Za-z$_][\w$]*)\s*,\s*([A-Za-z$_][\w$]*)\s*,\s*([A-Za-z$_][\w$]*)\s*,\s*(?:\"((?:[^\"\\]|\\.)*)\"|(null|true|false|[A-Za-z$_][\w$]*))\s*,\s*\"((?:[^\"\\]|\\.)*)\"(?:\s*,\s*([^)]+))?\s*\);"#,
     )
     .expect("invalid regex for defineSymbol extraction");
 
-    let mut symbols = Vec::new();
-
-    for capture in regex.captures_iter(&contents) {
-        let mode = capture[1].to_string();
-        let font = capture[2].to_string();
-        let group = capture[3].to_string();
-
-        let replace = capture.get(4).map(|m| m.as_str().to_string()).or_else(|| {
-            capture.get(5).and_then(|m| {
-                let value = m.as_str().trim();
-                if value.eq_ignore_ascii_case("null") {
-                    None
-                } else {
-                    Some(value.to_string())
-                }
-            })
-        });
-
-        let name = capture
-            .get(6)
-            .map(|m| m.as_str().to_string())
-            .unwrap_or_default();
-
-        let accept_unicode = capture
-            .get(7)
-            .map(|m| m.as_str().trim() == "true")
-            .unwrap_or(false);
-
-        symbols.push(Symbol {
-            mode,
-            font,
-            group,
-            replace,
-            name,
-            accept_unicode_char: accept_unicode,
-        });
-    }
+    let symbols: Vec<_> = regex
+        .captures_iter(&contents)
+        .map(|capture| Symbol {
+            mode: capture[1].to_string(),
+            font: capture[2].to_string(),
+            group: capture[3].to_string(),
+            replace: capture
+                .get(4)
+                .map(|m| m.as_str().to_string())
+                .or_else(|| map_literal_value(capture.get(5))),
+            name: capture
+                .get(6)
+                .map(|m| m.as_str().to_string())
+                .unwrap_or_default(),
+            accept_unicode_char: capture
+                .get(7)
+                .map(|m| m.as_str().trim() == "true")
+                .unwrap_or(false),
+        })
+        .collect();
 
     let count = symbols.len();
-    let json = serde_json::to_string_pretty(&symbols).context("failed to format symbols JSON")?;
-    Ok((json, count))
+    Ok((symbols, count))
 }
 
 fn extract_field_docs(contents: &str) -> BTreeMap<String, String> {
     let mut docs = BTreeMap::new();
-    let mut current_doc = Vec::new();
+    let mut active_comment = Vec::new();
+    let mut seen_fields = BTreeSet::new();
     let mut in_block = false;
 
-    for line in contents.lines() {
-        let trimmed = line.trim();
-
+    for line in contents.lines().map(str::trim) {
         if !in_block {
-            if trimmed.starts_with("const sigmasAndXis = {") {
-                in_block = true;
-            }
+            in_block = line.starts_with("const sigmasAndXis = {");
             continue;
         }
 
-        if trimmed == "};" {
+        if line == "};" {
             break;
         }
 
-        if trimmed.starts_with("//") && !trimmed.contains(':') {
-            current_doc.push(trimmed.trim_start_matches("//").trim().to_string());
+        if let Some(comment) = line.strip_prefix("//") {
+            if !line.contains(':') {
+                active_comment.push(comment.trim().to_string());
+                continue;
+            }
+        }
+
+        let Some((field, _)) = line.split_once(':') else {
+            continue;
+        };
+
+        let field = field.trim();
+        if field.is_empty() || !seen_fields.insert(field.to_string()) {
+            active_comment.clear();
             continue;
         }
 
-        if let Some((field, _)) = trimmed.split_once(':') {
-            let field = field.trim();
-            if field.is_empty() {
-                continue;
+        let inline_comment = line.split_once("//").map(|(_, rest)| rest.trim());
+        let mut doc = active_comment.join(" ");
+        if let Some(comment) = inline_comment {
+            if !doc.is_empty() {
+                doc.push(' ');
             }
-
-            let inline_comment = trimmed.split_once("//").map(|x| x.1.trim());
-
-            let doc_text = match (current_doc.is_empty(), inline_comment) {
-                (false, Some(comment)) => {
-                    let mut parts = current_doc.join(" ");
-                    if !comment.is_empty() {
-                        if !parts.is_empty() {
-                            parts.push(' ');
-                        }
-                        parts.push_str(comment);
-                    }
-                    parts
-                }
-                (false, None) => current_doc.join(" "),
-                (true, Some(comment)) => comment.to_string(),
-                (true, None) => {
-                    current_doc.clear();
-                    continue;
-                }
-            };
-
-            docs.insert(field.to_string(), doc_text);
-            current_doc.clear();
+            doc.push_str(comment);
         }
+
+        if !doc.is_empty() {
+            docs.insert(field.to_string(), doc);
+        }
+
+        active_comment.clear();
     }
 
-    let default_docs = [
-        (
-            "sqrtRuleThickness",
-            "The \\sqrt rule width is taken from the height of the surd character. Since we use the same font at all sizes, this thickness doesn't scale.",
-        ),
-        (
-            "ptPerEm",
-            "This value determines how large a pt is, for metrics which are defined in terms of pts. This value is also used in katex.scss; if you change it make sure the values match.",
-        ),
-        (
-            "doubleRuleSep",
-            "The space between adjacent `|` columns in an array definition. From `\\showthe\\doublerulesep` in LaTeX. Equals 2.0 / ptPerEm.",
-        ),
-        (
-            "arrayRuleWidth",
-            "The width of separator lines in {array} environments. From `\\showthe\\arrayrulewidth` in LaTeX. Equals 0.4 / ptPerEm.",
-        ),
-        ("fboxsep", "Two values from LaTeX source2e: 3 pt / ptPerEm"),
-        (
-            "fboxrule",
-            "Two values from LaTeX source2e: 0.4 pt / ptPerEm",
-        ),
-    ];
-
-    for (key, doc) in default_docs {
+    for (key, doc) in default_field_docs() {
         docs.entry(key.to_string())
             .or_insert_with(|| doc.to_string());
     }
@@ -305,4 +226,64 @@ struct Symbol {
     name: String,
     #[serde(rename = "acceptUnicodeChar")]
     accept_unicode_char: bool,
+}
+
+fn extract_object_after(contents: &str, marker: &str) -> Result<String> {
+    let start = contents
+        .find(marker)
+        .with_context(|| format!("could not find `{marker}`"))?;
+    let brace_start = contents[start..]
+        .find('{')
+        .map(|offset| start + offset)
+        .context("could not locate opening brace")?;
+    extract_braced_block(contents, brace_start)
+}
+
+fn write_pretty_json<T>(path: Utf8PathBuf, value: T) -> Result<()>
+where
+    T: Serialize,
+{
+    let mut file = File::create(&path).with_context(|| format!("failed to write {}", path))?;
+    let json = serde_json::to_vec_pretty(&value).context("failed to serialize JSON")?;
+    file.write_all(&json)
+        .with_context(|| format!("failed to write {}", path))?;
+    println!("Successfully wrote {} ({} bytes)", path, json.len());
+    Ok(())
+}
+
+fn map_literal_value(value: Option<regex::Match<'_>>) -> Option<String> {
+    value.and_then(|m| {
+        let value = m.as_str().trim();
+        if value.eq_ignore_ascii_case("null") {
+            None
+        } else {
+            Some(value.to_string())
+        }
+    })
+}
+
+fn default_field_docs() -> &'static [(&'static str, &'static str)] {
+    &[
+        (
+            "sqrtRuleThickness",
+            "The \\sqrt rule width is taken from the height of the surd character. Since we use the same font at all sizes, this thickness doesn't scale.",
+        ),
+        (
+            "ptPerEm",
+            "This value determines how large a pt is, for metrics which are defined in terms of pts. This value is also used in katex.scss; if you change it make sure the values match.",
+        ),
+        (
+            "doubleRuleSep",
+            "The space between adjacent `|` columns in an array definition. From `\\showthe\\doublerulesep` in LaTeX. Equals 2.0 / ptPerEm.",
+        ),
+        (
+            "arrayRuleWidth",
+            "The width of separator lines in {array} environments. From `\\showthe\\arrayrulewidth` in LaTeX. Equals 0.4 / ptPerEm.",
+        ),
+        ("fboxsep", "Two values from LaTeX source2e: 3 pt / ptPerEm"),
+        (
+            "fboxrule",
+            "Two values from LaTeX source2e: 0.4 pt / ptPerEm",
+        ),
+    ]
 }

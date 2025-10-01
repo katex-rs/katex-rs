@@ -3,6 +3,11 @@
 //! This is a Rust port of the KaTeX JavaScript library, providing
 //! fast LaTeX math rendering capabilities.
 #![warn(missing_docs)]
+#![warn(clippy::print_stdout)]
+#![warn(clippy::print_stderr)]
+#![warn(clippy::std_instead_of_alloc)]
+#![warn(clippy::std_instead_of_core)]
+#![allow(clippy::approx_constant)]
 
 extern crate alloc;
 pub mod build_common;
