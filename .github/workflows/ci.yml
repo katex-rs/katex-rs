@@ -164,8 +164,18 @@ jobs:
         run: cargo test --doc --all-features --workspace
 
   browser-test:
-    name: Browser Tests (Screenshots)
-    runs-on: ubuntu-latest
+    name: Browser Tests (Screenshots) - ${{ matrix.browser }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            browser: chrome
+          - os: ubuntu-latest
+            browser: firefox
+          - os: macos-15
+            browser: safari
     permissions:
       contents: read
     continue-on-error: true  # Allow this job to fail without failing the overall workflow
@@ -180,26 +190,41 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
 
-      - name: Cache cargo registry
+      - name: Cache cargo registry and node modules
         uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             target
+            KaTeX/node_modules
           key: ${{ runner.os }}-cargo-wasm-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-wasm-
             ${{ runner.os }}-cargo-
 
       - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        run: cargo install wasm-pack
 
-      - name: Install system Firefox
+      - name: Install Firefox
+        if: ${{ matrix.browser == 'firefox' }}
         uses: browser-actions/setup-firefox@v1
 
       - name: Install Geckodriver
+        if: ${{ matrix.browser == 'firefox' }}
         uses: browser-actions/setup-geckodriver@latest
+
+      - name: Install Chrome
+        if: ${{ matrix.browser == 'chrome' }}
+        uses: browser-actions/setup-chrome@v2
+
+      - name: Install Chromedriver
+        if: ${{ matrix.browser == 'chrome' }}
+        uses: nanasess/setup-chromedriver@v2
+
+      - name: Enable Safari WebDriver
+        if: ${{ matrix.browser == 'safari' }}
+        run: sudo safaridriver --enable
 
       - uses: actions/setup-node@v5
         with:
@@ -214,14 +239,15 @@ jobs:
 
       - name: Run browser tests
         run: |
-          cargo xtask screenshotter --browser firefox
+          cargo xtask screenshotter --browser ${{ matrix.browser }}
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: browser-test-results
+          name: browser-test-results-${{ matrix.os }}-${{ matrix.browser }}
           path: |
-            artifacts/screenshotter/new/
-            artifacts/screenshotter/diff/
+            artifacts/screenshots/diff
+            artifacts/screenshots/new
           retention-days: 7
+
