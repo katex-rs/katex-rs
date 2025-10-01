@@ -58,7 +58,7 @@ phf_codegen = "0.13.1"
 [dev-dependencies]
 btparse = "0.2.0"
 wasm-bindgen-test = "0.3.34"
-criterion = { version = "0.5", default-features = false }
+criterion = { version = "0.7", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = { version = "0.9" }
 regex = "1.11.3"
