@@ -2231,7 +2231,7 @@ fn a_mathml_font_tree_builder() {
     );
 
     it(
-        "should render \\mathbb{contents} with the correct mathvariants",
+        &format!("should render \\mathbb{{{contents}}} with the correct mathvariants"),
         || {
             let tex = format!("\\mathbb{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
@@ -2247,7 +2247,7 @@ fn a_mathml_font_tree_builder() {
     );
 
     it(
-        "should render \\mathrm{contents} with the correct mathvariants",
+        &format!("should render \\mathrm{{{contents}}} with the correct mathvariants"),
         || {
             let tex = format!("\\mathrm{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
@@ -2263,7 +2263,7 @@ fn a_mathml_font_tree_builder() {
     );
 
     it(
-        "should render \\mathit{contents} with the correct mathvariants",
+        &format!("should render \\mathit{{{contents}}} with the correct mathvariants"),
         || {
             let tex = format!("\\mathit{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
@@ -2279,7 +2279,7 @@ fn a_mathml_font_tree_builder() {
     );
 
     it(
-        "should render \\mathnormal{contents} with the correct mathvariants",
+        &format!("should render \\mathnormal{{{contents}}} with the correct mathvariants"),
         || {
             let tex = format!("\\mathnormal{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
@@ -2295,7 +2295,7 @@ fn a_mathml_font_tree_builder() {
     );
 
     it(
-        "should render \\mathbf{contents} with the correct mathvariants",
+        &format!("should render \\mathbf{{{contents}}} with the correct mathvariants"),
         || {
             let tex = format!("\\mathbf{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
@@ -2311,7 +2311,7 @@ fn a_mathml_font_tree_builder() {
     );
 
     it(
-        "should render \\mathcal{contents} with the correct mathvariants",
+        &format!("should render \\mathcal{{{contents}}} with the correct mathvariants"),
         || {
             let tex = format!("\\mathcal{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
@@ -2327,7 +2327,7 @@ fn a_mathml_font_tree_builder() {
     );
 
     it(
-        "should render \\mathfrak{contents} with the correct mathvariants",
+        &format!("should render \\mathfrak{{{contents}}} with the correct mathvariants"),
         || {
             let tex = format!("\\mathfrak{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
@@ -2343,7 +2343,7 @@ fn a_mathml_font_tree_builder() {
     );
 
     it(
-        "should render \\mathscr{contents} with the correct mathvariants",
+        &format!("should render \\mathscr{{{contents}}} with the correct mathvariants"),
         || {
             let tex = format!("\\mathscr{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
@@ -2359,7 +2359,7 @@ fn a_mathml_font_tree_builder() {
     );
 
     it(
-        "should render \\mathsf{contents} with the correct mathvariants",
+        &format!("should render \\mathsf{{{contents}}} with the correct mathvariants"),
         || {
             let tex = format!("\\mathsf{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
@@ -2375,7 +2375,7 @@ fn a_mathml_font_tree_builder() {
     );
 
     it(
-        "should render \\mathsfit{contents} with the correct mathvariants",
+        &format!("should render \\mathsfit{{{contents}}} with the correct mathvariants"),
         || {
             let tex = format!("\\mathsfit{{{contents}}}");
             let markup = build_mathml(&tex)?.to_markup()?;
@@ -3471,16 +3471,17 @@ fn ams_environments() {
 #[test]
 fn the_cd_environment() {
     it("should fail if not is display mode", || {
-        expect!(
-            r"\begin{CD}A @<a<< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}"
-        )
-        .not_to_parse(&non_display_settings())
+        expect!(r"\begin{CD}A @<a<< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}")
+            .not_to_parse(&non_display_settings())
     });
 
     it(
         "should fail if the character after '@' is not in <>AV=|.",
         || {
-            expect!(r"\begin{CD}A @X<a<< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}").not_to_parse(&display_settings())
+            expect!(
+                r"\begin{CD}A @X<a<< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}"
+            )
+            .not_to_parse(&display_settings())
         },
     );
     it(
@@ -3502,10 +3503,8 @@ fn the_cd_environment() {
     });
 
     it("should succeed without the flaws noted above.", || {
-        expect!(
-            r"\begin{CD}A @<a<< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}"
-        )
-        .to_build(&display_settings())
+        expect!(r"\begin{CD}A @<a<< B @>>b> C @>>> D\\@. @| @AcAA @VVdV \\@. E @= F @>>> G\end{CD}")
+            .to_build(&display_settings())
     });
 }
 
@@ -3998,10 +3997,7 @@ fn a_macro_expander() {
     it("should allow for multiple expansion", || {
         let settings = strict_settings();
         settings.macros.borrow_mut().extend([
-            (
-                "\\foo".to_owned(),
-                MacroDefinition::StaticStr("\\bar\\bar"),
-            ),
+            ("\\foo".to_owned(), MacroDefinition::StaticStr("\\bar\\bar")),
             ("\\bar".to_owned(), MacroDefinition::StaticStr("a")),
         ]);
 
@@ -5035,12 +5031,10 @@ fn the_mathchoice_function() {
     );
 
     it(
-        "should render as if there is nothing other in scriptscriptstyle",
+        "should render  as if there is nothing other in scriptscriptstyle",
         || {
-            expect!(&format!(
-                r"x_{{y_{{\mathchoice{{D}}{{T}}{{S}}{{{cmd}}}}}}}"
-            ))
-            .to_build_like(&format!("x_{{y_{{{cmd}}}}}"), &strict_settings())
+            expect!(&format!(r"x_{{y_{{\mathchoice{{D}}{{T}}{{S}}{{{cmd}}}}}}}"))
+                .to_build_like(&format!("x_{{y_{{{cmd}}}}}"), &strict_settings())
         },
     );
 }
@@ -5332,47 +5326,43 @@ fn extending_katex_by_new_fonts_and_symbols() {
         },
     );
 
-    it(
-        "should render new symbols with custom font metrics as expected",
-        || {
-            let mut ctx = get_context();
-            for number in 0..=9 {
-                ctx.font_metrics.add_custom_metrics(
-                    "mockEasternArabicFont-Regular".to_owned(),
-                    0x0660 + number,
-                    CharacterMetrics {
-                        depth: -0.00244140625,
-                        height: 0.6875,
-                        italic: 0.0,
-                        skew: 0.0,
-                        width: 0.0,
-                    },
-                );
-                ctx.font_metrics.add_custom_metrics(
-                    "mockEasternArabicFont-Regular".to_owned(),
-                    0x06F0 + number,
-                    CharacterMetrics {
-                        depth: -0.00244140625,
-                        height: 0.6875,
-                        italic: 0.0,
-                        skew: 0.0,
-                        width: 0.0,
-                    },
-                );
-            }
-            let settings = nonstrict_settings();
-            let html = render_to_string(&ctx, "۹۹^{۱۱}", &settings).map_err(|source| {
-                TestError::Parse {
-                    expression: "۹۹^{۱۱}".to_owned(),
-                    location: TestLocation::UNKNOWN,
-                    source,
-                }
+    it("Add new font class to new extended symbols", || {
+        let mut ctx = get_context();
+        for number in 0..=9 {
+            ctx.font_metrics.add_custom_metrics(
+                "mockEasternArabicFont-Regular".to_owned(),
+                0x0660 + number,
+                CharacterMetrics {
+                    depth: -0.00244140625,
+                    height: 0.6875,
+                    italic: 0.0,
+                    skew: 0.0,
+                    width: 0.0,
+                },
+            );
+            ctx.font_metrics.add_custom_metrics(
+                "mockEasternArabicFont-Regular".to_owned(),
+                0x06F0 + number,
+                CharacterMetrics {
+                    depth: -0.00244140625,
+                    height: 0.6875,
+                    italic: 0.0,
+                    skew: 0.0,
+                    width: 0.0,
+                },
+            );
+        }
+        let settings = nonstrict_settings();
+        let html =
+            render_to_string(&ctx, "۹۹^{۱۱}", &settings).map_err(|source| TestError::Parse {
+                expression: "۹۹^{۱۱}".to_owned(),
+                location: TestLocation::UNKNOWN,
+                source,
             })?;
-            let normalized_html = normalize_style_attributes(&html);
-            insta::assert_snapshot!("eastern_arabic_numerals_html", normalized_html);
-            Ok(())
-        },
-    );
+        let normalized_html = normalize_style_attributes(&html);
+        insta::assert_snapshot!("eastern_arabic_numerals_html", normalized_html);
+        Ok(())
+    });
 }
 
 #[test]
@@ -5380,7 +5370,7 @@ fn extending_katex_by_new_fonts_and_symbols() {
 fn debugging_macros() {
     use gag::BufferRedirect;
 
-    it("should parse \\message macro", || {
+    it("should print the argument using console.log", || {
         let mut buf = BufferRedirect::stdout().unwrap();
         expect!(r"\message{Hello, world}").to_parse(&strict_settings())?;
         let mut output = String::new();
@@ -5389,7 +5379,7 @@ fn debugging_macros() {
         Ok(())
     });
 
-    it("should parse \\errmessage macro", || {
+    it("should print the argument using console.error", || {
         let mut buf = BufferRedirect::stderr().unwrap();
         expect!(r"\errmessage{Hello, world}").to_parse(&strict_settings())?;
         let mut output = String::new();

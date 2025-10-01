@@ -1,0 +1,5 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mphantom><mi>x</mi></mphantom></mrow><annotation encoding="application/x-tex">\phantom{x}</annotation></semantics></math>

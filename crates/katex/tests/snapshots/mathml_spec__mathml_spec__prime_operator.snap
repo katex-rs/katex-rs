@@ -1,0 +1,6 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+assertion_line: 29
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>f</mi><mo lspace="0em" mathvariant="normal" rspace="0em">′</mo></msup></mrow><annotation encoding="application/x-tex">f&#x27;</annotation></semantics></math>

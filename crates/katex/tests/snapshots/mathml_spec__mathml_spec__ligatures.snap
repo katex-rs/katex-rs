@@ -1,0 +1,5 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext>“‘Hi—-”’</mtext><mi mathvariant="normal">‘</mi><mo>−</mo><mo>−</mo><mtext mathvariant="monospace">``‘Hi----&#x27;&#x27;’</mtext><mi mathvariant="normal">‘</mi><mtext mathvariant="monospace">``‘Hi----&#x27;&#x27;’</mtext><mi mathvariant="normal">‘</mi></mrow><annotation encoding="application/x-tex">\text{```Hi----&#x27;&#x27;&#x27;}`--\texttt{```Hi----&#x27;&#x27;&#x27;}`\text{\tt ```Hi----&#x27;&#x27;&#x27;}`</annotation></semantics></math>

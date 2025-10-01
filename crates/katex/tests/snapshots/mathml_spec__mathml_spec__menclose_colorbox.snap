@@ -1,0 +1,6 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+assertion_line: 106
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mpadded height="+6pt" lspace="3pt" mathbackground="red" voffset="3pt" width="+6pt"><mtext>b</mtext></mpadded></mrow><annotation encoding="application/x-tex">\colorbox{red}{b}</annotation></semantics></math>

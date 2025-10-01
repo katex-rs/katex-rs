@@ -1,0 +1,5 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>u</mi><mo>¨</mo></mover><mi>b</mi><mi>e</mi><mi>r</mi><mi>f</mi><mi>i</mi><mi>a</mi><mi>n</mi><mi>c</mi><mover accent="true"><mi>e</mi><mo>ˊ</mo></mover><mi>e</mi></mrow><annotation encoding="application/x-tex">über fiancée</annotation></semantics></math>

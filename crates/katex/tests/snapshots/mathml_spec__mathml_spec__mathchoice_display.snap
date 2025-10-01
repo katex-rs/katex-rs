@@ -1,0 +1,6 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+assertion_line: 142
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mstyle displaystyle="true" scriptlevel="0"><mrow><munderover><mo>\sum</mo><mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow><mi mathvariant="normal">∞</mi></munderover><msup><mi>x</mi><mi>k</mi></msup></mrow></mstyle></mrow><annotation encoding="application/x-tex">\displaystyle\mathchoice{\sum_{k = 0}^{\infty} x^k}{T}{S}{SS}</annotation></semantics></math>

@@ -1,0 +1,6 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+assertion_line: 62
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mstyle displaystyle="false" scriptlevel="0"><msubsup><mo>\sum</mo><mi>a</mi><mi>b</mi></msubsup></mstyle></mrow><annotation encoding="application/x-tex">\textstyle\sum_a^b</annotation></semantics></math>

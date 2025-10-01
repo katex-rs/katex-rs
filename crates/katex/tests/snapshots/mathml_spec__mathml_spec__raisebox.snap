@@ -1,0 +1,5 @@
+---
+source: crates/katex/tests/mathml_spec.rs
+expression: markup
+---
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mpadded voffset="0.25em"><mstyle displaystyle="false" scriptlevel="0"><mtext>b</mtext></mstyle></mpadded></mrow><annotation encoding="application/x-tex">\raisebox{0.25em}{b}</annotation></semantics></math>
