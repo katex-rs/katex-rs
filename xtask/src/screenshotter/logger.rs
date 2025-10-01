@@ -8,6 +8,10 @@ use indicatif::{MultiProgress, ProgressBar, ProgressDrawTarget, ProgressStyle};
 use crate::screenshotter::args::BrowserKind;
 use crate::screenshotter::models::{CaseResult, CaseStatus, MismatchSeverity};
 
+const PROGRESS_TEMPLATE: &str =
+    "{prefix} {wide_bar} {pos}/{len} [{elapsed_precise}<{eta_precise}] {msg}";
+const PROGRESS_CHARS: &str = "\u{2588}\u{2589}\u{258a}\u{258b}\u{258c}\u{258d}\u{258e}\u{258f}  ";
+
 #[derive(Clone)]
 pub struct Logger {
     inner: Arc<LoggerInner>,
@@ -26,11 +30,11 @@ pub struct ProgressGroup {
 }
 
 impl ProgressGroup {
-    pub fn capture(&self) -> &ProgressBar {
+    pub const fn capture(&self) -> &ProgressBar {
         &self.capture
     }
 
-    pub fn compare(&self) -> &ProgressBar {
+    pub const fn compare(&self) -> &ProgressBar {
         &self.compare
     }
 
@@ -76,41 +80,55 @@ impl Logger {
         self.inner.is_tty
     }
 
-    pub fn info(&self, message: impl Into<String>) {
+    pub fn info<T>(&self, message: T)
+    where
+        T: Into<String>,
+    {
         self.log(None, LogLevel::Info, message.into());
     }
 
-    pub fn success(&self, message: impl Into<String>) {
+    pub fn success<T>(&self, message: T)
+    where
+        T: Into<String>,
+    {
         self.log(None, LogLevel::Success, message.into());
     }
 
-    pub fn warn(&self, message: impl Into<String>) {
+    pub fn warn<T>(&self, message: T)
+    where
+        T: Into<String>,
+    {
         self.log(None, LogLevel::Warn(WarnLevel::Medium), message.into());
     }
 
-    pub fn warn_with_progress(
-        &self,
-        pb: Option<&ProgressBar>,
-        level: WarnLevel,
-        message: impl Into<String>,
-    ) {
+    pub fn warn_with_progress<T>(&self, pb: Option<&ProgressBar>, level: WarnLevel, message: T)
+    where
+        T: Into<String>,
+    {
         self.log(pb, LogLevel::Warn(level), message.into());
     }
 
-    pub fn error(&self, message: impl Into<String>) {
+    pub fn error<T>(&self, message: T)
+    where
+        T: Into<String>,
+    {
         self.log(None, LogLevel::Error, message.into());
     }
 
-    pub fn detail(&self, pb: Option<&ProgressBar>, message: impl Into<String>) {
+    pub fn detail<T>(&self, pb: Option<&ProgressBar>, message: T)
+    where
+        T: Into<String>,
+    {
         self.log(pb, LogLevel::Detail, message.into());
     }
 
     pub fn blank(&self) {
+        let _ = self;
         println!();
     }
 
     pub fn browser_banner(&self, browser: BrowserKind, total_cases: usize) {
-        let text = style(format!("{browser} • {total_cases} cases"))
+        let text = style(format!("{browser} \u{2022} {total_cases} cases"))
             .cyan()
             .bold();
         self.log(None, LogLevel::Info, text.to_string());
@@ -123,18 +141,24 @@ impl Logger {
 
         let draw_target = ProgressDrawTarget::stderr_with_hz(20);
         let multi = Arc::new(MultiProgress::with_draw_target(draw_target));
-        let base_style = ProgressStyle::with_template(
-            "{prefix} {wide_bar} {pos}/{len} [{elapsed_precise}<{eta_precise}] {msg}",
-        )
-        .unwrap()
-        .progress_chars("█▉▊▋▌▍▎▏  ");
+        let base_style = match ProgressStyle::with_template(PROGRESS_TEMPLATE) {
+            Ok(style) => style.progress_chars(PROGRESS_CHARS),
+            Err(error) => {
+                self.log(
+                    None,
+                    LogLevel::Error,
+                    format!("Failed to configure progress style: {error}"),
+                );
+                return None;
+            }
+        };
 
         let capture = multi.add(ProgressBar::new(total as u64));
         capture.set_style(base_style.clone());
         capture.set_prefix(format!(
             "{} {}",
             style(browser.to_string()).cyan().bold(),
-            style("🎨").dim()
+            style("\u{1F3A8}").dim()
         ));
         capture.enable_steady_tick(Duration::from_millis(150));
 
@@ -143,7 +167,7 @@ impl Logger {
         compare.set_prefix(format!(
             "{} {}",
             style(browser.to_string()).cyan().bold(),
-            style("🔍").dim()
+            style("\u{1F50D}").dim()
         ));
         compare.enable_steady_tick(Duration::from_millis(150));
 
