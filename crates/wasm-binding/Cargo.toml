@@ -1,8 +1,10 @@
 [package]
-name = "katex-wasm-binding"
+name = "wasm-binding"
+readme = "../../README.md"
+license-file = "../../LICENSE"
+description = "WASM bindings for katex-rs"
 version.workspace = true
 edition.workspace = true
-license.workspace = true
 repository.workspace = true
 publish.workspace = true
 
