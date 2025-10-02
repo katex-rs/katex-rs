@@ -49,6 +49,10 @@ wasm = ["dep:wasm-bindgen", "dep:js-sys", "dep:web-sys", "dep:console_error_pani
 name = "perf"
 harness = false
 
+[[bench]]
+name = "perf_gungraun"
+harness = false
+
 [build-dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -59,6 +63,7 @@ phf_codegen = "0.13.1"
 [dev-dependencies]
 btparse = "0.2.0"
 wasm-bindgen-test = "0.3.34"
+gungraun = "0.17.0"
 criterion = { version = "0.7", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = { version = "0.9" }

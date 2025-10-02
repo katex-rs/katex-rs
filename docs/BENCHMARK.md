@@ -2,11 +2,10 @@
 
 ## Running the benchmarks directly
 
-The Criterion suite replays the same expressions used by the screenshotter
-tests. It expects the KaTeX fixtures from the `KaTeX/test/screenshotter`
-directory – fetch them with `git submodule update --init --recursive` before
-running any of the commands below.【F:crates/katex/benches/perf.rs†L87-L118】 A
-missing dataset triggers a helpful error:
+The renderer benchmarks rely on the KaTeX screenshotter fixtures – fetch them
+with `git submodule update --init --recursive` before running any of the
+commands below.【F:crates/katex/benches/support.rs†L12-L77】 A missing dataset
+triggers a helpful error:
 
 ```
 missing dataset at …/KaTeX/test/screenshotter/ss_data.yaml. Run `git submodule
@@ -24,14 +23,26 @@ npm run test:perf
 The upstream script uses [`benchmark.js`](https://benchmarkjs.com) and reports
 operations per second for KaTeX’s JavaScript renderer.
 
-### Rust (native)
+### Rust (native, Criterion)
 
 ```bash
 cargo bench --bench perf
 ```
 
-The harness primes each case once before timing to ensure fonts and layout data
-are cached the same way as the production renderer.
+The Criterion harness primes each case before measurement so the caches mirror
+production behaviour.【F:crates/katex/benches/perf.rs†L37-L83】 Use Criterion’s
+reporting to track throughput changes over time and run targeted comparisons.
+
+### Rust (native, Gungraun)
+
+```bash
+cargo bench --bench perf_gungraun
+```
+
+Gungraun replays the same cases, emits callgrind traces plus SVG flamegraphs,
+and checks for regressions with a +5% soft limit on instruction counts before
+surfacing warnings.【F:crates/katex/benches/perf_gungraun.rs†L24-L77】 Pass
+`-- --help` for additional options supported by the harness.
 
 ### Rust (WebAssembly)
 
@@ -41,17 +52,8 @@ priority right now.
 
 ## Flamegraph tooling
 
-The repository provides an `xtask` helper that wraps the setup steps above and
-records CPU flamegraphs via Linux `perf` and
-[`inferno`](https://github.com/jonhoo/inferno). Examples:
-
-```bash
-# Profile the Criterion benchmark harness
-cargo xtask flamegraph native
-
-# Profile the upstream JavaScript renderer
-cargo xtask flamegraph js
-```
-
-All flamegraph SVGs are written to `target/flamegraphs/`. Use `--open` to launch
-the generated file, or `--output`/`--perf-data` to customise the output paths.
+Gungraun automatically generates callgrind traces and SVG flamegraphs alongside
+the benchmark results in `target/gungraun/`. Use a viewer such as
+`kcachegrind`, `callgrind_annotate`, or a browser to inspect the output. The
+`xtask` flamegraph helper has been retired; profile the WebAssembly and
+JavaScript harnesses with their native tooling when necessary.

@@ -63,24 +63,19 @@ fn main() -> Result<(), katex::ParseError> {
 }
 ```
 
-Configure display mode, numbering, colors, macros, and trust checks through the
+Configure display mode, numbering, colors and trust checks through the
 builder API:
 
 ```rust
-use std::collections::HashMap;
 use katex::{render_to_string, KatexContext, Settings, StrictMode, StrictSetting, TrustSetting};
 
 fn main() -> Result<(), katex::ParseError> {
     let ctx = KatexContext::default();
 
-    let mut macros = HashMap::new();
-    macros.insert(String::from("\\RR"), String::from("\\mathbb{R}"));
-
     let settings = Settings::builder()
         .display_mode(true)
         .fleqn(true)
         .leqno(true)
-        .macros(macros)
         .strict(StrictSetting::Mode(StrictMode::Warn))
         .trust(TrustSetting::Bool(true))
         .color_is_text_color(true)
@@ -123,8 +118,11 @@ checklist is:
 1. Hydrate the KaTeX submodule and Git LFS assets (`git submodule update --init --recursive`).
 2. Install Rust (stable + nightly), Node.js, `wasm-pack`, and `cargo-nextest`.
 3. Run formatting, Clippy, and the Nextest-powered test suite.
-4. Use `cargo xtask screenshotter` for browser-based regression tests and
-   `cargo bench --bench perf` for Criterion benchmarks.
+4. Use `cargo xtask screenshotter` for browser-based regression tests, run
+   `cargo bench --bench perf` for the Criterion-based native benchmarks, and
+   `cargo bench --bench perf_gungraun` for Gungraun flamegraphs plus regression
+   checks (Need installing `gungraun-runner` for this). You can checkout generated 
+   flamegraphs in the `target/gungraun/katex-rs/perf_gungraun` folder.
 
 Refer to [`docs/BENCHMARK.md`](docs/BENCHMARK.md) and
 [`docs/FLAMEGRAPH.md`](docs/FLAMEGRAPH.md) for deeper performance workflows.

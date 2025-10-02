@@ -1,5 +1,4 @@
 mod extract_data;
-mod flamegraph;
 mod screenshotter;
 
 use clap::{Parser, Subcommand};
@@ -19,8 +18,6 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    /// Generate CPU flamegraphs for the available performance harnesses.
-    Flamegraph(flamegraph::FlamegraphArgs),
     /// Run the browser-based screenshotter tests using WebDriver.
     Screenshotter(screenshotter::ScreenshotterArgs),
     /// Regenerate JSON data extracted from the upstream KaTeX repository.
@@ -33,7 +30,6 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Command::Flamegraph(args) => flamegraph::run(args),
         Command::Screenshotter(args) => screenshotter::run(args),
         Command::ExtractData(args) => extract_data::run(args),
     }

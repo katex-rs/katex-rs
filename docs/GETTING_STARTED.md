@@ -22,7 +22,7 @@ git lfs install --skip-repo
 git lfs pull
 ```
 
-The Criterion benchmark and screenshot harness expect the upstream KaTeX
+The benchmarking harness and screenshot suite expect the upstream KaTeX
 fixtures under `KaTeX/test/screenshotter`. Missing fixtures will cause the
 benchmark to fail with a helpful error pointing back to the commands above.
 
@@ -37,7 +37,7 @@ benchmark to fail with a helpful error pointing back to the commands above.
 | cargo-nextest (faster test runner) | `cargo install --locked cargo-nextest` |
 
 > Tip: the repository ships an [xtask helper](../xtask/src/main.rs) that wraps
-> complex workflows such as screenshot tests and flamegraph collection.
+> workflows such as screenshot tests and data extraction.
 
 ## 3. Run the verification suite
 
@@ -93,21 +93,19 @@ cargo xtask screenshotter
 Install Google Chrome, Firefox, and their WebDriver companions for full
 coverage. Pass `--browser` and `--webdriver` options to target specific setups.
 
-### Criterion benchmarks and flamegraphs
+### Native benchmarks and flamegraphs
 
-KaTeX-rs bundles a Criterion benchmark suite that replays the same inputs as the
-screenshot tests. Hydrate the KaTeX submodule before running:
+KaTeX-rs bundles two benchmark harnesses that replay the same inputs as the
+screenshot tests. Hydrate the KaTeX submodule before running either command:
 
 ```bash
 cargo bench --bench perf
+
+cargo bench --bench perf_gungraun
 ```
 
-Use the `xtask` wrapper to capture flamegraphs for the native, WebAssembly, and
-reference JavaScript implementations:
-
-```bash
-cargo xtask flamegraph native
-```
-
-For additional options, refer to [`docs/BENCHMARK.md`](BENCHMARK.md) and
-[`docs/FLAMEGRAPH.md`](FLAMEGRAPH.md).
+`perf` uses Criterion for statistically robust throughput comparisons. The
+`perf_gungraun` harness compares results against the prior baseline, surfaces
+regressions, and emits callgrind traces plus SVG flamegraphs to
+`target/gungraun/`. For additional options, refer to
+[`docs/BENCHMARK.md`](BENCHMARK.md) and [`docs/FLAMEGRAPH.md`](FLAMEGRAPH.md).
