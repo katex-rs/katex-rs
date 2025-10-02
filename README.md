@@ -42,7 +42,7 @@ tools, and WebAssembly targets. The project currently tracks KaTeX commit
 
 ```toml
 [dependencies]
-katex-rs = "0.1"
+katex-rs = "0.2"
 ```
 
 ### Render LaTeX to HTML + MathML
