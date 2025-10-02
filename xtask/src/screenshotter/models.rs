@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use std::time::Instant;
 
+use color_eyre::eyre::{Result, eyre};
 use image::RgbaImage;
 
 use serde_json::Value as JsonValue;
@@ -17,6 +18,59 @@ pub struct TestCase {
 pub struct Screenshot {
     pub png: Vec<u8>,
     pub image: RgbaImage,
+}
+
+#[derive(Clone, Debug)]
+pub struct HtmlSnapshot {
+    pub implementation: Option<String>,
+    pub status: Option<String>,
+    pub pre_html: String,
+    pub math_html: String,
+    pub post_html: String,
+}
+
+impl HtmlSnapshot {
+    pub fn from_json(value: JsonValue) -> Result<Self> {
+        if !value.is_object() {
+            return Err(eyre!("HTML snapshot response must be an object"));
+        }
+
+        let implementation = value
+            .get("impl")
+            .or_else(|| value.get("implementation"))
+            .and_then(JsonValue::as_str)
+            .map(|s| s.to_owned());
+        let status = value
+            .get("status")
+            .and_then(JsonValue::as_str)
+            .map(|s| s.to_owned());
+        let pre_html = value
+            .get("pre")
+            .or_else(|| value.get("pre_html"))
+            .and_then(JsonValue::as_str)
+            .unwrap_or_default()
+            .to_owned();
+        let math_html = value
+            .get("math")
+            .or_else(|| value.get("math_html"))
+            .and_then(JsonValue::as_str)
+            .unwrap_or_default()
+            .to_owned();
+        let post_html = value
+            .get("post")
+            .or_else(|| value.get("post_html"))
+            .and_then(JsonValue::as_str)
+            .unwrap_or_default()
+            .to_owned();
+
+        Ok(Self {
+            implementation,
+            status,
+            pre_html,
+            math_html,
+            post_html,
+        })
+    }
 }
 
 #[derive(Clone, Debug)]

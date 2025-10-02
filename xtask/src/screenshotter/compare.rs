@@ -34,6 +34,7 @@ pub struct CompareOutcome {
     pub note: Option<String>,
     pub severity: Option<MismatchSeverity>,
     pub diff_image: Option<Vec<u8>>,
+    pub baseline_missing: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -177,17 +178,23 @@ fn compare_screenshot(
             )),
             severity: Some(MismatchSeverity::Major),
             diff_image: None,
+            baseline_missing: true,
         });
     };
 
-    let actual_image = &screenshot.image;
-    let baseline_image = &baseline.image;
+    compare_images(&screenshot.image, &baseline.image, settings)
+}
 
-    let (aw, ah) = actual_image.dimensions();
-    let (bw, bh) = baseline_image.dimensions();
+pub fn compare_images(
+    actual: &RgbaImage,
+    baseline: &RgbaImage,
+    settings: CompareSettings,
+) -> Result<CompareOutcome> {
+    let (aw, ah) = actual.dimensions();
+    let (bw, bh) = baseline.dimensions();
 
     if aw != bw || ah != bh {
-        let diff_png = build_composite_diff(actual_image, baseline_image)?;
+        let diff_png = build_composite_diff(actual, baseline)?;
         return Ok(CompareOutcome {
             equal: false,
             diff_pixels: None,
@@ -197,10 +204,11 @@ fn compare_screenshot(
             )),
             severity: Some(MismatchSeverity::Major),
             diff_image: Some(diff_png),
+            baseline_missing: false,
         });
     }
 
-    let similarity = web_element_ssim(actual_image, baseline_image);
+    let similarity = web_element_ssim(actual, baseline);
 
     let total_pixels = (aw as u64) * (ah as u64);
     let estimated_diff = estimate_diff_pixels(similarity.score, total_pixels);
@@ -213,12 +221,13 @@ fn compare_screenshot(
             note: None,
             severity: None,
             diff_image: None,
+            baseline_missing: false,
         });
     }
 
     let mismatch = settings.describe_mismatch(estimated_diff, total_pixels, &thresholds);
     let diff_image = if mismatch.severity == MismatchSeverity::Major {
-        Some(build_composite_diff(actual_image, baseline_image)?)
+        Some(build_composite_diff(actual, baseline)?)
     } else {
         None
     };
@@ -229,6 +238,7 @@ fn compare_screenshot(
         note: Some(mismatch.message),
         severity: Some(mismatch.severity),
         diff_image,
+        baseline_missing: false,
     })
 }
 

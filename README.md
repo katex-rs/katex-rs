@@ -106,7 +106,7 @@ const html = katex.renderToString("\\int_0^\\infty e^{-x^2} dx", {
 
 The WASM bundle exposes the same `render`/`renderToString` signatures as
 KaTeX.js, accepts plain JavaScript option objects, and throws matching error
-types for easy drop-in replacement.【F:crates/wasm-binding/src/lib.rs†L5-L116】【F:crates/wasm-binding/src/lib.rs†L299-L358】
+types for easy drop-in replacement.
 
 ## Development & reproducibility
 
@@ -118,8 +118,12 @@ checklist is:
 1. Hydrate the KaTeX submodule and Git LFS assets (`git submodule update --init --recursive`).
 2. Install Rust (stable + nightly), Node.js, `wasm-pack`, and `cargo-nextest`.
 3. Run formatting, Clippy, and the Nextest-powered test suite.
-4. Use `cargo xtask screenshotter` for browser-based regression tests, run
-   `cargo bench --bench perf` for the Criterion-based native benchmarks, and
+4. Use `cargo xtask screenshotter` for browser-based regression tests. Pass
+   `--html-on-failure` to capture HTML output from both the WASM and JavaScript
+   implementations when comparing mismatched cases, and
+   `--allow-js-fallback` to treat the in-browser JavaScript rendering as the
+   reference when baselines are missing or diverge on your platform.
+5. Run `cargo bench --bench perf` for the Criterion-based native benchmarks, and
    `cargo bench --bench perf_gungraun` for Gungraun flamegraphs plus regression
    checks (Need installing `gungraun-runner` for this). You can checkout generated 
    flamegraphs in the `target/gungraun/katex-rs/perf_gungraun` folder.

@@ -92,6 +92,11 @@ cargo xtask screenshotter
 
 Install Google Chrome, Firefox, and their WebDriver companions for full
 coverage. Pass `--browser` and `--webdriver` options to target specific setups.
+When investigating pixel mismatches, add `--html-on-failure` to capture the
+rendered HTML from both the default (WASM) and JavaScript implementations for
+each failing case. Combine it with `--allow-js-fallback` to fall back to
+comparing the WASM output against the live JavaScript rendering when
+cross-platform differences or missing baselines would otherwise block progress.
 
 ### Native benchmarks and flamegraphs
 

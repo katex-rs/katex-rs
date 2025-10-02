@@ -4,13 +4,7 @@
 
 The renderer benchmarks rely on the KaTeX screenshotter fixtures – fetch them
 with `git submodule update --init --recursive` before running any of the
-commands below.【F:crates/katex/benches/support.rs†L12-L77】 A missing dataset
-triggers a helpful error:
-
-```
-missing dataset at …/KaTeX/test/screenshotter/ss_data.yaml. Run `git submodule
-update --init --recursive` to fetch the KaTeX fixtures.
-```
+commands below.
 
 ### JavaScript (reference)
 
@@ -30,8 +24,7 @@ cargo bench --bench perf
 ```
 
 The Criterion harness primes each case before measurement so the caches mirror
-production behaviour.【F:crates/katex/benches/perf.rs†L37-L83】 Use Criterion’s
-reporting to track throughput changes over time and run targeted comparisons.
+production behaviour. Use Criterion’s reporting to track throughput changes over time and run targeted comparisons.
 
 ### Rust (native, Gungraun)
 
@@ -41,8 +34,7 @@ cargo bench --bench perf_gungraun
 
 Gungraun replays the same cases, emits callgrind traces plus SVG flamegraphs,
 and checks for regressions with a +5% soft limit on instruction counts before
-surfacing warnings.【F:crates/katex/benches/perf_gungraun.rs†L24-L77】 Pass
-`-- --help` for additional options supported by the harness.
+surfacing warnings.
 
 ### Rust (WebAssembly)
 

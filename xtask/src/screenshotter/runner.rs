@@ -1,7 +1,7 @@
 use std::collections::{HashSet, VecDeque};
 use std::time::{Duration, Instant};
 
-use camino::Utf8PathBuf;
+use camino::{Utf8Path, Utf8PathBuf};
 use color_eyre::eyre::{Context, Report, Result, bail, eyre};
 use indicatif::ProgressBar;
 use serde_json::Value as JsonValue;
@@ -10,18 +10,20 @@ use tokio::task::{JoinSet, spawn_blocking};
 use tokio::time::sleep;
 
 use crate::screenshotter::args::{
-    BASELINE_DIR, BrowserKind, DEFAULT_BROWSERS, DIFF_DIR, NEW_DIR, PAGE_PATH, ScreenshotterArgs,
+    BASELINE_DIR, BrowserKind, DEFAULT_BROWSERS, DIFF_DIR, HTML_DIR, NEW_DIR, PAGE_PATH,
+    ScreenshotterArgs,
 };
 use crate::screenshotter::build::{ensure_katex_dist_assets, ensure_wasm_artifacts};
 use crate::screenshotter::compare::{
-    CompareJob, CompareSettings, CompareWorkResult, preload_baselines, run_compare_job,
+    CompareJob, CompareOutcome, CompareSettings, CompareWorkResult, compare_images,
+    preload_baselines, run_compare_job,
 };
 use crate::screenshotter::dataset::{filter_cases, load_cases, workspace_root};
 use crate::screenshotter::fs_utils::sync_artifact;
 use crate::screenshotter::logger::{Logger, WarnLevel, summarize_failures};
 use crate::screenshotter::models::{
-    CaseResult, CaseState, CaseStatus, CompareMeta, MismatchSeverity, RenderOutcome, Screenshot,
-    TestCase,
+    CaseResult, CaseState, CaseStatus, CompareMeta, HtmlSnapshot, MismatchSeverity, RenderOutcome,
+    Screenshot, TestCase,
 };
 use crate::screenshotter::server::start_static_server;
 use crate::screenshotter::viewport::{
@@ -35,6 +37,14 @@ struct BrowserRunConfig<'a> {
     browser: BrowserKind,
     server_url: &'a str,
     compare_settings: CompareSettings,
+}
+
+struct PendingFallback {
+    case_index: usize,
+    case_key: String,
+    browser: BrowserKind,
+    screenshot: Screenshot,
+    outcome: CompareOutcome,
 }
 
 pub fn run(mut args: ScreenshotterArgs) -> Result<()> {
@@ -188,6 +198,7 @@ async fn run_browser(
         .collect();
     let mut queue: VecDeque<usize> = (0..cases.len()).collect();
     let mut compare_tasks: JoinSet<(CompareMeta, Result<CompareWorkResult>)> = JoinSet::new();
+    let mut fallback_tasks: VecDeque<PendingFallback> = VecDeque::new();
     let concurrency_limit = std::thread::available_parallelism()
         .map(|n| n.get().max(1))
         .unwrap_or(4);
@@ -197,7 +208,27 @@ async fn run_browser(
     let capture_progress = progress.as_ref().map(|group| group.capture().clone());
     let compare_progress = progress.as_ref().map(|group| group.compare().clone());
 
-    while !queue.is_empty() || !compare_tasks.is_empty() {
+    while !queue.is_empty() || !compare_tasks.is_empty() || !fallback_tasks.is_empty() {
+        if let Some(pending) = fallback_tasks.pop_front() {
+            handle_js_fallback(
+                &logger,
+                compare_progress.as_ref(),
+                &driver,
+                root.as_ref(),
+                &cases[pending.case_index],
+                wait_ms,
+                timeout,
+                pending,
+                &mut case_states,
+                &mut failures,
+                &mut timings,
+                args.html_on_failure,
+                compare_settings,
+            )
+            .await?;
+            continue;
+        }
+
         if let Some(case_index) = queue.pop_front() {
             if case_states[case_index].is_finished() {
                 continue;
@@ -205,7 +236,7 @@ async fn run_browser(
 
             if compare_tasks.len() >= concurrency_limit {
                 queue.push_front(case_index);
-                process_next_compare(
+                if let Some((failed_index, _)) = process_next_compare(
                     &logger,
                     compare_progress.as_ref(),
                     &mut compare_tasks,
@@ -213,8 +244,24 @@ async fn run_browser(
                     &mut queue,
                     &mut failures,
                     &mut timings,
+                    &mut fallback_tasks,
+                    args.allow_js_fallback,
                 )
-                .await?;
+                .await?
+                {
+                    maybe_dump_case_html(
+                        &logger,
+                        compare_progress.as_ref(),
+                        &driver,
+                        root.as_ref(),
+                        &cases[failed_index],
+                        browser,
+                        wait_ms,
+                        timeout,
+                        args.html_on_failure,
+                    )
+                    .await;
+                }
                 continue;
             }
 
@@ -320,6 +367,18 @@ async fn run_browser(
                             case_result.clone(),
                         ));
                         case_states[case_index].finalize(case_result);
+                        maybe_dump_case_html(
+                            &logger,
+                            compare_progress.as_ref(),
+                            &driver,
+                            root.as_ref(),
+                            &cases[case_index],
+                            browser,
+                            wait_ms,
+                            timeout,
+                            args.html_on_failure,
+                        )
+                        .await;
                     }
                 }
                 Err(err) => {
@@ -347,13 +406,23 @@ async fn run_browser(
                             failure.clone(),
                         ));
                         case_states[case_index].finalize(failure);
+                        maybe_dump_case_html(
+                            &logger,
+                            compare_progress.as_ref(),
+                            &driver,
+                            root.as_ref(),
+                            &cases[case_index],
+                            browser,
+                            wait_ms,
+                            timeout,
+                            args.html_on_failure,
+                        )
+                        .await;
                     }
                 }
             }
-        }
-
-        if !compare_tasks.is_empty() {
-            process_next_compare(
+        } else if !compare_tasks.is_empty() {
+            if let Some((failed_index, _)) = process_next_compare(
                 &logger,
                 compare_progress.as_ref(),
                 &mut compare_tasks,
@@ -361,13 +430,29 @@ async fn run_browser(
                 &mut queue,
                 &mut failures,
                 &mut timings,
+                &mut fallback_tasks,
+                args.allow_js_fallback,
             )
-            .await?;
+            .await?
+            {
+                maybe_dump_case_html(
+                    &logger,
+                    compare_progress.as_ref(),
+                    &driver,
+                    root.as_ref(),
+                    &cases[failed_index],
+                    browser,
+                    wait_ms,
+                    timeout,
+                    args.html_on_failure,
+                )
+                .await;
+            }
         }
     }
 
     while !compare_tasks.is_empty() {
-        process_next_compare(
+        if let Some((failed_index, _)) = process_next_compare(
             &logger,
             compare_progress.as_ref(),
             &mut compare_tasks,
@@ -375,6 +460,41 @@ async fn run_browser(
             &mut queue,
             &mut failures,
             &mut timings,
+            &mut fallback_tasks,
+            args.allow_js_fallback,
+        )
+        .await?
+        {
+            maybe_dump_case_html(
+                &logger,
+                compare_progress.as_ref(),
+                &driver,
+                root.as_ref(),
+                &cases[failed_index],
+                browser,
+                wait_ms,
+                timeout,
+                args.html_on_failure,
+            )
+            .await;
+        }
+    }
+
+    while let Some(pending) = fallback_tasks.pop_front() {
+        handle_js_fallback(
+            &logger,
+            compare_progress.as_ref(),
+            &driver,
+            root.as_ref(),
+            &cases[pending.case_index],
+            wait_ms,
+            timeout,
+            pending,
+            &mut case_states,
+            &mut failures,
+            &mut timings,
+            args.html_on_failure,
+            compare_settings,
         )
         .await?;
     }
@@ -457,7 +577,9 @@ async fn process_next_compare(
     queue: &mut VecDeque<usize>,
     failures: &mut Vec<(String, CaseResult)>,
     timings: &mut Vec<f64>,
-) -> Result<()> {
+    fallback_tasks: &mut VecDeque<PendingFallback>,
+    allow_js_fallback: bool,
+) -> Result<Option<(usize, CaseResult)>> {
     if let Some(join_result) = compare_tasks.join_next().await {
         let (meta, outcome_result) = join_result.map_err(|err| eyre!(err))?;
         let CompareMeta {
@@ -470,7 +592,7 @@ async fn process_next_compare(
 
         let state = &mut case_states[case_index];
         if state.is_finished() {
-            return Ok(());
+            return Ok(None);
         }
 
         match outcome_result {
@@ -496,39 +618,53 @@ async fn process_next_compare(
                     if let Some(duration) = state.duration_ms() {
                         timings.push(duration);
                     }
-                } else {
-                    let severity = outcome.severity.unwrap_or(MismatchSeverity::Major);
-                    let message = outcome
-                        .note
-                        .clone()
-                        .or_else(|| {
-                            outcome
-                                .diff_pixels
-                                .map(|p| format!("Differs from baseline (diff pixels: {p})"))
-                        })
-                        .unwrap_or_else(|| "Screenshot differs from baseline".to_owned());
-
-                    if state.attempts_left() > 0 {
-                        logger.retrying(compare_progress, format!("retrying: {message}"));
-                        queue.push_back(case_index);
-                        sleep(Duration::from_millis(50)).await;
-                    } else {
-                        logger.case_mismatch(
-                            compare_progress,
-                            &case_key,
-                            browser,
-                            severity,
-                            message.clone(),
-                        );
-                        let failure = CaseResult {
-                            status: CaseStatus::Mismatch,
-                            message: Some(message.clone()),
-                            severity: Some(severity),
-                        };
-                        failures.push((format!("{case_key} [{browser}]"), failure.clone()));
-                        state.finalize(failure);
-                    }
+                    return Ok(None);
                 }
+
+                let severity = outcome.severity.unwrap_or(MismatchSeverity::Major);
+                let message = outcome
+                    .note
+                    .clone()
+                    .or_else(|| {
+                        outcome
+                            .diff_pixels
+                            .map(|p| format!("Differs from baseline (diff pixels: {p})"))
+                    })
+                    .unwrap_or_else(|| "Screenshot differs from baseline".to_owned());
+
+                if state.attempts_left() > 0 {
+                    logger.retrying(compare_progress, format!("retrying: {message}"));
+                    queue.push_back(case_index);
+                    sleep(Duration::from_millis(50)).await;
+                    return Ok(None);
+                }
+
+                if allow_js_fallback {
+                    fallback_tasks.push_back(PendingFallback {
+                        case_index,
+                        case_key: case_key.clone(),
+                        browser,
+                        screenshot,
+                        outcome,
+                    });
+                    return Ok(None);
+                }
+
+                logger.case_mismatch(
+                    compare_progress,
+                    &case_key,
+                    browser,
+                    severity,
+                    message.clone(),
+                );
+                let failure = CaseResult {
+                    status: CaseStatus::Mismatch,
+                    message: Some(message.clone()),
+                    severity: Some(severity),
+                };
+                failures.push((format!("{case_key} [{browser}]"), failure.clone()));
+                state.finalize(failure.clone());
+                return Ok(Some((case_index, failure)));
             }
             Err(err) => {
                 let message = err.to_string();
@@ -536,40 +672,218 @@ async fn process_next_compare(
                     logger.retrying(compare_progress, format!("retrying: {message}"));
                     queue.push_back(case_index);
                     sleep(Duration::from_millis(200)).await;
-                } else {
-                    logger.case_failure(
-                        compare_progress,
-                        CaseStatus::Error,
-                        &case_key,
-                        browser,
-                        message.clone(),
-                    );
-                    let failure = CaseResult {
-                        status: CaseStatus::Error,
-                        message: Some(message.clone()),
-                        severity: None,
-                    };
-                    failures.push((format!("{case_key} [{browser}]"), failure.clone()));
-                    state.finalize(failure);
+                    return Ok(None);
                 }
+
+                logger.case_failure(
+                    compare_progress,
+                    CaseStatus::Error,
+                    &case_key,
+                    browser,
+                    message.clone(),
+                );
+                let failure = CaseResult {
+                    status: CaseStatus::Error,
+                    message: Some(message.clone()),
+                    severity: None,
+                };
+                failures.push((format!("{case_key} [{browser}]"), failure.clone()));
+                state.finalize(failure.clone());
+                return Ok(Some((case_index, failure)));
             }
+        }
+    }
+
+    Ok(None)
+}
+
+async fn handle_js_fallback(
+    logger: &Logger,
+    compare_progress: Option<&ProgressBar>,
+    driver: &WebDriver,
+    root: &Utf8Path,
+    case: &TestCase,
+    wait_ms: u64,
+    timeout: Duration,
+    pending: PendingFallback,
+    case_states: &mut [CaseState],
+    failures: &mut Vec<(String, CaseResult)>,
+    timings: &mut Vec<f64>,
+    capture_html: bool,
+    compare_settings: CompareSettings,
+) -> Result<()> {
+    let PendingFallback {
+        case_index,
+        case_key,
+        browser,
+        screenshot,
+        outcome,
+    } = pending;
+
+    let reason = outcome
+        .note
+        .clone()
+        .or_else(|| {
+            outcome
+                .baseline_missing
+                .then_some("Baseline missing".to_owned())
+        })
+        .unwrap_or_else(|| "Screenshot differs from baseline".to_owned());
+
+    logger.warn_with_progress(
+        compare_progress,
+        WarnLevel::Low,
+        format!("{case_key} ({browser}) {reason}; comparing against JS implementation"),
+    );
+
+    match render_case_with_impl(
+        logger,
+        compare_progress,
+        driver,
+        case,
+        timeout,
+        wait_ms,
+        browser,
+        Some("js"),
+    )
+    .await
+    {
+        Ok(RenderOutcome::Screenshot(js_screenshot)) => {
+            let comparison =
+                compare_images(&screenshot.image, &js_screenshot.image, compare_settings)?;
+            if comparison.equal {
+                let state = &mut case_states[case_index];
+                logger.case_pass(compare_progress, &case_key, browser, state.duration_ms());
+                logger.warn_with_progress(
+                    compare_progress,
+                    WarnLevel::Low,
+                    format!("{case_key} ({browser}) matched JS output; treating as pass"),
+                );
+                state.finalize(CaseResult {
+                    status: CaseStatus::Pass,
+                    message: None,
+                    severity: None,
+                });
+                if let Some(duration) = state.duration_ms() {
+                    timings.push(duration);
+                }
+                return Ok(());
+            }
+
+            let severity = comparison.severity.unwrap_or(MismatchSeverity::Major);
+            let fallback_note = comparison
+                .note
+                .clone()
+                .unwrap_or_else(|| "Screenshot differs from JS implementation".to_owned());
+            let message = format!("{fallback_note} (vs JS fallback)");
+            logger.case_mismatch(
+                compare_progress,
+                &case_key,
+                browser,
+                severity,
+                message.clone(),
+            );
+            let failure = CaseResult {
+                status: CaseStatus::Mismatch,
+                message: Some(message.clone()),
+                severity: Some(severity),
+            };
+            failures.push((format!("{case_key} [{browser}]"), failure.clone()));
+            case_states[case_index].finalize(failure);
+            maybe_dump_case_html(
+                logger,
+                compare_progress,
+                driver,
+                root,
+                case,
+                browser,
+                wait_ms,
+                timeout,
+                capture_html,
+            )
+            .await;
+        }
+        Ok(RenderOutcome::Error(case_result)) => {
+            let message = case_result
+                .message
+                .clone()
+                .unwrap_or_else(|| "JS fallback render error".to_owned());
+            let failure = CaseResult {
+                status: CaseStatus::Error,
+                message: Some(format!("JS fallback error: {message}")),
+                severity: None,
+            };
+            logger.case_failure(
+                compare_progress,
+                failure.status,
+                &case_key,
+                browser,
+                failure.message.clone().unwrap(),
+            );
+            failures.push((format!("{case_key} [{browser}]"), failure.clone()));
+            case_states[case_index].finalize(failure);
+            maybe_dump_case_html(
+                logger,
+                compare_progress,
+                driver,
+                root,
+                case,
+                browser,
+                wait_ms,
+                timeout,
+                capture_html,
+            )
+            .await;
+        }
+        Err(err) => {
+            let message = err.to_string();
+            let failure = CaseResult {
+                status: CaseStatus::Error,
+                message: Some(format!("JS fallback failure: {message}")),
+                severity: None,
+            };
+            logger.case_failure(
+                compare_progress,
+                failure.status,
+                &case_key,
+                browser,
+                failure.message.clone().unwrap(),
+            );
+            failures.push((format!("{case_key} [{browser}]"), failure.clone()));
+            case_states[case_index].finalize(failure);
+            maybe_dump_case_html(
+                logger,
+                compare_progress,
+                driver,
+                root,
+                case,
+                browser,
+                wait_ms,
+                timeout,
+                capture_html,
+            )
+            .await;
         }
     }
 
     Ok(())
 }
 
-async fn render_case(
-    logger: &Logger,
-    progress: Option<&ProgressBar>,
+async fn invoke_run_case(
     driver: &WebDriver,
     case: &TestCase,
     timeout: Duration,
     wait_ms: u64,
-    browser: BrowserKind,
-) -> Result<RenderOutcome> {
+    impl_override: Option<&str>,
+) -> Result<Result<(), CaseResult>> {
+    let mut args = Vec::new();
+    args.push(case.payload.clone());
+    if let Some(mode) = impl_override {
+        args.push(JsonValue::String(mode.to_string().into()));
+    }
+
     let run_result = driver
-        .execute_async(RUN_CASE_SCRIPT, vec![case.payload.clone()])
+        .execute_async(RUN_CASE_SCRIPT, args)
         .await
         .map_err(Report::from)?
         .convert::<JsonValue>()?;
@@ -583,44 +897,54 @@ async fn render_case(
             .unwrap_or("render error")
             .to_owned();
 
-        return Ok(RenderOutcome::Error(CaseResult {
+        return Ok(Err(CaseResult {
             status: CaseStatus::Error,
             message: Some(message),
             severity: None,
         }));
     }
 
-    let start = Instant::now();
-    loop {
-        let ready: bool = driver
-            .execute("return window.__ready === true;", Vec::<JsonValue>::new())
-            .await
-            .map_err(Report::from)?
-            .convert()?;
-        if ready {
-            break;
-        }
-        if start.elapsed() >= timeout {
-            let message = format!(
-                "timed out after {}ms waiting for window.__ready",
-                timeout.as_millis()
-            );
-
-            return Ok(RenderOutcome::Error(CaseResult {
-                status: CaseStatus::Error,
-                message: Some(message),
-                severity: None,
-            }));
-        }
-        sleep(Duration::from_millis(50)).await;
-    }
+    wait_for_ready_state(driver, timeout).await?;
 
     if wait_ms > 0 {
         sleep(Duration::from_millis(wait_ms)).await;
     }
 
-    let screenshot = capture_case_screenshot(logger, progress, driver, browser).await?;
-    Ok(RenderOutcome::Screenshot(screenshot))
+    Ok(Ok(()))
+}
+
+async fn render_case(
+    logger: &Logger,
+    progress: Option<&ProgressBar>,
+    driver: &WebDriver,
+    case: &TestCase,
+    timeout: Duration,
+    wait_ms: u64,
+    browser: BrowserKind,
+) -> Result<RenderOutcome> {
+    render_case_with_impl(
+        logger, progress, driver, case, timeout, wait_ms, browser, None,
+    )
+    .await
+}
+
+async fn render_case_with_impl(
+    logger: &Logger,
+    progress: Option<&ProgressBar>,
+    driver: &WebDriver,
+    case: &TestCase,
+    timeout: Duration,
+    wait_ms: u64,
+    browser: BrowserKind,
+    impl_override: Option<&str>,
+) -> Result<RenderOutcome> {
+    match invoke_run_case(driver, case, timeout, wait_ms, impl_override).await? {
+        Ok(()) => {
+            let screenshot = capture_case_screenshot(logger, progress, driver, browser).await?;
+            Ok(RenderOutcome::Screenshot(screenshot))
+        }
+        Err(case_result) => Ok(RenderOutcome::Error(case_result)),
+    }
 }
 
 async fn capture_case_screenshot(
@@ -631,6 +955,27 @@ async fn capture_case_screenshot(
 ) -> Result<Screenshot> {
     let raw_screenshot = driver.screenshot_as_png().await.map_err(Report::from)?;
     normalize_viewport_screenshot(logger, progress, &raw_screenshot, browser)
+}
+
+async fn wait_for_ready_state(driver: &WebDriver, timeout: Duration) -> Result<()> {
+    let start = Instant::now();
+    loop {
+        let ready: bool = driver
+            .execute("return window.__ready === true;", Vec::<JsonValue>::new())
+            .await
+            .map_err(Report::from)?
+            .convert()?;
+        if ready {
+            return Ok(());
+        }
+        if start.elapsed() >= timeout {
+            bail!(
+                "timed out after {}ms waiting for window.__ready",
+                timeout.as_millis()
+            );
+        }
+        sleep(Duration::from_millis(50)).await;
+    }
 }
 
 async fn wait_for_run_case(driver: &WebDriver, timeout: Duration) -> Result<()> {
@@ -673,19 +1018,198 @@ async fn wait_for_run_case(driver: &WebDriver, timeout: Duration) -> Result<()> 
     }
 }
 
-const RUN_CASE_SCRIPT: &str = r#"
-    const payload = arguments[0];
-    const done = arguments[arguments.length - 1];
-    if (typeof window.runCase !== 'function') {
-        done({ state: 'error', message: 'window.runCase is not available' });
+struct HtmlDumpResult {
+    saved_paths: Vec<Utf8PathBuf>,
+    warnings: Vec<String>,
+}
+
+async fn maybe_dump_case_html(
+    logger: &Logger,
+    progress: Option<&ProgressBar>,
+    driver: &WebDriver,
+    root: &Utf8Path,
+    case: &TestCase,
+    browser: BrowserKind,
+    wait_ms: u64,
+    timeout: Duration,
+    enabled: bool,
+) {
+    if !enabled {
         return;
     }
+
+    match dump_case_html(driver, root, case, browser, wait_ms, timeout).await {
+        Ok(result) => {
+            if !result.saved_paths.is_empty() {
+                let joined = result
+                    .saved_paths
+                    .iter()
+                    .map(|p| p.as_str())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                logger.detail(
+                    progress,
+                    format!(
+                        "Captured HTML artifacts for {} [{}]: {joined}",
+                        case.key, browser
+                    ),
+                );
+            }
+            for warning in result.warnings {
+                logger.warn_with_progress(
+                    progress,
+                    WarnLevel::Low,
+                    format!("{} [{}]: {warning}", case.key, browser),
+                );
+            }
+        }
+        Err(err) => {
+            logger.warn_with_progress(
+                progress,
+                WarnLevel::Low,
+                format!(
+                    "{} [{}]: failed to capture HTML artifacts: {err}",
+                    case.key, browser
+                ),
+            );
+        }
+    }
+}
+
+async fn dump_case_html(
+    driver: &WebDriver,
+    root: &Utf8Path,
+    case: &TestCase,
+    browser: BrowserKind,
+    wait_ms: u64,
+    timeout: Duration,
+) -> Result<HtmlDumpResult> {
+    let mut result = HtmlDumpResult {
+        saved_paths: Vec::new(),
+        warnings: Vec::new(),
+    };
+
+    if let Some(snapshot) = capture_html_snapshot(driver).await? {
+        let path = write_html_artifact(root, case, browser, &snapshot).await?;
+        result.saved_paths.push(path);
+    } else {
+        result
+            .warnings
+            .push("captureHtmlSnapshot helper is unavailable".to_owned());
+    }
+
+    let alt_impl = "js";
+    match invoke_run_case(driver, case, timeout, wait_ms, Some(alt_impl)).await? {
+        Ok(()) => {
+            if let Some(snapshot) = capture_html_snapshot(driver).await? {
+                let path = write_html_artifact(root, case, browser, &snapshot).await?;
+                if !result.saved_paths.iter().any(|p| p == &path) {
+                    result.saved_paths.push(path);
+                }
+            } else {
+                result.warnings.push(format!(
+                    "captureHtmlSnapshot helper returned null after rendering with {alt_impl}",
+                ));
+            }
+        }
+        Err(case_result) => {
+            let message = case_result
+                .message
+                .clone()
+                .unwrap_or_else(|| "render error".to_owned());
+            result.warnings.push(format!(
+                "{alt_impl} implementation reported an error: {message}",
+            ));
+            if let Some(snapshot) = capture_html_snapshot(driver).await? {
+                let path = write_html_artifact(root, case, browser, &snapshot).await?;
+                if !result.saved_paths.iter().any(|p| p == &path) {
+                    result.saved_paths.push(path);
+                }
+            }
+        }
+    }
+
+    Ok(result)
+}
+
+async fn write_html_artifact(
+    root: &Utf8Path,
+    case: &TestCase,
+    browser: BrowserKind,
+    snapshot: &HtmlSnapshot,
+) -> Result<Utf8PathBuf> {
+    let impl_label = snapshot
+        .implementation
+        .as_deref()
+        .unwrap_or("default")
+        .to_lowercase();
+    let sanitized_key = sanitized_case_key(&case.key);
+    let file_name = format!("{}-{}-{}.html", sanitized_key, browser.slug(), impl_label);
+    let path = root.join(HTML_DIR).join(file_name);
+    let document = build_html_document(&case.key, snapshot, &impl_label);
+    let bytes = document.into_bytes();
+    sync_artifact(path.as_ref(), Some(bytes.as_slice())).await?;
+    Ok(path)
+}
+
+fn sanitized_case_key(key: &str) -> String {
+    key.chars()
+        .map(|ch| match ch {
+            'a'..='z' | 'A'..='Z' | '0'..='9' | '-' | '_' | '.' => ch,
+            _ => '_',
+        })
+        .collect()
+}
+
+fn build_html_document(case_key: &str, snapshot: &HtmlSnapshot, impl_label: &str) -> String {
+    let status = snapshot.status.as_deref().unwrap_or("unknown");
+    format!(
+        "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>{case_key} [{impl_label}]</title>\n  <style>body {{ font-family: sans-serif; margin: 1rem; }}\n  header {{ margin-bottom: 1rem; }}\n  section {{ margin-bottom: 1rem; }}\n  .math {{ padding: 1rem; border: 1px solid #ccc; }}\n  </style>\n</head>\n<body>\n  <header>\n    <h1>{case_key}</h1>\n    <p><strong>Implementation:</strong> {impl_label}</p>\n    <p><strong>Status:</strong> {status}</p>\n  </header>\n  <section>\n    <h2>Pre</h2>\n    <div id=\"pre\">{}</div>\n  </section>\n  <section class=\"math\">\n    <h2>Math</h2>\n    <div id=\"math\">{}</div>\n  </section>\n  <section>\n    <h2>Post</h2>\n    <div id=\"post\">{}</div>\n  </section>\n</body>\n</html>\n",
+        snapshot.pre_html, snapshot.math_html, snapshot.post_html
+    )
+}
+
+async fn capture_html_snapshot(driver: &WebDriver) -> Result<Option<HtmlSnapshot>> {
+    let snapshot: Option<JsonValue> = driver
+        .execute(CAPTURE_HTML_SCRIPT, Vec::<JsonValue>::new())
+        .await
+        .map_err(Report::from)?
+        .convert()?;
+    if let Some(value) = snapshot {
+        Ok(Some(HtmlSnapshot::from_json(value)?))
+    } else {
+        Ok(None)
+    }
+}
+
+const RUN_CASE_SCRIPT: &str = r#"
+    const payload = arguments[0];
+    const implMode = arguments.length > 2 ? arguments[1] : null;
+    const done = arguments[arguments.length - 1];
+    const hasRenderWithImpl = typeof window.renderWithImpl === 'function';
+    const run = () => {
+        const implValue = typeof implMode === 'string' ? implMode : null;
+        if (implValue && hasRenderWithImpl) {
+            return window.renderWithImpl(implValue, payload);
+        }
+        if (typeof window.runCase === 'function') {
+            return window.runCase(payload);
+        }
+        throw new Error('window.runCase is not available');
+    };
     Promise.resolve()
-        .then(() => window.runCase(payload))
+        .then(run)
         .then(result => done(result || {}))
         .catch(err => {
             const message = err && err.message ? err.message : String(err);
             const stack = err && err.stack ? err.stack : null;
             done({ state: 'error', message, stack });
         });
+"#;
+
+const CAPTURE_HTML_SCRIPT: &str = r#"
+    if (typeof window.captureHtmlSnapshot !== 'function') {
+        return null;
+    }
+    return window.captureHtmlSnapshot();
 "#;

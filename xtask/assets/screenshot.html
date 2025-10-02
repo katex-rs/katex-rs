@@ -144,7 +144,7 @@
         }
       }
     }
- 
+
     async function ensureFonts() {
       if (!(document.fonts && document.fonts.load)) return;
       const promises = [];
@@ -164,99 +164,16 @@
       promises.push(loadFont("Batang"));
       try { await Promise.all(promises); } catch (_) {}
     }
- 
-    // Expose a programmatic API so the same page can render multiple cases without reload.
-    window.runCase = async function(payload) {
-      const mathNode = document.getElementById("math");
-      const preNode = document.getElementById("pre");
-      const postNode = document.getElementById("post");
 
-      // Reset previous content
-      mathNode.innerHTML = "";
-      const payloadObject =
-        payload && typeof payload === "object" && !Array.isArray(payload) ? payload : {};
-      const pre = payloadObject.pre;
-      const post = payloadObject.post;
-      setHTMLSafe(preNode, pre && typeof pre === "string" ? pre : "");
-      setHTMLSafe(postNode, post && typeof post === "string" ? post : "");
+    const defaultImpl = implMode === "js" ? "js" : "wasm";
+    window.__defaultImpl = defaultImpl;
+    window.__currentImpl = null;
 
-      const styles = payloadObject.styles;
-      if (typeof styles === "string" && styles.length > 0) {
-        mathNode.setAttribute("style", styles);
-      } else {
-        mathNode.removeAttribute("style");
-      }
-
-      // Map options object to KaTeX options
-      const o = payloadObject;
-      const opts = {};
-      if ("displayMode" in o) opts.displayMode = !!o.displayMode;
-      else if ("display" in o) opts.display = !!o.display;
-      if ("throwOnError" in o) opts.throwOnError = !!o.throwOnError;
-      else if ("noThrow" in o) opts.noThrow = !!o.noThrow;
-
-      if (o.errorColor) opts.errorColor = String(o.errorColor);
-      if (o.color) opts.color = String(o.color);
-
-      ["leqno","fleqn","colorIsTextColor","globalGroup"].forEach(k => {
-        if (k in o) opts[k] = !!o[k];
-      });
-      if ("minRuleThickness" in o) opts.minRuleThickness = Number(o.minRuleThickness);
-      if ("maxExpand" in o) opts.maxExpand = Number(o.maxExpand);
-      if ("sizeMultiplier" in o) opts.sizeMultiplier = Number(o.sizeMultiplier);
-
-      if ("strict" in o) opts.strict = o.strict;
-      if ("trust" in o) opts.trust = o.trust;
-      if ("output" in o) opts.output = o.output;
-      else opts.output = "html"; // Default to HTML-only for screenshot compatibility
-      const macros = o.macros;
-      if (macros && typeof macros === "object" && !Array.isArray(macros)) {
-        opts.macros = macros;
-      }
-
-      if (!("strict" in opts)) opts.strict = false;
-      if (!("trust" in opts)) opts.trust = true;
-
-      setStatus("pending", null, null);
-      window.__ready = false;
-      try {
-        const texSource =
-          typeof o.tex === "string" ? o.tex : o.tex == null ? "" : String(o.tex);
-        window.katex.render(texSource, mathNode, opts);
-      } catch (err) {
-        const message = err && err.message ? err.message : String(err);
-        const stack = err && err.stack ? String(err.stack) : null;
-        setStatus("error", message, stack);
-        window.__ready = true;
-        return { state: "error", message, stack };
-      }
-
-      await waitForImagesIn(document);
-      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-      window.__ready = true;
-      return setStatus("rendered", null, null);
-    };
-
-    window.updateCompareStatus = function(state, message, stack) {
-      return setStatus(state, message || null, stack || null);
-    };
-
-    async function main() {
-      if (implMode === "js") {
-        try {
-          const katexModule = await import("/katex.mjs");
-          window.katex = katexModule;
-        } catch (err) {
-          const message = err && err.message ? err.message : String(err);
-          const stack = err && err.stack ? String(err.stack) : null;
-          setStatus("error", message, stack);
-          window.__ready = true;
-          console.error("[impl] Failed to load KaTeX JS module:", message);
-          return;
-        }
-      } else {
-        await initWasm();
-        window.katex = (() => {
+    let wasmInitPromise = null;
+    let wasmApi = null;
+    async function ensureWasmImplementation() {
+      if (!wasmInitPromise) {
+        wasmInitPromise = initWasm().then(() => {
           const api = {
             render: wasm.render,
             renderToString: wasm.renderToString,
@@ -271,10 +188,168 @@
               // ignore version retrieval failures; keep API functional
             }
           }
-          return api;
-        })();
+          wasmApi = api;
+        });
+      }
+      await wasmInitPromise;
+      if (!wasmApi) {
+        throw new Error("Failed to initialize KaTeX WASM implementation");
+      }
+      window.katex = wasmApi;
+      return "wasm";
+    }
+
+    let jsModulePromise = null;
+    async function ensureJsImplementation() {
+      if (!jsModulePromise) {
+        jsModulePromise = import("/katex.mjs");
+      }
+      const module = await jsModulePromise;
+      window.katex = module;
+      return "js";
+    }
+
+    async function loadImplementation(mode) {
+      const target = typeof mode === "string" && mode.toLowerCase() === "js" ? "js" : "wasm";
+      if (window.__currentImpl === target && window.katex) {
+        return target;
+      }
+      const loaded = target === "js"
+        ? await ensureJsImplementation()
+        : await ensureWasmImplementation();
+      window.__currentImpl = loaded;
+      return loaded;
+    }
+
+    window.loadImplementation = loadImplementation;
+
+    function normalizePayload(payload) {
+      return payload && typeof payload === "object" && !Array.isArray(payload) ? payload : {};
+    }
+
+    async function renderInternal(payload, implPreference) {
+      const mathNode = document.getElementById("math");
+      const preNode = document.getElementById("pre");
+      const postNode = document.getElementById("post");
+
+      mathNode.innerHTML = "";
+      const payloadObject = normalizePayload(payload);
+      const pre = payloadObject.pre;
+      const post = payloadObject.post;
+      setHTMLSafe(preNode, pre && typeof pre === "string" ? pre : "");
+      setHTMLSafe(postNode, post && typeof post === "string" ? post : "");
+
+      const styles = payloadObject.styles;
+      if (typeof styles === "string" && styles.length > 0) {
+        mathNode.setAttribute("style", styles);
+      } else {
+        mathNode.removeAttribute("style");
       }
 
+      const o = payloadObject;
+      const opts = {};
+      if ("displayMode" in o) opts.displayMode = !!o.displayMode;
+      else if ("display" in o) opts.displayMode = !!o.display;
+
+      if ("throwOnError" in o) opts.throwOnError = !!o.throwOnError;
+      else if ("noThrow" in o) {
+        const noThrow = typeof o.noThrow === "string"
+          ? o.noThrow.toLowerCase() === "true"
+          : !!o.noThrow;
+        opts.throwOnError = !noThrow;
+      }
+
+      if (o.errorColor) opts.errorColor = String(o.errorColor);
+      if (o.color) opts.color = String(o.color);
+
+      ["leqno","fleqn","colorIsTextColor","globalGroup"].forEach(k => {
+        if (k in o) opts[k] = !!o[k];
+      });
+      if ("minRuleThickness" in o) opts.minRuleThickness = Number(o.minRuleThickness);
+      if ("maxExpand" in o) opts.maxExpand = Number(o.maxExpand);
+      if ("sizeMultiplier" in o) opts.sizeMultiplier = Number(o.sizeMultiplier);
+
+      if ("strict" in o) opts.strict = o.strict;
+      if ("trust" in o) opts.trust = o.trust;
+      if ("output" in o) opts.output = o.output;
+      else opts.output = "html";
+      const macros = o.macros;
+      if (macros && typeof macros === "object" && !Array.isArray(macros)) {
+        opts.macros = macros;
+      }
+
+      if (!("strict" in opts)) opts.strict = false;
+      if (!("trust" in opts)) opts.trust = true;
+
+      setStatus("pending", null, null);
+      window.__ready = false;
+
+      const targetImpl = typeof implPreference === "string" && implPreference.length > 0
+        ? implPreference
+        : defaultImpl;
+      let resolvedImpl = defaultImpl;
+      try {
+        resolvedImpl = await loadImplementation(targetImpl);
+      } catch (err) {
+        const message = err && err.message ? err.message : String(err);
+        const stack = err && err.stack ? String(err.stack) : null;
+        setStatus("error", message, stack);
+        window.__ready = true;
+        return { state: "error", message, stack };
+      }
+
+      try {
+        const texSource =
+          typeof o.tex === "string" ? o.tex : o.tex == null ? "" : String(o.tex);
+        window.katex.render(texSource, mathNode, opts);
+      } catch (err) {
+        const message = err && err.message ? err.message : String(err);
+        const stack = err && err.stack ? String(err.stack) : null;
+        setStatus("error", message, stack);
+        window.__ready = true;
+        return { state: "error", message, stack };
+      }
+
+      await waitForImagesIn(document);
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      window.__currentImpl = resolvedImpl;
+      window.__ready = true;
+      return setStatus("rendered", null, null);
+    }
+
+    // Expose a programmatic API so the same page can render multiple cases without reload.
+    window.runCase = function(payload) {
+      return renderInternal(payload, defaultImpl);
+    };
+
+    window.renderWithImpl = function(mode, payload) {
+      return renderInternal(payload, mode);
+    };
+
+    window.captureHtmlSnapshot = function() {
+      const mathNode = document.getElementById("math");
+      const preNode = document.getElementById("pre");
+      const postNode = document.getElementById("post");
+      const statusObj = typeof window.__status === "object" && window.__status !== null
+        ? window.__status
+        : null;
+      const state = statusObj && statusObj.state ? String(statusObj.state) : null;
+      const message = statusObj && statusObj.message ? String(statusObj.message) : null;
+      const statusText = state && message ? `${state}: ${message}` : (state || message || null);
+      return {
+        impl: window.__currentImpl || defaultImpl || null,
+        status: statusText,
+        pre: preNode ? preNode.innerHTML : "",
+        math: mathNode ? mathNode.innerHTML : "",
+        post: postNode ? postNode.innerHTML : "",
+      };
+    };
+
+    window.updateCompareStatus = function(state, message, stack) {
+      return setStatus(state, message || null, stack || null);
+    };
+
+    async function main() {
       const { payload, error } = decodePayloadFromSearch(searchParams);
       if (error) {
         setStatus("error", error, null);
@@ -284,19 +359,15 @@
 
       window.__initialPayload = payload;
 
-      try {
-        await window.runCase(payload);
-        // Make font loads deterministic across cases
-        if (document.fonts && document.fonts.ready) {
-          try { await document.fonts.ready; } catch (_) {}
-        }
-        await ensureFonts();
-      } catch (err) {
-        const message = err && err.message ? err.message : String(err);
-        const stack = err && err.stack ? String(err.stack) : null;
-        setStatus("error", message, stack);
-        window.__ready = true;
+      const result = await window.runCase(payload);
+      if (result && result.state === "error") {
+        return;
       }
+
+      if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch (_) {}
+      }
+      await ensureFonts();
     }
 
     main();
