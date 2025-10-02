@@ -6,6 +6,7 @@ pub const BASELINE_DIR: &str = "KaTeX/test/screenshotter/images";
 pub const ARTIFACT_ROOT: &str = "artifacts/screenshots";
 pub const NEW_DIR: &str = "artifacts/screenshots/new";
 pub const DIFF_DIR: &str = "artifacts/screenshots/diff";
+pub const HTML_DIR: &str = "artifacts/screenshots/html";
 
 pub const VIEWPORT_WIDTH: u32 = 1024;
 pub const VIEWPORT_HEIGHT: u32 = 768;
@@ -130,4 +131,12 @@ pub struct ScreenshotterArgs {
     /// Pixel-diff tolerance profile to apply during comparisons.
     #[arg(long, value_enum, default_value_t = CompareTolerance::Normal)]
     pub tolerance: CompareTolerance,
+    /// When set, capture the rendered HTML for failing cases using the default
+    /// implementation and the fallback JavaScript implementation.
+    #[arg(long = "html-on-failure", default_value_t = false)]
+    pub html_on_failure: bool,
+    /// Allow falling back to JS-vs-WASM comparisons when baselines are missing
+    /// or mismatched.
+    #[arg(long = "allow-js-fallback", default_value_t = false)]
+    pub allow_js_fallback: bool,
 }

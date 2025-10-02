@@ -22,6 +22,7 @@ pub async fn start_static_server(
     let katex_dist_dir = katex_dir.join("dist");
     let katex_css = katex_dist_dir.join("katex.min.css");
     let katex_min_js = katex_dist_dir.join("katex.min.js");
+    let katex_mjs = katex_dist_dir.join("katex.mjs");
     let katex_fonts = katex_dist_dir.join("fonts");
     let katex_additional_fonts = katex_dir.join("test/screenshotter/fonts");
     let khan_image = katex_dir.join("website/static/img/khan-academy.png");
@@ -36,7 +37,7 @@ pub async fn start_static_server(
         );
     }
 
-    if !katex_css.exists() || !katex_min_js.exists() {
+    if !katex_css.exists() || !katex_min_js.exists() || !katex_mjs.exists() {
         bail!(
             "KaTeX CSS or JS not found at {}. Re-run with --build auto/always after building the KaTeX submodule.",
             katex_css
@@ -78,6 +79,10 @@ pub async fn start_static_server(
         .route_service(
             "/katex.min.js",
             get_service(ServeFile::new(katex_min_js.as_std_path())),
+        )
+        .route_service(
+            "/katex.mjs",
+            get_service(ServeFile::new(katex_mjs.as_std_path())),
         )
         .route_service(
             "/website/static/img/khan-academy.png",
