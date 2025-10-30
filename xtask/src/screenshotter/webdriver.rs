@@ -1,7 +1,7 @@
+use std::fs::create_dir_all;
 use std::net::Ipv4Addr;
 use std::process::{Child, Command, Stdio};
 use std::time::Duration;
-use std::fs::create_dir_all;
 
 use color_eyre::eyre::{Context, Report, Result, bail, eyre};
 use thirtyfour::common::capabilities::chromium::ChromiumLikeCapabilities;
