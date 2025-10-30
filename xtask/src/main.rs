@@ -19,7 +19,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Command {
     /// Run the browser-based screenshotter tests using WebDriver.
-    Screenshotter(screenshotter::ScreenshotterArgs),
+    Screenshotter(Box<screenshotter::ScreenshotterArgs>),
     /// Regenerate JSON data extracted from the upstream KaTeX repository.
     ExtractData(extract_data::ExtractDataArgs),
 }
@@ -30,7 +30,7 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Command::Screenshotter(args) => screenshotter::run(args),
+        Command::Screenshotter(args) => screenshotter::run(*args),
         Command::ExtractData(args) => extract_data::run(args),
     }
 }
