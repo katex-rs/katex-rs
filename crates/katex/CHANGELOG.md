@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2](https://github.com/katex-rs/katex-rs/compare/katex-rs-v0.2.1...katex-rs-v0.2.2) - 2025-10-30
+
+### Other
+
+- improve code quality
+
 ## [0.2.1](https://github.com/katex-rs/katex-rs/compare/katex-rs-v0.2.0...katex-rs-v0.2.1) - 2025-10-02
 
 ### Other
