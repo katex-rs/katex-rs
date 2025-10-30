@@ -7,7 +7,7 @@ resolver = "3"
 edition = "2024"
 publish = false
 license = "MIT"
-version = "0.2.1"
+version = "0.2.2"
 repository = "https://github.com/katex-rs/katex-rs"
 
 [workspace.lints.clippy]
