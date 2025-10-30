@@ -1,3 +1,4 @@
+use std::fs::create_dir_all;
 use std::net::Ipv4Addr;
 use std::process::{Child, Command, Stdio};
 use std::time::Duration;
@@ -141,9 +142,9 @@ pub fn ensure_output_dirs(root: &camino::Utf8Path) -> Result<()> {
     use crate::screenshotter::args::{ARTIFACT_ROOT, DIFF_DIR, HTML_DIR, NEW_DIR};
 
     let artifact_root = root.join(ARTIFACT_ROOT);
-    std::fs::create_dir_all(artifact_root.as_std_path())?;
-    std::fs::create_dir_all(root.join(NEW_DIR).as_std_path())?;
-    std::fs::create_dir_all(root.join(DIFF_DIR).as_std_path())?;
-    std::fs::create_dir_all(root.join(HTML_DIR).as_std_path())?;
+    create_dir_all(artifact_root.as_std_path())?;
+    create_dir_all(root.join(NEW_DIR).as_std_path())?;
+    create_dir_all(root.join(DIFF_DIR).as_std_path())?;
+    create_dir_all(root.join(HTML_DIR).as_std_path())?;
     Ok(())
 }

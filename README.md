@@ -34,7 +34,7 @@ tools, and WebAssembly targets. The project currently tracks KaTeX commit
 - [x] Spec-aligned unit and integration tests
 - [x] Automated screenshot regression harness
 - [x] WebAssembly bindings with KaTeX-compatible API surface
-- [ ] Perfect visual parity with the latest KaTeX release (`FireFox` now works well; `Chrome` has minor layout differences)
+- [x] Pixel perfect rendering with KaTeX across all platforms
 
 ## Quick start
 
