@@ -2,4 +2,4 @@
 source: crates/katex/tests/mathml_spec.rs
 expression: markup
 ---
-<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mo>\sum</mo><mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow><mi mathvariant="normal">∞</mi></msubsup><msup><mi>x</mi><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">\mathchoice{D}{\sum_{k = 0}^{\infty} x^k}{S}{SS}</annotation></semantics></math>
+<math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow><mi mathvariant="normal">∞</mi></msubsup><msup><mi>x</mi><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">\mathchoice{D}{\sum_{k = 0}^{\infty} x^k}{S}{SS}</annotation></semantics></math>

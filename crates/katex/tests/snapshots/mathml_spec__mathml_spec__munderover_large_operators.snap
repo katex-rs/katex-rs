@@ -2,4 +2,4 @@
 source: crates/katex/tests/mathml_spec.rs
 expression: markup
 ---
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mstyle displaystyle="true" scriptlevel="0"><munderover><mo>\sum</mo><mi>a</mi><mi>b</mi></munderover></mstyle></mrow><annotation encoding="application/x-tex">\displaystyle\sum_a^b</annotation></semantics></math>
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mstyle displaystyle="true" scriptlevel="0"><munderover><mo>∑</mo><mi>a</mi><mi>b</mi></munderover></mstyle></mrow><annotation encoding="application/x-tex">\displaystyle\sum_a^b</annotation></semantics></math>
