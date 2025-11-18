@@ -8,6 +8,7 @@
 use crate::build_common::{
     VListElemAndShift, VListParam, make_span, make_symbol, make_v_list, mathsym, static_svg,
 };
+use crate::build_mathml::make_text;
 use crate::define_function::{FunctionDefSpec, FunctionPropSpec, ord_argument};
 use crate::dom_tree::HtmlDomNode;
 use crate::functions::utils::assemble_sup_sub;
@@ -237,24 +238,33 @@ fn mathml_builder(
         }));
     };
 
-    let (symbol, name, body, parent_is_sup_sub) = match op_node {
+    let (symbol, name, body, parent_is_sup_sub, mode) = match op_node {
         ParseNodeOp::Symbol {
             name,
             parent_is_sup_sub,
+            mode,
             ..
-        } => (true, name.clone(), vec![], *parent_is_sup_sub),
+        } => (true, name.clone(), vec![], *parent_is_sup_sub, *mode),
         ParseNodeOp::Body {
             body,
             parent_is_sup_sub,
+            mode,
             ..
-        } => (false, String::new(), body.clone(), *parent_is_sup_sub),
+        } => (
+            false,
+            String::new(),
+            body.clone(),
+            *parent_is_sup_sub,
+            *mode,
+        ),
     };
 
     let node_result = if symbol {
         // Symbol
+        let text_node = make_text(&name, mode, Some(options), &ctx.symbols);
         let mut node = MathNode::builder()
             .node_type(MathNodeType::Mo)
-            .children(vec![MathDomNode::Text(TextNode { text: name.clone() })])
+            .children(vec![MathDomNode::Text(text_node)])
             .build();
 
         if no_successor(&name) {
