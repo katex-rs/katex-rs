@@ -921,7 +921,7 @@ fn a_color_parser() {
     let custom_color_expression2 = r"\textcolor{#fA6fA6}{x}";
     let custom_color_expression3 = r"\textcolor{fA6fA6}{x}";
     let bad_custom_color_expression1 = r"\textcolor{bad-color}{x}";
-    let bad_custom_color_expression2 = r"\textcolor{#fA6f}{x}";
+    let bad_custom_color_expression2 = r"\textcolor{#fA6f1}{x}";
     let bad_custom_color_expression3 = r"\textcolor{#gA6}{x}";
     let old_color_expression = r"\color{#fA6}xy";
 
@@ -989,6 +989,41 @@ fn a_color_parser() {
         settings.color_is_text_color = true;
         settings.global_group = true;
         expect!(old_color_expression).to_parse_like(r"\textcolor{#fA6}{x}y", &settings)
+    });
+}
+
+#[test]
+fn alpha_hex_color_parser() {
+    it("should correctly extract alpha hex colors", || {
+        let alpha_color_expression1 = r"\textcolor{#ff000080}{x}";
+        let alpha_color_expression2 = r"\textcolor{#1234ABCD}{z}";
+        let alpha_color_expression3 = r"\textcolor{#abc8}{w}"; // 4-digit with alpha
+
+        let parsed1 = get_parsed_strict(alpha_color_expression1)?;
+        assert_let!(ParseNode::Color(color_node1) = &parsed1[0]);
+        assert_eq!(color_node1.color, "#ff000080");
+
+        let parsed2 = get_parsed_strict(alpha_color_expression2)?;
+        assert_let!(ParseNode::Color(color_node2) = &parsed2[0]);
+        assert_eq!(color_node2.color, "#1234ABCD");
+
+        let parsed3 = get_parsed_strict(alpha_color_expression3)?;
+        assert_let!(ParseNode::Color(color_node3) = &parsed3[0]);
+        assert_eq!(color_node3.color, "#abc8");
+
+        Ok(())
+    });
+
+    it("should not parse invalid alpha hex colors", || {
+        expect!(r"\textcolor{#ff00008g}{x}").not_to_parse(&strict_settings())?;
+        expect!(r"\textcolor{#ff00008}{x}").not_to_parse(&strict_settings())?;
+        expect!(r"\textcolor{#ff000080f}{x}").not_to_parse(&strict_settings())
+    });
+
+    it("should build correctly with alpha colors", || {
+        expect!(r"\textcolor{#ff000080}{x}").to_build(&strict_settings())?;
+        expect!(r"\textcolor{#1234ABCD}{z}").to_build(&strict_settings())?;
+        expect!(r"\textcolor{#abc8}{w}").to_build(&strict_settings())
     });
 }
 
@@ -4514,6 +4549,32 @@ fn a_macro_expander() {
             }),
         );
         expect!(r"\int").to_parse_like("\\int\\limits", &settings)
+    });
+
+    it("macros argument can simulate \\def with arguments", || {
+        let settings = strict_settings();
+        // Simulate: \t x -> \text{x}
+        // Definition tokens: } 1 # { \text
+        // Stack order (reverse): \text { # 1 }
+
+        let mut tokens = Vec::new();
+        tokens.push(Token::new("}", None));
+        tokens.push(Token::new("1", None));
+        tokens.push(Token::new("#", None));
+        tokens.push(Token::new("{", None));
+        tokens.push(Token::new("\\text", None));
+
+        settings.macros.borrow_mut().insert(
+            "\\t".to_owned(),
+            MacroDefinition::Expansion(MacroExpansion {
+                tokens,
+                num_args: 1,
+                unexpandable: None,
+                delimiters: None,
+            }),
+        );
+
+        expect!(r"\t x").to_parse_like(r"\text{x}", &settings)
     });
 
     it("\\newcommand doesn't change settings.macros", || {

@@ -1,4 +1,4 @@
 [submodule "KaTeX"]
 	path = KaTeX
 	url = https://github.com/KaTeX/KaTeX
-	commit = 9fb63136e680715ad83c119366f6f697105d2c55
+	commit = 785315c0f630f65347cac14b3ec72629cfe7631e

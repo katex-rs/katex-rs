@@ -3,13 +3,13 @@
 //! Ported from KaTeX/src/MacroExpander.js with adjustments to fit the Rust
 //! codebase.
 
-use alloc::sync::Arc;
-
 use crate::context::KatexContext;
 use crate::lexer::Lexer;
 use crate::macros::builtins::BUILTIN_MACROS;
 use crate::namespace::{KeyMap, Namespace};
-use crate::types::{Mode, ParseError, ParseErrorKind, Settings, Token};
+use crate::types::TokenText;
+use crate::types::{Mode, ParseError, ParseErrorKind, Settings, SourceLocation, Token};
+use alloc::sync::Arc;
 
 use crate::macros::{
     MacroArg, MacroContextInterface, MacroDefinition, MacroExpansion, MacroExpansionResult,
@@ -120,8 +120,13 @@ impl<'a> MacroExpander<'a> {
         self.push_tokens(tokens);
 
         // compute range token with empty text
-        // We drop location info in this port; just synthesize an empty token
-        Ok(start_tok.range(end_tok, String::new()))
+        let loc = SourceLocation::range(start_tok.loc, end_tok.loc);
+        Ok(Some(Token {
+            text: TokenText::from(String::new()),
+            loc,
+            noexpand: None,
+            treat_as_relax: None,
+        }))
     }
 
     /// Consume specified number of arguments with optional delimiters

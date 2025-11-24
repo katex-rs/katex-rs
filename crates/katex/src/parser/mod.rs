@@ -990,23 +990,25 @@ impl<'a> Parser<'a> {
         let res = self.parse_string_group("color", optional)?;
         let Some(tok) = res else { return Ok(None) };
         let mut text = tok.text.to_owned_string();
-        let is_letters = text.chars().all(|c| c.is_ascii_alphabetic());
-        let is_hash3 = text.starts_with('#')
-            && text.len() == 4
-            && text.chars().skip(1).all(|c| c.is_ascii_hexdigit());
-        let is_hash6 = text.starts_with('#')
-            && text.len() == 7
-            && text.chars().skip(1).all(|c| c.is_ascii_hexdigit());
-        let is_6hex = text.len() == 6 && text.chars().all(|c| c.is_ascii_hexdigit());
-        if !(is_letters || is_hash3 || is_hash6 || is_6hex) {
-            return Err(ParseError::with_token(
-                ParseErrorKind::InvalidColor { color: text },
-                &tok,
-            ));
+
+        if text.len() == 6 && text.chars().all(|c| c.is_ascii_hexdigit()) {
+            text.insert(0, '#');
+        } else {
+            let valid = text.strip_prefix('#').map_or_else(
+                || text.chars().all(|c| c.is_ascii_alphabetic()),
+                |hex| {
+                    matches!(hex.len(), 3 | 4 | 6 | 8) && hex.chars().all(|c| c.is_ascii_hexdigit())
+                },
+            );
+
+            if !valid {
+                return Err(ParseError::with_token(
+                    ParseErrorKind::InvalidColor { color: text },
+                    &tok,
+                ));
+            }
         }
-        if is_6hex {
-            text = format!("#{text}");
-        }
+
         Ok(Some(ParseNode::ColorToken(
             parse_node::ParseNodeColorToken {
                 mode: self.mode,
