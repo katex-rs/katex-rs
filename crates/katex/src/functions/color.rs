@@ -48,7 +48,7 @@ pub fn define_color(ctx: &mut KatexContext) {
             Ok(ParseNode::Color(ParseNodeColor {
                 mode: context.parser.mode,
                 loc: context.loc(),
-                color,
+                color: color.to_string(),
                 body: body_nodes,
             }))
         }),
@@ -83,7 +83,7 @@ pub fn define_color(ctx: &mut KatexContext) {
             // This mimics the behavior of color.sty
             context.parser.gullet.macros_mut().set(
                 "\\current@color",
-                Some(MacroDefinition::String(color.clone())),
+                Some(MacroDefinition::String(color.to_string())),
                 false,
             );
 
@@ -95,7 +95,7 @@ pub fn define_color(ctx: &mut KatexContext) {
             Ok(ParseNode::Color(ParseNodeColor {
                 mode: context.parser.mode,
                 loc: context.loc(),
-                color,
+                color: color.to_string(),
                 body,
             }))
         }),

@@ -1,5 +1,6 @@
 ---
 source: crates/katex/tests/katex_spec.rs
+assertion_line: 2668
 expression: "format!(\"{:#?}\", tree)"
 ---
 [
@@ -12,7 +13,9 @@ expression: "format!(\"{:#?}\", tree)"
                     ParseNodeMathOrd {
                         mode: Math,
                         loc: None,
-                        text: "\\sigma",
+                        text: Owned(
+                            "\\sigma",
+                        ),
                     },
                 ),
             ),
@@ -21,7 +24,9 @@ expression: "format!(\"{:#?}\", tree)"
                     ParseNodeTextOrd {
                         mode: Math,
                         loc: None,
-                        text: "2",
+                        text: Owned(
+                            "2",
+                        ),
                     },
                 ),
             ),

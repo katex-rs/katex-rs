@@ -7,7 +7,7 @@
 use crate::context::KatexContext;
 use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
 use crate::parser::parse_node::{AnyParseNode, NodeType, ParseNode, ParseNodeTextOrd};
-use crate::types::{ParseError, ParseErrorKind};
+use crate::types::{ParseError, ParseErrorKind, TokenText};
 
 /// Register the \@char function
 pub fn define_char(ctx: &mut KatexContext) {
@@ -73,7 +73,7 @@ pub fn define_char(ctx: &mut KatexContext) {
                 Ok(ParseNode::TextOrd(ParseNodeTextOrd {
                     mode: context.parser.mode,
                     loc: context.loc(),
-                    text: text.to_string(),
+                    text: TokenText::from(text.to_string()),
                 }))
             },
         ),

@@ -462,7 +462,7 @@ mod tests {
         let simple_node = AnyParseNode::MathOrd(ParseNodeMathOrd {
             mode: Mode::Math,
             loc: None,
-            text: "x".to_owned(),
+            text: "x".into(),
         });
         assert_eq!(group_length(&simple_node), 1);
     }
@@ -484,7 +484,7 @@ mod tests {
         let simple_node = AnyParseNode::MathOrd(ParseNodeMathOrd {
             mode: Mode::Math,
             loc: None,
-            text: "x".to_owned(),
+            text: "x".into(),
         });
 
         // This should not panic and should return an error for unsupported node type

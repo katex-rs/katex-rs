@@ -1,6 +1,6 @@
 use alloc::borrow::ToOwned as _;
 use alloc::sync::Arc;
-use core::ops::Range;
+use core::ops::{Deref, Range};
 use core::ptr;
 
 use crate::types::{ErrorLocationProvider, SourceLocation};
@@ -67,6 +67,14 @@ impl TokenText {
     pub fn clone_into(&self, buf: &mut String) {
         buf.clear();
         buf.push_str(self.as_str());
+    }
+}
+
+impl Deref for TokenText {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_str()
     }
 }
 

@@ -130,7 +130,7 @@ mod tests {
         let verb_node = ParseNodeVerb {
             mode: Mode::Text,
             loc: None,
-            body: "hello world".to_owned(),
+            body: "hello world".into(),
             star: false,
         };
         let result = make_verb(&verb_node);
@@ -142,7 +142,7 @@ mod tests {
         let verb_node = ParseNodeVerb {
             mode: Mode::Text,
             loc: None,
-            body: "hello world".to_owned(),
+            body: "hello world".into(),
             star: true,
         };
         let result = make_verb(&verb_node);
@@ -154,7 +154,7 @@ mod tests {
         let verb_node = ParseNodeVerb {
             mode: Mode::Text,
             loc: None,
-            body: "helloworld".to_owned(),
+            body: "helloworld".into(),
             star: false,
         };
         let result = make_verb(&verb_node);

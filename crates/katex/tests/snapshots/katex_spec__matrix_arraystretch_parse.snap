@@ -1,5 +1,6 @@
 ---
 source: crates/katex/tests/katex_spec.rs
+assertion_line: 1528
 expression: "format!(\"{:#?}\", parsed)"
 ---
 [
@@ -48,7 +49,9 @@ expression: "format!(\"{:#?}\", parsed)"
                                                 ParseNodeMathOrd {
                                                     mode: Math,
                                                     loc: None,
-                                                    text: "a",
+                                                    text: Owned(
+                                                        "a",
+                                                    ),
                                                 },
                                             ),
                                         ],
@@ -77,7 +80,9 @@ expression: "format!(\"{:#?}\", parsed)"
                                                 ParseNodeMathOrd {
                                                     mode: Math,
                                                     loc: None,
-                                                    text: "b",
+                                                    text: Owned(
+                                                        "b",
+                                                    ),
                                                 },
                                             ),
                                         ],
@@ -108,7 +113,9 @@ expression: "format!(\"{:#?}\", parsed)"
                                                 ParseNodeMathOrd {
                                                     mode: Math,
                                                     loc: None,
-                                                    text: "c",
+                                                    text: Owned(
+                                                        "c",
+                                                    ),
                                                 },
                                             ),
                                         ],
@@ -137,7 +144,9 @@ expression: "format!(\"{:#?}\", parsed)"
                                                 ParseNodeMathOrd {
                                                     mode: Math,
                                                     loc: None,
-                                                    text: "d",
+                                                    text: Owned(
+                                                        "d",
+                                                    ),
                                                 },
                                             ),
                                         ],

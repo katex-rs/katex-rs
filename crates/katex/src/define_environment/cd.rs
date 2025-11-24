@@ -25,7 +25,7 @@ use crate::{
     },
     style::DISPLAY,
     symbols::Atom,
-    types::{BreakToken, Mode, ParseError, ParseErrorKind},
+    types::{BreakToken, Mode, ParseError, ParseErrorKind, TokenText},
     utils::push_and_get_mut,
 };
 use phf::phf_map;
@@ -92,7 +92,7 @@ fn cd_arrow(
                 family: Atom::Rel,
                 mode: Mode::Math,
                 loc: None,
-                text: (*func_name).to_owned(),
+                text: TokenText::from(*func_name),
             });
             let sized_arrow =
                 parser.call_function("\\Big", vec![bare_arrow], vec![], None, None)?;
@@ -111,14 +111,14 @@ fn cd_arrow(
             let arrow = AnyParseNode::TextOrd(ParseNodeTextOrd {
                 mode: Mode::Math,
                 loc: None,
-                text: "\\Vert".to_owned(),
+                text: TokenText::from("\\Vert"),
             });
             parser.call_function("\\Big", vec![arrow], vec![], None, None)
         }
         _ => Ok(AnyParseNode::TextOrd(ParseNodeTextOrd {
             mode: Mode::Math,
             loc: None,
-            text: " ".to_owned(),
+            text: TokenText::from(" "),
         })),
     }
 }

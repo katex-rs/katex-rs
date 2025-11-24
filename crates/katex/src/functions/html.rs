@@ -53,26 +53,26 @@ pub fn define_html(ctx: &mut crate::KatexContext) {
             let mut attributes = KeyMap::default();
             let mut trust_context = match context.func_name {
                 "\\htmlClass" => {
-                    attributes.insert("class".to_owned(), value.clone());
+                    attributes.insert("class".to_owned(), value.to_owned_string());
                     TrustContext {
                         command: "\\htmlClass".to_owned(),
-                        class: Some(value),
+                        class: Some(value.to_string()),
                         ..Default::default()
                     }
                 }
                 "\\htmlId" => {
-                    attributes.insert("id".to_owned(), value.clone());
+                    attributes.insert("id".to_owned(), value.to_owned_string());
                     TrustContext {
                         command: "\\htmlId".to_owned(),
-                        id: Some(value),
+                        id: Some(value.to_string()),
                         ..Default::default()
                     }
                 }
                 "\\htmlStyle" => {
-                    attributes.insert("style".to_owned(), value.clone());
+                    attributes.insert("style".to_owned(), value.to_owned_string());
                     TrustContext {
                         command: "\\htmlStyle".to_owned(),
-                        style: Some(value),
+                        style: Some(value.to_string()),
                         ..Default::default()
                     }
                 }

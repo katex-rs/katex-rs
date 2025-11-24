@@ -1,5 +1,6 @@
 ---
 source: crates/katex/tests/katex_spec.rs
+assertion_line: 3703
 expression: "format!(\"{:#?}\", parsed)"
 ---
 [
@@ -18,35 +19,45 @@ expression: "format!(\"{:#?}\", parsed)"
                                 ParseNodeTextOrd {
                                     mode: Text,
                                     loc: None,
-                                    text: "\\",
+                                    text: Owned(
+                                        "\\",
+                                    ),
                                 },
                             ),
                             TextOrd(
                                 ParseNodeTextOrd {
                                     mode: Text,
                                     loc: None,
-                                    text: "h",
+                                    text: Owned(
+                                        "h",
+                                    ),
                                 },
                             ),
                             TextOrd(
                                 ParseNodeTextOrd {
                                     mode: Text,
                                     loc: None,
-                                    text: "r",
+                                    text: Owned(
+                                        "r",
+                                    ),
                                 },
                             ),
                             TextOrd(
                                 ParseNodeTextOrd {
                                     mode: Text,
                                     loc: None,
-                                    text: "e",
+                                    text: Owned(
+                                        "e",
+                                    ),
                                 },
                             ),
                             TextOrd(
                                 ParseNodeTextOrd {
                                     mode: Text,
                                     loc: None,
-                                    text: "f",
+                                    text: Owned(
+                                        "f",
+                                    ),
                                 },
                             ),
                         ],

@@ -45,7 +45,7 @@ fn html_builder(
             CSS_SPACE.get(spacing_node.text.as_str()).map_or_else(
                 || {
                     Err(ParseError::new(ParseErrorKind::UnknownSpaceType {
-                        name: spacing_node.text.clone(),
+                        name: spacing_node.text.to_string(),
                     }))
                 },
                 |&class_name| {
@@ -116,7 +116,7 @@ fn mathml_builder(
             .into())
     } else {
         Err(ParseError::new(ParseErrorKind::UnknownSpaceType {
-            name: spacing_node.text.clone(),
+            name: spacing_node.text.to_string(),
         }))
     }
 }

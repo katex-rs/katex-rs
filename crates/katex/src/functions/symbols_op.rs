@@ -130,7 +130,7 @@ mod tests {
         let node = AnyParseNode::Atom(ParseNodeAtom {
             mode: Mode::Math,
             loc: None,
-            text: "+".to_owned(),
+            text: "+".into(),
             family: Atom::Bin,
         });
 
@@ -152,7 +152,7 @@ mod tests {
         let node = AnyParseNode::Atom(ParseNodeAtom {
             mode: Mode::Math,
             loc: None,
-            text: "+".to_owned(),
+            text: "+".into(),
             family: Atom::Bin,
         });
 
@@ -175,7 +175,7 @@ mod tests {
         let node = AnyParseNode::Atom(ParseNodeAtom {
             mode: Mode::Math,
             loc: None,
-            text: ",".to_owned(),
+            text: ",".into(),
             family: Atom::Punct,
         });
 
@@ -203,7 +203,7 @@ mod tests {
         let node = AnyParseNode::Atom(ParseNodeAtom {
             mode: Mode::Math,
             loc: None,
-            text: "(".to_owned(),
+            text: "(".into(),
             family: Atom::Open,
         });
 
@@ -231,7 +231,7 @@ mod tests {
         let node = AnyParseNode::Atom(ParseNodeAtom {
             mode: Mode::Math,
             loc: None,
-            text: ")".to_owned(),
+            text: ")".into(),
             family: Atom::Close,
         });
 
@@ -259,7 +259,7 @@ mod tests {
         let node = AnyParseNode::Atom(ParseNodeAtom {
             mode: Mode::Math,
             loc: None,
-            text: "=".to_owned(),
+            text: "=".into(),
             family: Atom::Rel,
         });
 

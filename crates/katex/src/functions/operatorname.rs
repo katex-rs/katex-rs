@@ -92,7 +92,7 @@ pub fn html_builder(
                     AnyParseNode::TextOrd(ParseNodeTextOrd {
                         mode: child.mode(),
                         loc: child.loc().cloned(),
-                        text: text.to_owned(),
+                        text: text.to_owned().into(),
                     })
                 },
             )

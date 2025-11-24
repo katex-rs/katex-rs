@@ -15,7 +15,7 @@ use crate::parser::parse_node::{
 };
 use crate::spacing_data::MeasurementOwned;
 use crate::types::{
-    ArgType, CssProperty, CssStyle, Mode, ParseError, ParseErrorKind, TrustContext,
+    ArgType, CssProperty, CssStyle, Mode, ParseError, ParseErrorKind, TokenText, TrustContext,
 };
 use crate::units::{make_em, valid_unit};
 
@@ -246,7 +246,7 @@ fn format_unsupported_cmd(text: &str, mode: Mode, error_color: &str) -> ParseNod
         textord_array.push(AnyParseNode::TextOrd(ParseNodeTextOrd {
             mode: Mode::Text,
             loc: None,
-            text: ch.to_string(),
+            text: TokenText::from(ch.to_string()),
         }));
     }
     let text_node = AnyParseNode::Text(ParseNodeText {

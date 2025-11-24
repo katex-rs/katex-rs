@@ -735,7 +735,7 @@ impl<'a> Parser<'a> {
                     }
                     let mut primes = iter::repeat_n(
                         ParseNode::TextOrd(ParseNodeTextOrd {
-                            text: "\\prime".into(),
+                            text: TokenText::from("\\prime"),
                             mode: self.mode,
                             loc: None,
                         }),
@@ -882,7 +882,7 @@ impl<'a> Parser<'a> {
                         vec![ParseNode::TextOrd(parse_node::ParseNodeTextOrd {
                             mode: Mode::Text,
                             loc: a.loc().range_ref(group[i + 2].loc()),
-                            text: "---".to_owned(),
+                            text: TokenText::from("---"),
                         })],
                     );
                     n -= 2;
@@ -892,7 +892,7 @@ impl<'a> Parser<'a> {
                         vec![ParseNode::TextOrd(parse_node::ParseNodeTextOrd {
                             mode: Mode::Text,
                             loc: a.loc().range_ref(group[i + 1].loc()),
-                            text: "--".to_owned(),
+                            text: TokenText::from("--"),
                         })],
                     );
                     n -= 1;
@@ -907,7 +907,7 @@ impl<'a> Parser<'a> {
                     vec![ParseNode::TextOrd(parse_node::ParseNodeTextOrd {
                         mode: Mode::Text,
                         loc: a.loc().range_ref(group[i + 1].loc()),
-                        text: format!("{ch}{ch}"),
+                        text: TokenText::from(format!("{ch}{ch}")),
                     })],
                 );
                 n -= 1;
@@ -1013,7 +1013,7 @@ impl<'a> Parser<'a> {
             parse_node::ParseNodeColorToken {
                 mode: self.mode,
                 loc: None,
-                color: text,
+                color: TokenText::from(text),
             },
         )))
     }
@@ -1209,7 +1209,7 @@ impl<'a> Parser<'a> {
                     Ok(Some(ParseNode::Raw(parse_node::ParseNodeRaw {
                         mode: Mode::Text,
                         loc: None,
-                        string: t.text.to_owned_string(),
+                        string: t.text,
                     })))
                 } else {
                     Ok(None)
@@ -1304,7 +1304,7 @@ impl<'a> Parser<'a> {
             textord_array.push(AnyParseNode::TextOrd(parse_node::ParseNodeTextOrd {
                 mode: Mode::Text,
                 loc: None,
-                text: ch.to_string(),
+                text: TokenText::from(ch.to_string()),
             }));
         }
         let text_node = AnyParseNode::Text(parse_node::ParseNodeText {
@@ -1394,11 +1394,28 @@ impl<'a> Parser<'a> {
 
             // Extract content between delimiters
             let inner_body = &body[1..body.len() - 1];
+            let inner_body = match text {
+                Cow::Borrowed(_s) => {
+                    // This path means we borrowed from nucleus.text (which is TokenText).
+                    // We need to construct a new TokenText slicing the original one.
+                    // However, text was stripped of \verb prefix manually above:
+                    // if let Some(arg) = text.as_ref().strip_prefix("\\verb")
+                    // This implies we are creating a new string anyway or slicing.
+                    // Since TokenText supports slicing if we have the original Arc,
+                    // but here we only have &str.
+                    // We can check if nucleus.text is capable of being sliced.
+                    // But nucleus.text is TokenText.
+                    // Let's just create a new TokenText from the string for now.
+                    // Optimizing this further would require passing indices.
+                    TokenText::from(inner_body.to_owned())
+                }
+                Cow::Owned(_) => TokenText::from(inner_body.to_owned()),
+            };
 
             return Ok(Some(ParseNode::Verb(parse_node::ParseNodeVerb {
                 mode: Mode::Text,
                 loc: nucleus.loc,
-                body: inner_body.to_owned(),
+                body: inner_body,
                 star,
             })));
         }
@@ -1444,40 +1461,41 @@ impl<'a> Parser<'a> {
 
         // Recognize base symbol via symbol table
         let mut symbol_node = if let Some(info) = self.ctx.symbols.get(self.mode, &text) {
+            let token_text = TokenText::from(text.clone());
             match info.group {
                 Group::Atom(atom) => ParseNode::Atom(parse_node::ParseNodeAtom {
                     family: atom,
                     mode: self.mode,
                     loc: nucleus.loc.clone(),
-                    text: text.clone(),
+                    text: token_text,
                 }),
                 Group::NonAtom(na) => match na {
                     NonAtom::MathOrd => ParseNode::MathOrd(parse_node::ParseNodeMathOrd {
                         mode: self.mode,
                         loc: nucleus.loc.clone(),
-                        text: text.clone(),
+                        text: token_text,
                     }),
                     NonAtom::TextOrd => ParseNode::TextOrd(parse_node::ParseNodeTextOrd {
                         mode: self.mode,
                         loc: nucleus.loc.clone(),
-                        text: text.clone(),
+                        text: token_text,
                     }),
                     NonAtom::Spacing => ParseNode::Spacing(parse_node::ParseNodeSpacing {
                         mode: self.mode,
                         loc: nucleus.loc.clone(),
-                        text: text.clone(),
+                        text: token_text,
                     }),
                     NonAtom::AccentToken => {
                         ParseNode::AccentToken(parse_node::ParseNodeAccentToken {
                             mode: self.mode,
                             loc: nucleus.loc.clone(),
-                            text: text.clone(),
+                            text: token_text,
                         })
                     }
                     NonAtom::OpToken => ParseNode::OpToken(parse_node::ParseNodeOpToken {
                         mode: self.mode,
                         loc: nucleus.loc.clone(),
-                        text: text.clone(),
+                        text: token_text,
                     }),
                 },
             }
@@ -1507,10 +1525,11 @@ impl<'a> Parser<'a> {
                         .map(|loc| loc as &dyn ErrorLocationProvider),
                 )?;
             }
+            let token_text = TokenText::from(text.clone());
             ParseNode::TextOrd(parse_node::ParseNodeTextOrd {
                 mode: Mode::Text,
                 loc: nucleus.loc.clone(),
-                text: text.clone(),
+                text: token_text,
             })
         } else {
             // EOF, ^, _, {, }, etc.

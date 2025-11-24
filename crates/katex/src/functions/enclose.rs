@@ -46,7 +46,7 @@ pub fn define_enclose(ctx: &mut KatexContext) {
                 mode: context.parser.mode,
                 loc: context.loc(),
                 label: context.func_name.to_owned(),
-                background_color: Some(color),
+                background_color: Some(color.to_string()),
                 border_color: None,
                 body: Box::new(body),
             }))
@@ -94,8 +94,8 @@ pub fn define_enclose(ctx: &mut KatexContext) {
                 mode: context.parser.mode,
                 loc: context.loc(),
                 label: context.func_name.to_owned(),
-                background_color: Some(background_color),
-                border_color: Some(border_color),
+                background_color: Some(background_color.to_string()),
+                border_color: Some(border_color.to_string()),
                 body: Box::new(body),
             }))
         }),

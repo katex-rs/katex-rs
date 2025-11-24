@@ -19,6 +19,7 @@ use crate::stretchy::{math_ml_node, svg_span};
 use crate::types::ClassList;
 use crate::types::{
     ArgType, CssProperty, CssStyle, ErrorLocationProvider, Mode, ParseError, ParseErrorKind,
+    TokenText,
 };
 use crate::units::make_em;
 use crate::{KatexContext, build_html, build_mathml};
@@ -275,7 +276,7 @@ pub fn html_builder(
             let ord = ParseNode::TextOrd(ParseNodeTextOrd {
                 mode: group.mode,
                 loc: group.loc.clone(),
-                text: group.label.clone(),
+                text: TokenText::from(group.label.clone()),
             });
             let HtmlDomNode::Symbol(mut accent) = build_common::make_ord(ctx, &ord, options)?
             else {

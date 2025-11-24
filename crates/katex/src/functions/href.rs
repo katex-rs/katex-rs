@@ -13,7 +13,7 @@ use crate::options::Options;
 use crate::parser::parse_node::{
     AnyParseNode, NodeType, ParseNodeHref, ParseNodeText, ParseNodeTextOrd,
 };
-use crate::types::{ArgType, ParseError, ParseErrorKind, TrustContext};
+use crate::types::{ArgType, ParseError, ParseErrorKind, TokenText, TrustContext};
 use crate::{build_html, build_mathml};
 
 /// Registers href functions in the KaTeX context
@@ -109,7 +109,7 @@ pub fn define_href(ctx: &mut crate::KatexContext) {
                         body: vec![AnyParseNode::TextOrd(ParseNodeTextOrd {
                             mode: context.parser.mode,
                             loc: context.loc(),
-                            text: "\\textasciitilde".to_owned(),
+                            text: TokenText::from("\\textasciitilde"),
                         })],
                         font: None,
                     }));
@@ -117,7 +117,7 @@ pub fn define_href(ctx: &mut crate::KatexContext) {
                     chars.push(AnyParseNode::TextOrd(ParseNodeTextOrd {
                         mode: context.parser.mode,
                         loc: context.loc(),
-                        text: ch.to_string(),
+                        text: TokenText::from(ch.to_string()),
                     }));
                 }
             }

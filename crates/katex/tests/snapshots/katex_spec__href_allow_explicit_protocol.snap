@@ -1,5 +1,6 @@
 ---
 source: crates/katex/tests/katex_spec.rs
+assertion_line: 3682
 expression: "format!(\"{:#?}\", parsed)"
 ---
 [
@@ -18,21 +19,27 @@ expression: "format!(\"{:#?}\", parsed)"
                                 ParseNodeMathOrd {
                                     mode: Math,
                                     loc: None,
-                                    text: "f",
+                                    text: Owned(
+                                        "f",
+                                    ),
                                 },
                             ),
                             MathOrd(
                                 ParseNodeMathOrd {
                                     mode: Math,
                                     loc: None,
-                                    text: "o",
+                                    text: Owned(
+                                        "o",
+                                    ),
                                 },
                             ),
                             MathOrd(
                                 ParseNodeMathOrd {
                                     mode: Math,
                                     loc: None,
-                                    text: "o",
+                                    text: Owned(
+                                        "o",
+                                    ),
                                 },
                             ),
                         ],

@@ -8,7 +8,7 @@ use crate::build_html::DomType;
 use crate::spacing_data::MeasurementOwned;
 use crate::style::Style;
 use crate::symbols::Atom;
-use crate::types::{Mode, SourceLocation, Token};
+use crate::types::{Mode, SourceLocation, Token, TokenText};
 
 use crate::namespace::KeyMap;
 use strum::{AsRefStr, Display, EnumDiscriminants};
@@ -614,7 +614,7 @@ pub struct ParseNodeColorToken {
     /// Optional source location for error reporting
     pub loc: Option<SourceLocation>,
     /// The color specification string
-    pub color: String,
+    pub color: TokenText,
 }
 
 /// Represents mathematical operators in KaTeX expressions, supporting both
@@ -799,7 +799,7 @@ pub struct ParseNodeRaw {
     /// Optional source location for error reporting
     pub loc: Option<SourceLocation>,
     /// The raw string content
-    pub string: String,
+    pub string: TokenText,
 }
 
 /// Represents size specifications for spacing or dimensions in mathematical
@@ -1053,7 +1053,7 @@ pub struct ParseNodeVerb {
     /// Optional source location for error reporting
     pub loc: Option<SourceLocation>,
     /// The verbatim text content
-    pub body: String,
+    pub body: TokenText,
     /// Whether this is a starred version (affects rendering)
     pub star: bool,
 }
@@ -1087,7 +1087,7 @@ pub struct ParseNodeAtom {
     /// Optional source location for error reporting
     pub loc: Option<SourceLocation>,
     /// The symbol text
-    pub text: String,
+    pub text: TokenText,
 }
 
 /// Represents ordinary mathematical symbols without special spacing rules.
@@ -1122,7 +1122,7 @@ pub struct ParseNodeMathOrd {
     /// Optional source location for error reporting
     pub loc: Option<SourceLocation>,
     /// The symbol text
-    pub text: String,
+    pub text: TokenText,
 }
 
 /// Represents explicit spacing elements in mathematical expressions.
@@ -1157,7 +1157,7 @@ pub struct ParseNodeSpacing {
     /// Optional source location for error reporting
     pub loc: Option<SourceLocation>,
     /// The spacing command or symbol
-    pub text: String,
+    pub text: TokenText,
 }
 
 /// Represents ordinary text symbols within mathematical expressions.
@@ -1182,7 +1182,7 @@ pub struct ParseNodeTextOrd {
     /// Optional source location for error reporting
     pub loc: Option<SourceLocation>,
     /// The text content
-    pub text: String,
+    pub text: TokenText,
 }
 
 /// Represents accent symbols used for diacritical marks.
@@ -1216,7 +1216,7 @@ pub struct ParseNodeAccentToken {
     /// Optional source location for error reporting
     pub loc: Option<SourceLocation>,
     /// The accent symbol
-    pub text: String,
+    pub text: TokenText,
 }
 
 /// Represents operator symbols with special positioning rules.
@@ -1242,7 +1242,7 @@ pub struct ParseNodeOpToken {
     /// Optional source location for error reporting
     pub loc: Option<SourceLocation>,
     /// The operator symbol
-    pub text: String,
+    pub text: TokenText,
 }
 
 // Function parse nodes (from functions/*.js)
@@ -2837,7 +2837,7 @@ pub fn assert_node_type(
 ///     family: Atom::Bin,
 ///     mode: Mode::Math,
 ///     loc: None,
-///     text: "+".to_string(),
+///     text: "+".into(),
 /// });
 /// assert!(check_symbol_node_type(Some(&atom_node)).is_some());
 ///
@@ -2966,7 +2966,7 @@ mod tests {
             family: Atom::Bin,
             mode: Mode::Math,
             loc: None,
-            text: "+".to_owned(),
+            text: "+".into(),
         });
 
         let result = assert_node_type(Some(&node), NodeType::Atom);
@@ -2980,7 +2980,7 @@ mod tests {
             family: Atom::Bin,
             mode: Mode::Math,
             loc: None,
-            text: "+".to_owned(),
+            text: "+".into(),
         });
 
         let result = assert_node_type(Some(&node), NodeType::MathOrd);
@@ -3013,7 +3013,7 @@ mod tests {
             family: Atom::Bin,
             mode: Mode::Math,
             loc: None,
-            text: "+".to_owned(),
+            text: "+".into(),
         });
 
         let result = check_symbol_node_type(Some(&node));
@@ -3048,7 +3048,7 @@ mod tests {
             family: Atom::Bin,
             mode: Mode::Math,
             loc: None,
-            text: "+".to_owned(),
+            text: "+".into(),
         });
 
         let result = assert_symbol_node_type(Some(&node));

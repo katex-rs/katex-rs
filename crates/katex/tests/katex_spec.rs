@@ -832,7 +832,7 @@ fn a_text_parser() {
             .iter()
             .filter_map(|node| {
                 if let ParseNode::TextOrd(text_ord) = node {
-                    Some(text_ord.text.clone())
+                    Some(text_ord.text.to_owned_string())
                 } else {
                     None
                 }
