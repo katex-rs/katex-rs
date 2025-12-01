@@ -183,7 +183,7 @@ async fn run_browser(
     let base_url = format!("{server_url}{PAGE_PATH}");
     driver.goto(&base_url).await.map_err(Report::from)?;
 
-    wait_for_run_case(&driver, Duration::from_millis(args.timeout)).await?;
+    wait_for_page_load(&driver, Duration::from_millis(args.timeout)).await?;
 
     let baseline_dir = root.join(BASELINE_DIR);
     let new_dir = root.join(NEW_DIR);
@@ -978,12 +978,12 @@ async fn wait_for_ready_state(driver: &WebDriver, timeout: Duration) -> Result<(
     }
 }
 
-async fn wait_for_run_case(driver: &WebDriver, timeout: Duration) -> Result<()> {
+async fn wait_for_page_load(driver: &WebDriver, timeout: Duration) -> Result<()> {
     let start = Instant::now();
     loop {
         let result: bool = driver
             .execute(
-                "return typeof window.runCase === 'function';",
+                "return typeof window.runCase === 'function' && window.__initialSetupDone === true;",
                 Vec::<JsonValue>::new(),
             )
             .await
@@ -1003,15 +1003,12 @@ async fn wait_for_run_case(driver: &WebDriver, timeout: Duration) -> Result<()> 
                 .convert()?;
             if let Some(status) = status {
                 bail!(
-                    "runCase helper did not become available within {}ms (status: {})",
+                    "page load failed within {}ms (status: {})",
                     timeout.as_millis(),
                     status
                 );
             } else {
-                bail!(
-                    "runCase helper did not become available within {}ms",
-                    timeout.as_millis()
-                );
+                bail!("page load failed within {}ms", timeout.as_millis());
             }
         }
         sleep(Duration::from_millis(50)).await;
