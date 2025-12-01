@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3](https://github.com/katex-rs/katex-rs/compare/katex-rs-v0.2.2...katex-rs-v0.2.3) - 2025-12-01
+
+### Added
+
+- migrate upstream KaTeX changes for hex alpha colors and macro
+
+### Other
+
+- Update criterion requirement from 0.7 to 0.8 ([#19](https://github.com/katex-rs/katex-rs/pull/19))
+- use TokenText for parse node text fields
+- Use make_text for MathML operator symbols and update MathML snapshots. ([#16](https://github.com/katex-rs/katex-rs/pull/16))
+
 ## [0.2.2](https://github.com/katex-rs/katex-rs/compare/katex-rs-v0.2.1...katex-rs-v0.2.2) - 2025-10-30
 
 ### Other
