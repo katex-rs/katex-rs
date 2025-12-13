@@ -251,6 +251,10 @@ jobs:
         run: |
           cargo xtask screenshotter --browser ${{ matrix.browser }} --allow-js-fallback
 
+      - name: Run browser tests (MathML)
+        run: |
+          cargo xtask screenshotter --browser ${{ matrix.browser }} --mathml --allow-js-fallback
+
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
