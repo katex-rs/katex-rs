@@ -105,10 +105,12 @@ fn mathml_builder(
     if let ParseNode::AccentUnder(accent_under) = node {
         let accent_node = math_ml_node(accent_under.label.as_str());
         let group = build_mathml::build_group(ctx, &accent_under.base, options)?;
-        let node = MathNode::builder()
+        let mut node = MathNode::builder()
             .node_type(MathNodeType::Munder)
             .children(vec![group, accent_node.into()])
             .build();
+        node.attributes
+            .insert("accentunder".to_owned(), "true".to_owned());
         Ok(node.into())
     } else {
         Err(ParseError::new(ParseErrorKind::ExpectedNode {
