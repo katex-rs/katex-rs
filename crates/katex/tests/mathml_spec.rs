@@ -230,4 +230,18 @@ fn a_mathml_builder() {
         insta::assert_snapshot!("mathml_spec__htmlmathml_clean_symbols", markup);
         Ok(())
     });
+
+    it("should inherit font in \\text", || {
+        let settings = Settings::default();
+        let markup = mathml_markup(r"\textsf{\text{a}}", &settings)?;
+        insta::assert_snapshot!("mathml_spec__text_inheritance", markup);
+        Ok(())
+    });
+
+    it("should match KaTeX arrow size", || {
+        let settings = Settings::default();
+        let markup = mathml_markup(r"\xrightarrow{a}", &settings)?;
+        insta::assert_snapshot!("mathml_spec__arrow_size", markup);
+        Ok(())
+    });
 }

@@ -212,7 +212,10 @@ fn mathml_builder(
 
     let mut arrow_node = math_ml_node(&xarrow.label);
     // Set minsize based on arrow type
-    let minsize = if xarrow.label.starts_with("\\x") {
+    // In KaTeX.js, this check is `group.label.charAt(0) === "x"`.
+    // Since command names start with `\`, this is always false, resulting in
+    // "3.0em". We replicate this behavior for consistency.
+    let minsize = if xarrow.label.starts_with("x") {
         "1.75em"
     } else {
         "3.0em"
