@@ -7,11 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.4](https://github.com/katex-rs/katex-rs/compare/katex-rs-v0.2.3...katex-rs-v0.2.4) - 2026-03-07
+## [0.2.4](https://github.com/katex-rs/katex-rs/compare/katex-rs-v0.2.3...katex-rs-v0.2.4) - 2026-03-06
 
 ### Other
 
-- Update strum requirement from 0.27.2 to 0.28.0 ([#21](https://github.com/katex-rs/katex-rs/pull/21))
 - Update strum_macros requirement from 0.27.2 to 0.28.0 ([#20](https://github.com/katex-rs/katex-rs/pull/20))
 
 ## [0.2.3](https://github.com/katex-rs/katex-rs/compare/katex-rs-v0.2.2...katex-rs-v0.2.3) - 2025-12-01
