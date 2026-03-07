@@ -23,7 +23,7 @@ tower-http = { version = "0.6", features = ["fs"] }
 url = "2.5"
 xshell = "0.2"
 futures = "0.3"
-strum = "0.27"
+strum = "0.28"
 strum_macros = "0.28"
 atty = "0.2"
 indicatif = "0.18"

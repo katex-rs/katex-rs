@@ -28,9 +28,8 @@ name = "katex"
 # Core dependencies
 thiserror = "2.0.16"
 phf = { version = "0.13.1", features = ["macros"] }
-
 strum_macros = "0.28.0"
-strum = { version = "0.27.2", features = ["derive"] }
+strum = { version = "0.28.0", features = ["derive"] }
 bon = "3.7.2"
 rapidhash = "4.1.0"
 
