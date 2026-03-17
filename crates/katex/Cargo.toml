@@ -28,9 +28,8 @@ name = "katex"
 # Core dependencies
 thiserror = "2.0.16"
 phf = { version = "0.13.1", features = ["macros"] }
-
-strum_macros = "0.27.2"
-strum = { version = "0.27.2", features = ["derive"] }
+strum_macros = "0.28.0"
+strum = { version = "0.28.0", features = ["derive"] }
 bon = "3.7.2"
 rapidhash = "4.1.0"
 
@@ -64,7 +63,7 @@ phf_codegen = "0.13.1"
 btparse = "0.2.0"
 wasm-bindgen-test = "0.3.34"
 gungraun = "0.17.0"
-criterion = { version = "0.7", default-features = false }
+criterion = { version = "0.8", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = { version = "0.9" }
 regex = "1.11.3"
