@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0](https://github.com/katex-rs/katex-rs/compare/katex-rs-v0.2.4...katex-rs-v0.3.0) - 2026-09-05
+
+### Other
+
+- Update KaTeX Dependencies
+- Add MathML CI Tests
+- Update Dependencies
+- Fix Issue #31
+
 ## [0.2.4](https://github.com/katex-rs/katex-rs/compare/katex-rs-v0.2.3...katex-rs-v0.2.4) - 2026-03-06
 
 ### Other
