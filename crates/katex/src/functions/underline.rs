@@ -77,7 +77,7 @@ fn html_builder(
     )?;
 
     Ok(make_span(
-        ClassList::Const(&["mord", "underline"]),
+        ClassList::Const(&["mord", "katex-underline"]),
         vec![vlist.into()],
         Some(options),
         None,

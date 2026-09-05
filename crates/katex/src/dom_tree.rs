@@ -269,6 +269,8 @@ impl Img {
 /// Symbol node containing information about a single symbol
 #[derive(Debug, Clone)]
 pub struct SymbolNode {
+    /// Text ordinals may coalesce even when empty font classes were elided.
+    pub is_text_ord: bool,
     /// The text content of this symbol
     pub text: String,
     /// Height of this symbol
@@ -347,6 +349,7 @@ impl SymbolNode {
             .map_or_else(|| text.to_owned(), ToString::to_string);
 
         Self {
+            is_text_ord: false,
             text,
             height: height.unwrap_or_default(),
             depth: depth.unwrap_or_default(),

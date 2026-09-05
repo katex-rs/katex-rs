@@ -149,8 +149,8 @@ pub fn define_accent(ctx: &mut KatexContext) {
 }
 
 /// HTML builder for accent nodes
-/// NOTE: Unlike most `htmlBuilder`s, this one handles not only "accent", but
-/// also "supsub" since an accent can affect super/subscripting.
+/// NOTE: Unlike most `htmlBuilder`s, this one handles not only "katex-accent",
+/// but also "supsub" since an accent can affect super/subscripting.
 pub fn html_builder(
     node: &ParseNode,
     options: &Options,
@@ -207,24 +207,7 @@ pub fn html_builder(
     // Note that our skew metrics are just the kern between each character
     // and the skewchar.
     let skew = if must_shift {
-        // If the base is a character box, then we want the skew of the
-        // innermost character. To do that, we find the innermost character:
-        let base_char = base.to_base_elem()?;
-        // Then, we render its group to get the symbol inside it
-        let base_group =
-            build_html::build_group(ctx, base_char, &options.having_cramped_style(), None)?;
-        // Finally, we pull the skew off of the symbol.
-        if let HtmlDomNode::Symbol(symbol) = base_group {
-            symbol.skew
-        } else {
-            return Err(ParseError::new(ParseErrorKind::ExpectedSymbolNode {
-                context: "base character",
-            }));
-        }
-        // Note that we now throw away baseGroup, because the layers we
-        // removed with getBaseElem might contain things like \color which
-        // we can't get rid of.
-        // TODO(emily): Find a better way to get the skew
+        base_symbol_skew(&body)
     } else {
         0f64
     };
@@ -339,7 +322,7 @@ pub fn html_builder(
     };
 
     let accent_wrap: HtmlDomNode = make_span(
-        ClassList::Const(&["mord", "accent"]),
+        ClassList::Const(&["mord", "katex-accent"]),
         vec![accent_body.into()],
         Some(options),
         None,
@@ -412,4 +395,20 @@ fn mathml_builder(
         .insert("accent".to_owned(), "true".to_owned());
 
     Ok(MathDomNode::Math(mover))
+}
+
+/// Read the metrics after font wrappers have been applied.
+fn base_symbol_skew(node: &HtmlDomNode) -> f64 {
+    let children = match node {
+        HtmlDomNode::Symbol(symbol) => return symbol.skew,
+        HtmlDomNode::DomSpan(span) => &span.children,
+        HtmlDomNode::Anchor(anchor) => &anchor.children,
+        HtmlDomNode::Fragment(fragment) => &fragment.children,
+        _ => return 0.0,
+    };
+    if let [child] = children.as_slice() {
+        base_symbol_skew(child)
+    } else {
+        0.0
+    }
 }

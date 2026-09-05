@@ -78,6 +78,11 @@ fn parse_js_options(options: JsValue) -> Result<JsSettings, JsValue> {
 
     let obj: Object = options.into();
     let get = |key: &str| -> Result<JsValue, JsValue> {
+        // Upstream ignores inherited settings, including polluted prototypes.
+        // Do not call obj.hasOwnProperty, which callers can shadow.
+        if !Object::has_own(&obj, &JsValue::from_str(key)) {
+            return Ok(JsValue::UNDEFINED);
+        }
         Reflect::get(&obj, &JsValue::from_str(key))
             .map_err(|_| js_error(&format!("failed to read option '{key}'")))
     };

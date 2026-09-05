@@ -156,10 +156,7 @@ fn mathml_builder(
             .calculate_size(&kern_node.dimension, options)
             .map_or(kern_node.dimension.number, |d| d);
 
-        Ok(MathDomNode::Space(SpaceNode {
-            width: dimension,
-            character: None, // Use default space character
-        }))
+        Ok(SpaceNode::new(dimension).into())
     } else {
         Err(ParseError::new(ParseErrorKind::ExpectedNode {
             node: NodeType::Kern,

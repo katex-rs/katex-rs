@@ -71,7 +71,7 @@ fn html_builder(
     if let ParseNode::Cr(cr) = node {
         let mut span = make_span("mspace", vec![], Some(options), None);
         if cr.new_line {
-            span.classes.push("newline");
+            span.classes.push("katex-newline");
             if let Some(size) = &cr.size {
                 span.style.insert(
                     CssProperty::MarginTop,

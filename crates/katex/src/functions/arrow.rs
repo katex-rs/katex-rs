@@ -211,8 +211,9 @@ fn mathml_builder(
     };
 
     let mut arrow_node = math_ml_node(&xarrow.label);
-    // Set minsize based on arrow type
-    let minsize = if xarrow.label.starts_with("\\x") {
+    // Match the pinned upstream's label check, including the leading backslash:
+    // parsed command labels currently take the 3.0em branch.
+    let minsize = if xarrow.label.starts_with('x') {
         "1.75em"
     } else {
         "3.0em"

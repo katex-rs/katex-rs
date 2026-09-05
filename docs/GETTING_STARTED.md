@@ -32,12 +32,26 @@ benchmark to fail with a helpful error pointing back to the commands above.
 | --- | --- |
 | Stable Rust toolchain | `rustup default stable` |
 | Nightly toolchain for linting/screenshot tests | `rustup toolchain install nightly` |
-| Node.js dependencies | Install Node.js 18+ and npm via your package manager |
+| Node.js dependencies | Install Node.js 22+ and Corepack via your package manager |
 | wasm-pack (WebAssembly builds) | `curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf \| sh` |
 | cargo-nextest (faster test runner) | `cargo install --locked cargo-nextest` |
 
 > Tip: the repository ships an [xtask helper](../xtask/src/main.rs) that wraps
 > workflows such as screenshot tests and data extraction.
+
+Install the upstream dependencies using the package manager pinned by KaTeX:
+
+```bash
+cd KaTeX
+corepack pnpm install --frozen-lockfile
+cd ..
+cargo xtask build-katex
+```
+
+For native Windows builds, upstream's build script requires `cp` on PATH
+(e.g. Git for Windows `usr/bin`); alternatively use WSL. When upgrading an
+old Yarn checkout, move the ignored `.pnp.cjs` and `.pnp.loader.mjs` out of
+`KaTeX` before running pnpm, so the legacy loader does not intercept modules.
 
 ## 3. Run the verification suite
 
@@ -80,6 +94,32 @@ directory by running:
 ```bash
 cargo xtask extract-data
 ```
+
+### Upstream behavior regression tests
+
+The submodule is pinned to `49904aa2b6c5d82ba0c5a1bc3a4d9b3353a1401c`
+(KaTeX 0.18.5, main as checked on 2026-09-05). The previous README named
+`785315c`, but the previous gitlink actually pointed to `049ed98c`.
+
+```bash
+cargo test -p katex-rs --test upstream_spec
+wasm-pack build crates/wasm-binding --target web --no-opt --dev
+node --test xtask/tests/upstream-wasm.test.mjs
+```
+
+To deliberately regenerate the JS reference fixtures after an upstream upgrade:
+
+```bash
+cargo xtask build-katex
+cargo xtask extract-data
+node xtask/tests/generate-upstream-fixtures.mjs
+```
+
+The fixture records the commit and version. Native and WASM tests compare
+174 outputs, allowing only attribute/CSS declaration ordering differences.
+The screenshot runner stamps its JS/CSS build with the submodule commit;
+`--build auto` rebuilds stale assets, `--build always` always rebuilds them,
+and `--build never` rejects missing or stale assets.
 
 ### Screenshot regression tests
 

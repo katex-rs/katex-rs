@@ -545,19 +545,23 @@ fn a_frac_parser() {
         "should parse cfrac, dfrac, tfrac, and genfrac as fracs",
         || {
             let dfrac_parsed = get_parsed_strict(dfrac_expression)?;
-            assert_let!(ParseNode::Genfrac(node) = &dfrac_parsed[0]);
+            assert_let!(ParseNode::Styling(wrapper) = &dfrac_parsed[0]);
+            assert_let!(ParseNode::Genfrac(node) = &wrapper.body[0]);
             assert!(node.has_bar_line);
 
             let tfrac_parsed = get_parsed_strict(tfrac_expression)?;
-            assert_let!(ParseNode::Genfrac(node) = &tfrac_parsed[0]);
+            assert_let!(ParseNode::Styling(wrapper) = &tfrac_parsed[0]);
+            assert_let!(ParseNode::Genfrac(node) = &wrapper.body[0]);
             assert!(node.has_bar_line);
 
             let cfrac_parsed = get_parsed_strict(cfrac_expression)?;
-            assert_let!(ParseNode::Genfrac(node) = &cfrac_parsed[0]);
+            assert_let!(ParseNode::Styling(wrapper) = &cfrac_parsed[0]);
+            assert_let!(ParseNode::Genfrac(node) = &wrapper.body[0]);
             assert!(node.has_bar_line);
 
             let genfrac_parsed = get_parsed_strict(genfrac1)?;
-            assert_let!(ParseNode::Genfrac(node) = &genfrac_parsed[0]);
+            assert_let!(ParseNode::Styling(wrapper) = &genfrac_parsed[0]);
+            assert_let!(ParseNode::Genfrac(node) = &wrapper.body[0]);
             assert!(node.left_delim.is_some());
             assert!(node.right_delim.is_some());
             Ok(())
@@ -2893,17 +2897,17 @@ fn a_horizontal_brace_builder() {
 
     it("should produce mords", || {
         let built = get_built(r"\overbrace x", &strict_settings())?;
-        assert!(built[0].classes().contains("mord"));
+        assert!(built[0].classes().contains("minner"));
 
         let built = get_built(r"\overbrace{x}^2", &strict_settings())?;
-        assert!(built[0].classes().contains("mord"));
+        assert!(built[0].classes().contains("minner"));
 
         let built = get_built(r"\overbrace +", &strict_settings())?;
-        assert!(built[0].classes().contains("mord"));
+        assert!(built[0].classes().contains("minner"));
         assert!(!built[0].classes().contains("mbin"));
 
         let built = get_built(r"\overbrace )^2", &strict_settings())?;
-        assert!(built[0].classes().contains("mord"));
+        assert!(built[0].classes().contains("minner"));
         assert!(!built[0].classes().contains("mclose"));
 
         Ok(())
@@ -3065,25 +3069,25 @@ fn a_strike_through_parser() {
 #[test]
 fn a_strike_through_builder() {
     it("should not fail", || {
-        expect!(r"\cancel{x}").to_build(&strict_settings())?;
-        expect!(r"\cancel{x}^2").to_build(&strict_settings())?;
-        expect!(r"\cancel{x}_2").to_build(&strict_settings())?;
-        expect!(r"\cancel{x}_2^2").to_build(&strict_settings())?;
-        expect!(r"\sout{x}").to_build(&strict_settings())?;
-        expect!(r"\sout{x}^2").to_build(&strict_settings())?;
-        expect!(r"\sout{x}_2").to_build(&strict_settings())?;
-        expect!(r"\sout{x}_2^2").to_build(&strict_settings())
+        expect!(r"\cancel{x}").to_build(&Settings::default())?;
+        expect!(r"\cancel{x}^2").to_build(&Settings::default())?;
+        expect!(r"\cancel{x}_2").to_build(&Settings::default())?;
+        expect!(r"\cancel{x}_2^2").to_build(&Settings::default())?;
+        expect!(r"\sout{x}").to_build(&Settings::default())?;
+        expect!(r"\sout{x}^2").to_build(&Settings::default())?;
+        expect!(r"\sout{x}_2").to_build(&Settings::default())?;
+        expect!(r"\sout{x}_2^2").to_build(&Settings::default())
     });
 
     it("should produce mords", || {
-        let built = get_built(r"\cancel x", &strict_settings())?;
+        let built = get_built(r"\cancel x", &Settings::default())?;
         assert!(built[0].classes().contains("mord"));
 
-        let built = get_built(r"\cancel +", &strict_settings())?;
+        let built = get_built(r"\cancel +", &Settings::default())?;
         assert!(built[0].classes().contains("mord"));
         assert!(!built[0].classes().contains("mbin"));
 
-        let built = get_built(r"\cancel )^2", &strict_settings())?;
+        let built = get_built(r"\cancel )^2", &Settings::default())?;
         assert!(built[0].classes().contains("mord"));
         assert!(!built[0].classes().contains("mclose"));
 

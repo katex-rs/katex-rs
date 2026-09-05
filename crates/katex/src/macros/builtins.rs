@@ -521,7 +521,6 @@ pub const BUILTIN_MACROS: phf::Map<&str, MacroDefinition> = phf_map! {
     "\\Bbbk" => MacroDefinition::StaticStr("\\Bbb{k}"),
 
     // Unicode middle dot
-    "\u{00B7}" => MacroDefinition::StaticStr("\\cdotp"),
 
     // \llap and \rlap render their contents in text mode
     "\\llap" => MacroDefinition::StaticStr("\\mathllap{\\textrm{#1}}"),
@@ -535,7 +534,8 @@ pub const BUILTIN_MACROS: phf::Map<&str, MacroDefinition> = phf_map! {
     "\\underbar" => MacroDefinition::StaticStr("\\underline{\\text{#1}}"),
 
     // \not is defined by base/fontmath.ltx via
-    "\\not" => MacroDefinition::StaticStr("\\html@mathml{\\mathrel{\\mathrlap\\@not}}{\\char\"338}"),
+    "\\hphantom" => MacroDefinition::StaticStr("\\smash{\\phantom{#1}}"),
+    "\\not" => MacroDefinition::StaticStr("\\html@mathml{\\mathrel{\\mathrlap\\@not}\\nobreak}{\\char\"338}"),
 
     // Negated symbols from base/fontmath.ltx:
     "\\neq" => MacroDefinition::StaticStr("\\html@mathml{\\mathrel{\\not=}}{\\mathrel{\\char`\u{2260}}}"),
@@ -563,7 +563,6 @@ pub const BUILTIN_MACROS: phf::Map<&str, MacroDefinition> = phf_map! {
     "\u{231F}" => MacroDefinition::StaticStr("\\lrcorner"),
     "\u{00A9}" => MacroDefinition::StaticStr("\\copyright"),
     "\u{00AE}" => MacroDefinition::StaticStr("\\textregistered"),
-    "\u{FE0F}" => MacroDefinition::StaticStr("\\textregistered"),
 
     // The KaTeX fonts have corners at codepoints that don't match Unicode.
     // For MathML purposes, use the Unicode code point.

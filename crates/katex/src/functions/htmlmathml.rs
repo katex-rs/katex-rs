@@ -23,6 +23,7 @@ pub fn define_htmlmathml(ctx: &mut crate::KatexContext) {
         props: FunctionPropSpec {
             num_args: 2,
             allowed_in_text: true,
+            allowed_in_argument: true,
             ..Default::default()
         },
         handler: Some(|context, args, _opt_args| {

@@ -101,6 +101,16 @@ impl Logger {
         self.log(None, LogLevel::Warn(WarnLevel::Medium), message.into());
     }
 
+    pub fn known_reference_warning(&self, pb: Option<&ProgressBar>, message: &str) {
+        if let Some(pb) = pb {
+            pb.inc(1);
+        }
+        self.warn_with_progress(pb, WarnLevel::Medium, message);
+        if std::env::var("GITHUB_ACTIONS").as_deref() == Ok("true") {
+            println!("{}", github_warning_annotation(message));
+        }
+    }
+
     pub fn warn_with_progress<T>(&self, pb: Option<&ProgressBar>, level: WarnLevel, message: T)
     where
         T: Into<String>,
@@ -341,6 +351,54 @@ fn log_target(level: LogLevel) -> LogTarget {
     }
 }
 
+fn github_warning_annotation(message: &str) -> String {
+    let escaped = message
+        .replace('%', "%25")
+        .replace('\r', "%0D")
+        .replace('\n', "%0A");
+    format!("::warning title=Known upstream MathML divergence::{escaped}")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Logger, WarnLevel, github_warning_annotation, summarize_failures};
+    use crate::screenshotter::models::{CaseResult, CaseStatus};
+
+    #[test]
+    fn github_annotation_escapes_command_data() {
+        assert_eq!(
+            github_warning_annotation("50%\r\n::error::not a command"),
+            "::warning title=Known upstream MathML divergence::50%25%0D%0A::error::not a command"
+        );
+    }
+
+    #[test]
+    fn warnings_do_not_mask_errors_in_mixed_results() {
+        let logger = Logger::new();
+        let mut results = vec![(
+            "LowerAccent".to_owned(),
+            CaseResult {
+                status: CaseStatus::Warning,
+                message: None,
+                severity: None,
+            },
+        )];
+        assert!(summarize_failures(&logger, &results).is_none());
+        results.push((
+            "OtherCase".to_owned(),
+            CaseResult {
+                status: CaseStatus::Error,
+                message: None,
+                severity: None,
+            },
+        ));
+        assert!(matches!(
+            summarize_failures(&logger, &results),
+            Some(WarnLevel::High)
+        ));
+    }
+}
+
 fn warn_level_for_mismatch(severity: MismatchSeverity) -> WarnLevel {
     match severity {
         MismatchSeverity::Minor => WarnLevel::Low,
@@ -371,7 +429,7 @@ pub fn summarize_failures(logger: &Logger, failures: &[(String, CaseResult)]) ->
                 .severity
                 .map(warn_level_for_mismatch)
                 .unwrap_or(WarnLevel::High),
-            CaseStatus::Pass => continue,
+            CaseStatus::Pass | CaseStatus::Warning => continue,
         };
 
         highest = Some(match highest {
@@ -406,7 +464,7 @@ pub fn summarize_failures(logger: &Logger, failures: &[(String, CaseResult)]) ->
                         format!("\"{message}\" for {name}"),
                     );
                 }
-                CaseStatus::Pass => {}
+                CaseStatus::Pass | CaseStatus::Warning => {}
             }
         }
 

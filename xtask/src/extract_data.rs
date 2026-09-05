@@ -55,11 +55,11 @@ fn extract_font_metrics(katex_src: &Utf8Path) -> Result<Value> {
 }
 
 fn extract_sigmas_and_xis(katex_src: &Utf8Path) -> Result<Value> {
-    let path = katex_src.join("fontMetrics.js");
+    let path = katex_src.join("fontMetrics.ts");
     let contents =
         std::fs::read_to_string(&path).with_context(|| format!("failed to read {}", path))?;
 
-    let sigmas_source = extract_object_after(&contents, "const sigmasAndXis =")?;
+    let sigmas_source = extract_object_after(&contents, "const sigmasAndXis")?;
     let sigmas: Value =
         json5::from_str(&sigmas_source).context("failed to parse sigmasAndXis object as JSON5")?;
 
@@ -70,7 +70,7 @@ fn extract_sigmas_and_xis(katex_src: &Utf8Path) -> Result<Value> {
 }
 
 fn extract_symbols(katex_src: &Utf8Path) -> Result<(Vec<Symbol>, usize)> {
-    let path = katex_src.join("symbols.js");
+    let path = katex_src.join("symbols.ts");
     let contents =
         std::fs::read_to_string(&path).with_context(|| format!("failed to read {}", path))?;
 
@@ -101,6 +101,12 @@ fn extract_symbols(katex_src: &Utf8Path) -> Result<(Vec<Symbol>, usize)> {
         .collect();
 
     let count = symbols.len();
+    if count == 0 {
+        bail!(
+            "no defineSymbol calls found in {}; upstream syntax may have changed",
+            path
+        );
+    }
     Ok((symbols, count))
 }
 
@@ -112,7 +118,7 @@ fn extract_field_docs(contents: &str) -> BTreeMap<String, String> {
 
     for line in contents.lines().map(str::trim) {
         if !in_block {
-            in_block = line.starts_with("const sigmasAndXis = {");
+            in_block = line.starts_with("const sigmasAndXis");
             continue;
         }
 
@@ -286,4 +292,32 @@ fn default_field_docs() -> &'static [(&'static str, &'static str)] {
             "Two values from LaTeX source2e: 0.4 pt / ptPerEm",
         ),
     ]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extracts_pinned_typescript_data() -> Result<()> {
+        let src = project_root().join("KaTeX/src");
+        let metrics = extract_sigmas_and_xis(&src)?;
+        assert_eq!(
+            metrics["sigmasAndXis"]["ptPerEm"],
+            json!([10.0, 10.0, 10.0])
+        );
+        let (symbols, count) = extract_symbols(&src)?;
+        assert_eq!(count, 609);
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.mode == "text" && s.name == r"\u00b7")
+        );
+        assert!(
+            symbols
+                .iter()
+                .any(|s| s.name == r"\\nobreak" && s.replace.as_deref() == Some(""))
+        );
+        Ok(())
+    }
 }

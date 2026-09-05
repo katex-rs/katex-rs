@@ -210,6 +210,22 @@
   {
     "mode": "math",
     "font": "main",
+    "group": "punct",
+    "replace": "\\u22c5",
+    "name": "\\u00b7",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "text",
+    "font": "main",
+    "group": "textord",
+    "replace": "\\u22c5",
+    "name": "\\u00b7",
+    "acceptUnicodeChar": false
+  },
+  {
+    "mode": "math",
+    "font": "main",
     "group": "textord",
     "replace": "\\u0023",
     "name": "\\\\#",
@@ -3603,6 +3619,7 @@
     "mode": "math",
     "font": "main",
     "group": "spacing",
+    "replace": "",
     "name": "\\\\nobreak",
     "acceptUnicodeChar": false
   },
@@ -3610,6 +3627,7 @@
     "mode": "math",
     "font": "main",
     "group": "spacing",
+    "replace": "",
     "name": "\\\\allowbreak",
     "acceptUnicodeChar": false
   },

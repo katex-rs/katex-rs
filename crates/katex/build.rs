@@ -418,10 +418,13 @@ fn write_symbols(buffer: &mut String, symbols: &[Symbol], variant: &str) -> Buil
             _ => return Err(BuildScriptError(format!("Invalid group: {group}")).into()),
         };
 
-        let replace_value = replace.as_ref().map_or_else(
-            || "None".to_owned(),
-            |s| format!("Some(\'{}\')", convert_unicode_escapes(s)),
-        );
+        let replace_value = replace
+            .as_ref()
+            .filter(|value| !value.is_empty())
+            .map_or_else(
+                || "None".to_owned(),
+                |s| format!("Some(\'{}\')", convert_unicode_escapes(s)),
+            );
 
         let _ = writeln!(buffer, "    \"{arm}\" => CharInfo {{");
         let _ = writeln!(buffer, "        font: {font_str},");

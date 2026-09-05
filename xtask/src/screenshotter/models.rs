@@ -15,6 +15,11 @@ pub struct TestCase {
 }
 
 impl TestCase {
+    pub fn known_mathml_reference_bug(&self) -> bool {
+        self.payload.get("output").and_then(JsonValue::as_str) == Some("mathml")
+            && matches!(self.key.as_str(), "LowerAccent" | "StretchyAccent")
+    }
+
     pub fn artifact_key(&self) -> String {
         if self.payload.get("output").and_then(JsonValue::as_str) == Some("mathml") {
             format!("{}-mathml", self.key)
@@ -26,7 +31,7 @@ impl TestCase {
 
 #[cfg(test)]
 mod tests {
-    use super::TestCase;
+    use super::{CaseResult, CaseState, CaseStatus, MismatchSeverity, TestCase};
     use serde_json::json;
 
     #[test]
@@ -39,6 +44,83 @@ mod tests {
         case.payload["output"] = json!("mathml");
         assert_eq!(case.artifact_key(), "Accents-mathml");
         assert_eq!(case.key, "Accents");
+    }
+
+    #[test]
+    fn only_known_mathml_reference_mismatches_become_warnings() {
+        for key in ["LowerAccent", "StretchyAccent"] {
+            let case = TestCase {
+                key: key.to_owned(),
+                payload: json!({"output": "mathml"}),
+            };
+            let mut result = CaseResult {
+                status: CaseStatus::Mismatch,
+                message: Some("pixel mismatch".to_owned()),
+                severity: Some(MismatchSeverity::Major),
+            };
+            result.classify_known_reference_bug(&case, "<mo stretchy=\"true\">undefined</mo>");
+            assert_eq!(result.status, CaseStatus::Warning);
+            assert_eq!(result.message.as_deref(), Some("pixel mismatch"));
+            let mut state = CaseState::new(1);
+            state.finalize(result);
+            assert!(state.is_finished());
+            assert!(state.has_warning());
+        }
+    }
+
+    #[test]
+    fn reference_warning_does_not_hide_other_failures_or_passes() {
+        for (key, output, reference, status) in [
+            (
+                "LowerAccent",
+                "html",
+                ">undefined</mo>",
+                CaseStatus::Mismatch,
+            ),
+            (
+                "StretchyAccent",
+                "htmlAndMathml",
+                ">undefined</mo>",
+                CaseStatus::Mismatch,
+            ),
+            ("Accents", "mathml", ">undefined</mo>", CaseStatus::Mismatch),
+            (
+                "LowerAccentExtra",
+                "mathml",
+                ">undefined</mo>",
+                CaseStatus::Mismatch,
+            ),
+            (
+                "LowerAccent",
+                "mathml",
+                "<mo>fixed</mo>",
+                CaseStatus::Mismatch,
+            ),
+            (
+                "LowerAccent",
+                "mathml",
+                ">undefined</mo>",
+                CaseStatus::Error,
+            ),
+            (
+                "StretchyAccent",
+                "mathml",
+                ">undefined</mo>",
+                CaseStatus::Pass,
+            ),
+        ] {
+            let case = TestCase {
+                key: key.to_owned(),
+                payload: json!({"output": output}),
+            };
+            let mut result = CaseResult {
+                status,
+                message: None,
+                severity: None,
+            };
+            result.classify_known_reference_bug(&case, reference);
+            assert_eq!(result.status, status, "{key}, {output}, {reference}");
+        }
     }
 }
 
@@ -109,6 +191,7 @@ pub struct BaselineEntry {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum CaseStatus {
     Pass,
+    Warning,
     Mismatch,
     Error,
 }
@@ -118,6 +201,19 @@ pub struct CaseResult {
     pub status: CaseStatus,
     pub message: Option<String>,
     pub severity: Option<MismatchSeverity>,
+}
+
+impl CaseResult {
+    /// Only a completed JS comparison with the known broken reference is
+    /// waived.
+    pub fn classify_known_reference_bug(&mut self, case: &TestCase, reference_html: &str) {
+        if self.status == CaseStatus::Mismatch
+            && case.known_mathml_reference_bug()
+            && reference_html.contains(">undefined</mo>")
+        {
+            self.status = CaseStatus::Warning;
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -171,6 +267,12 @@ impl CaseState {
 
     pub fn is_finished(&self) -> bool {
         self.final_result.is_some()
+    }
+
+    pub fn has_warning(&self) -> bool {
+        self.final_result
+            .as_ref()
+            .is_some_and(|result| result.status == CaseStatus::Warning)
     }
 
     pub fn finalize(&mut self, result: CaseResult) {

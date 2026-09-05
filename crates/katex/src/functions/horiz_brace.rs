@@ -19,7 +19,12 @@ use crate::{KatexContext, build_html, build_mathml};
 pub fn define_horiz_brace(ctx: &mut KatexContext) {
     ctx.define_function(FunctionDefSpec {
         node_type: Some(NodeType::HorizBrace),
-        names: &["\\overbrace", "\\underbrace"],
+        names: &[
+            "\\overbrace",
+            "\\underbrace",
+            "\\overbracket",
+            "\\underbracket",
+        ],
         props: FunctionPropSpec {
             num_args: 1,
             ..Default::default()
@@ -135,9 +140,9 @@ pub fn html_builder(
     };
 
     let classes = if group.is_over {
-        ClassList::Const(&["mord", "mover"])
+        ClassList::Const(&["minner", "mover"])
     } else {
-        ClassList::Const(&["mord", "munder"])
+        ClassList::Const(&["minner", "munder"])
     };
 
     if let Some(sup_sub_group) = sup_sub_group {
@@ -160,7 +165,7 @@ pub fn html_builder(
                 options,
             )?;
             Ok(make_span(
-                ClassList::Const(&["mord", "mover"]),
+                ClassList::Const(&["minner", "mover"]),
                 vec![vlist.into()],
                 Some(options),
                 None,
@@ -182,7 +187,7 @@ pub fn html_builder(
                 options,
             )?;
             Ok(make_span(
-                ClassList::Const(&["mord", "munder"]),
+                ClassList::Const(&["minner", "munder"]),
                 vec![vlist.into()],
                 Some(options),
                 None,
@@ -209,7 +214,7 @@ fn mathml_builder(
     let accent_node = math_ml_node(&group.label);
     let base_group = build_mathml::build_group(ctx, &group.base, options)?;
 
-    let mut mover = MathNode::builder()
+    let mover = MathNode::builder()
         .node_type(if group.is_over {
             MathNodeType::Mover
         } else {
@@ -217,10 +222,6 @@ fn mathml_builder(
         })
         .children(vec![base_group, MathDomNode::Math(accent_node)])
         .build();
-
-    mover
-        .attributes
-        .insert("accent".to_owned(), "true".to_owned());
 
     Ok(MathDomNode::Math(mover))
 }

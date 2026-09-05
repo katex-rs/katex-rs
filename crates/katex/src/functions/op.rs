@@ -488,6 +488,7 @@ pub fn define_op(ctx: &mut crate::KatexContext) {
         ],
         props: FunctionPropSpec {
             num_args: 0,
+            allowed_in_argument: true,
             ..Default::default()
         },
         handler: Some(|context, _args, _opt_args| {

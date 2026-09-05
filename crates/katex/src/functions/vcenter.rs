@@ -100,5 +100,9 @@ fn mathml_builder(
         .attributes
         .insert("class".to_owned(), "vcenter".to_owned());
 
-    Ok(MathDomNode::Math(mpadded))
+    Ok(MathNode::builder()
+        .node_type(MathNodeType::Mrow)
+        .children(vec![mpadded.into()])
+        .build()
+        .into())
 }

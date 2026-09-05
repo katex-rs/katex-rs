@@ -435,8 +435,8 @@ pub fn inner_path(name: &str, height: f64) -> String {
 pub fn tall_delim(label: &str, mid_height: f64) -> Result<String, ParseError> {
     match label {
         "lbrack" => Ok(format!(
-            "M403 1759 V84 H666 V0 H319 V1759 v{mid_height} v1759 h347 v-84
-H403z M403 1759 V0 H319 V1759 v{mid_height} v1759 h84z"
+            "M403 1759 V84 H666 V0 H319 V1759 v{mid_height} v1759 v84 h347 v-84
+H403z M403 1759 V0 H319 V1759 v{mid_height} v1759 v84 h84z"
         )),
         "rbrack" => Ok(format!(
             "M347 1759 V0 H0 V84 H263 V1759 v{mid_height} v1759 H0 v84 H347z
@@ -581,6 +581,10 @@ v40h399900v-40zM0 241v40h399900v-40zm0 0v40h399900v-40z",
 -68.7 15.7-86 37-10 12-15 25.3-15 40 0 22.7 9.8 40.7 29.5 54 19.7 13.3 43.5 21
  71.5 23h399859zM103 281v-40h399897v40z",
 
+    "leftbracketunder" => "M0 0 h120 V290 H399995 v120 H0z M0 0 h120 V290 H399995 v120 H0z",
+    "leftbracketover" => "M0 440 h120 V150 H399995 v-120 H0z M0 440 h120 V150 H399995 v-120 H0z",
+    "rightbracketunder" => "M399995 0 h-120 V290 H0 v120 H400000z M399995 0 h-120 V290 H0 v120 H400000z",
+    "rightbracketover" => "M399995 440 h-120 V150 H0 v-120 H399995z M399995 440 h-120 V150 H0 v-120 H399995z",
     "leftlinesegment" => "M40 281 V428 H0 V94 H40 V241 H400000 v40z
 M40 281 V428 H0 V94 H40 V241 H400000 v40z",
 

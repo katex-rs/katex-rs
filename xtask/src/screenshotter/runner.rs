@@ -546,7 +546,18 @@ async fn run_browser_session(
     if failures.is_empty() {
         logger.finish_progress(compare_progress.clone(), summary_line.clone());
         logger.info(summary_line);
-        logger.success(format!("All cases passed for {}", browser));
+        let warnings = case_states
+            .iter()
+            .filter(|state| state.has_warning())
+            .count();
+        if warnings == 0 {
+            logger.success(format!("All cases passed for {}", browser));
+        } else {
+            logger.warn(format!(
+                "{} passed, {warnings} known upstream MathML warnings, 0 failures for {browser}",
+                cases.len() - warnings
+            ));
+        }
         Ok(())
     } else {
         logger.finish_progress(
@@ -826,19 +837,26 @@ async fn handle_js_fallback(
                 .clone()
                 .unwrap_or_else(|| "Screenshot differs from JS implementation".to_owned());
             let message = format!("{fallback_note} (vs JS fallback)");
-            logger.case_mismatch(
-                compare_progress,
-                &case_key,
-                browser,
-                severity,
-                message.clone(),
-            );
-            let failure = CaseResult {
+            let mut failure = CaseResult {
                 status: CaseStatus::Mismatch,
                 message: Some(message.clone()),
                 severity: Some(severity),
             };
-            failures.push((format!("{case_key} [{browser}]"), failure.clone()));
+            if case.known_mathml_reference_bug()
+                && let Some(reference) = capture_html_snapshot(driver).await?
+                && reference.implementation.as_deref() == Some("js")
+                && reference.status.as_deref() == Some("rendered")
+            {
+                failure.classify_known_reference_bug(case, &reference.math_html);
+            }
+            if failure.status == CaseStatus::Warning {
+                logger.known_reference_warning(compare_progress, &format!(
+                    "{case_key} ({browser}): known upstream MathML line-segment accent emits undefined; {message}. Diff artifacts retained."
+                ));
+            } else {
+                logger.case_mismatch(compare_progress, &case_key, browser, severity, message);
+                failures.push((format!("{case_key} [{browser}]"), failure.clone()));
+            }
             case_states[case_index].finalize(failure);
             maybe_dump_case_html(
                 logger,

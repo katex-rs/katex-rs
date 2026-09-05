@@ -37,9 +37,10 @@ fn html_builder(
     };
 
     // Style changes are handled in the TeXbook on pg. 442, Rule 3.
-    let new_options = options
-        .having_style(styling_node.style)
-        .with_font(String::new());
+    let mut new_options = options.having_style(styling_node.style);
+    if styling_node.reset_font {
+        new_options = new_options.with_font(String::new());
+    }
     sizing_group(ctx, &styling_node.body, &new_options, options)
 }
 
@@ -63,7 +64,10 @@ fn mathml_builder(
     };
 
     // Figure out what style we're changing to.
-    let new_options = options.having_style(styling_node.style);
+    let mut new_options = options.having_style(styling_node.style);
+    if styling_node.reset_font {
+        new_options = new_options.with_font(String::new());
+    }
 
     let inner = build_mathml::build_expression(ctx, &styling_node.body, &new_options, None)?;
 
@@ -118,6 +122,7 @@ pub fn define_styling(ctx: &mut crate::KatexContext) {
             let style = style_map(style_name);
 
             Ok(ParseNode::Styling(ParseNodeStyling {
+                reset_font: false,
                 mode: context.parser.mode,
                 loc: context.loc(),
                 style,

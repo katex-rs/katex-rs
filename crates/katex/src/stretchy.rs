@@ -34,6 +34,8 @@ pub const STRETCHY_CODE_POINT: phf::Map<&'static str, &'static str> = phf_map! {
     "xrightarrow" => "\u{2192}",
     "underbrace" => "\u{23df}",
     "overbrace" => "\u{23de}",
+    "overbracket" => "\u{23b4}",
+    "underbracket" => "\u{23b5}",
     "overgroup" => "\u{23e0}",
     "undergroup" => "\u{23e1}",
     "overleftrightarrow" => "\u{2194}",
@@ -61,9 +63,9 @@ pub const STRETCHY_CODE_POINT: phf::Map<&'static str, &'static str> = phf_map! {
     "xrightleftarrows" => "\u{21c4}",
     "xrightequilibrium" => "\u{21cc}",
     "xleftequilibrium" => "\u{21cb}",
-    "\\cdrightarrow" => "\u{2192}",
-    "\\cdleftarrow" => "\u{2190}",
-    "\\cdlongequal" => "=",
+    "cdrightarrow" => "\u{2192}",
+    "cdleftarrow" => "\u{2190}",
+    "cdlongequal" => "=",
 };
 
 /// Data structure for image information
@@ -98,6 +100,8 @@ impl ImageData {
 }
 
 const IMAGES_DATA: phf::Map<&'static str, ImageData> = phf_map! {
+    "overbracket" => ImageData::new(&["leftbracketover", "rightbracketover"], 1.6, 440.0, None),
+    "underbracket" => ImageData::new(&["leftbracketunder", "rightbracketunder"], 1.6, 410.0, None),
     "overrightarrow" => ImageData::new(&["rightarrow"], 0.888, 522.0, Some("xMaxYMin")),
     "overleftarrow" => ImageData::new(&["leftarrow"], 0.888, 522.0, Some("xMinYMin")),
     "underrightarrow" => ImageData::new(&["rightarrow"], 0.888, 522.0, Some("xMaxYMin")),
@@ -315,7 +319,7 @@ pub fn svg_span(group: &AnyParseNode, options: &Options) -> Result<HtmlDomNode, 
         }
 
         // For multiple paths, create a stretchy span containing all spans
-        let mut span = make_span("stretchy", spans, Some(options), None);
+        let mut span = make_span("katex-stretchy", spans, Some(options), None);
         span.height = height_val;
         span.style.insert(CssProperty::Height, make_em(height_val));
         if data.min_width > 0.0 {
@@ -339,7 +343,10 @@ pub fn enclose_span(
 
     let is_box_like = label.contains("fbox") || label.contains("color");
     if is_box_like || label == "angl" {
-        let classes = vec![Cow::Borrowed("stretchy"), Cow::Owned(label.to_owned())];
+        let classes = vec![
+            Cow::Borrowed("katex-stretchy"),
+            Cow::Owned(label.to_owned()),
+        ];
         let mut span = make_span(classes, vec![], Some(options), None);
 
         if label == "fbox"

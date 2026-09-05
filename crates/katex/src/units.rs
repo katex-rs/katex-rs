@@ -11,6 +11,7 @@ use crate::KatexContext;
 use crate::options::Options;
 use crate::spacing_data::Measurement;
 use crate::types::{ParseError, ParseErrorKind};
+use core::fmt::Write as _;
 use phf::phf_set;
 
 const RELATIVE_UNITS: phf::Set<&'static str> = phf_set!("ex", "em", "mu");
@@ -170,7 +171,8 @@ pub fn make_em(n: f64) -> String {
     let int_part = scaled_int / PRECISION;
     let mut frac_part = scaled_int % PRECISION;
 
-    result.push_str(int_part.to_string().as_str());
+    // Write directly into the output instead of allocating a temporary String.
+    let _ = write!(result, "{int_part}");
 
     if frac_part != 0 {
         result.push('.');

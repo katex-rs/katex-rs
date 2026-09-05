@@ -128,23 +128,30 @@ fn html_builder(
         return Ok(node.into());
     }
 
-    // Set height and depth to 0 as specified
     if smash_node.smash_height {
-        node.height = 0f64;
-        // Reset children heights if they exist
-        for child in &mut node.children {
-            if let Some(height) = child.height_mut() {
-                *height = 0f64;
+        node.height = 0.0;
+    }
+    if smash_node.smash_depth {
+        node.depth = 0.0;
+    }
+    if smash_node.smash_height && smash_node.smash_depth {
+        return Ok(make_span(
+            ClassList::Const(&["mord", "katex-smash"]),
+            vec![node.into()],
+            Some(options),
+            None,
+        )
+        .into());
+    }
+    for child in &mut node.children {
+        if smash_node.smash_height {
+            if let Some(h) = child.height_mut() {
+                *h = 0.0;
             }
         }
-    }
-
-    if smash_node.smash_depth {
-        node.depth = 0f64;
-        // Reset children depths if they exist
-        for child in &mut node.children {
-            if let Some(depth) = child.depth_mut() {
-                *depth = 0f64;
+        if smash_node.smash_depth {
+            if let Some(d) = child.depth_mut() {
+                *d = 0.0;
             }
         }
     }

@@ -504,26 +504,8 @@ fn functions_delimiter_functions() {
         Ok(())
     });
 
-    it("reject group opening delimiters", || {
-        let error = expect!(r"\bigl{(}1+2\bigr)3").parse_error(&strict_settings())?;
-        match error.kind.as_ref() {
-            ParseErrorKind::InvalidDelimiterTypeAfter { function } => {
-                assert_eq!(function, "\\bigl");
-            }
-            other => panic!("Unexpected error kind: {other:?}"),
-        }
-        Ok(())
-    });
-
-    it("reject group closing delimiters", || {
-        let error = expect!(r"\bigl(1+2\bigr{)}3").parse_error(&strict_settings())?;
-        match error.kind.as_ref() {
-            ParseErrorKind::InvalidDelimiterTypeAfter { function } => {
-                assert_eq!(function, "\\bigr");
-            }
-            other => panic!("Unexpected error kind: {other:?}"),
-        }
-        Ok(())
+    it("accept braced single delimiters", || {
+        expect!(r"\bigl{(}1+2\bigr{)}3").to_parse(&strict_settings())
     });
 }
 

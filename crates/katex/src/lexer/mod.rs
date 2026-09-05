@@ -260,15 +260,12 @@ impl<'a> Lexer<'a> {
     /// string.
     #[must_use]
     pub fn new(input: Arc<str>, settings: &'a Settings) -> Self {
-        let mut catcodes = KeyMap::default();
-        catcodes.insert('%', 14); // comment character
-        catcodes.insert('~', 13); // active character
-
         Self {
             input,
             last_index: 0,
             settings,
-            catcodes,
+            // Defaults are implicit; allocate only for explicit overrides.
+            catcodes: KeyMap::default(),
         }
     }
 
@@ -282,7 +279,11 @@ impl<'a> Lexer<'a> {
     /// set.
     #[must_use]
     pub fn get_catcode(&self, ch: char) -> Option<u8> {
-        self.catcodes.get(&ch).copied()
+        self.catcodes.get(&ch).copied().or(match ch {
+            '%' => Some(14),
+            '~' => Some(13),
+            _ => None,
+        })
     }
 
     /// Tokenizes and returns the next token from the current position in the
@@ -340,7 +341,7 @@ impl<'a> Lexer<'a> {
 
         if token_text.len() == 1
             && let Some(first_char) = token_text.as_str().chars().next()
-            && self.catcodes.get(&first_char) == Some(&14)
+            && self.get_catcode(first_char) == Some(14)
         {
             // Comment character, skip to end of line
             if let Some(rel_pos) = slice.find('\n') {

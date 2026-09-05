@@ -35,6 +35,8 @@ pub fn define_environment(ctx: &mut KatexContext) {
             for item in &name_group.body {
                 if let AnyParseNode::TextOrd(text_ord) = item {
                     env_name.push_str(&text_ord.text);
+                } else if matches!(item, AnyParseNode::Spacing(spacing) if spacing.text == " ") {
+                    env_name.push(' ');
                 } else {
                     return Err(ParseError::new(ParseErrorKind::InvalidEnvironmentName {
                         value: format!("{:?}", args[0]),

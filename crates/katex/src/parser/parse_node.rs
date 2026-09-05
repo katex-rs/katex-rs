@@ -858,6 +858,8 @@ pub struct ParseNodeSize {
 /// useful for distinguishing vectors from scalars or emphasizing certain terms.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ParseNodeStyling {
+    /// Reset the inherited math font at a mode or array boundary.
+    pub reset_font: bool,
     /// The parsing mode ([`Mode::Math`] or [`Mode::Text`])
     pub mode: Mode,
     /// Optional source location for error reporting

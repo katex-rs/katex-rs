@@ -260,6 +260,9 @@ pub enum ParseErrorKind {
     ExpectedRawStringFirstArgument,
     #[error("Error parsing key-value for \\htmlData")]
     HtmlDataKeyValueParseError,
+    /// An htmlData entry must contain an equals sign.
+    #[error("\\htmlData key/value '{item}' missing equals sign")]
+    HtmlDataMissingEquals { item: String },
     #[error("Unrecognized html command")]
     UnrecognizedHtmlCommand,
     #[error("Expected color-token for {argument}")]
@@ -306,7 +309,7 @@ pub enum ParseErrorKind {
     EnvironmentHandlerNotImplemented,
     #[error("\\@char argument must be an ordgroup")]
     CharArgumentMustBeOrdGroup,
-    #[error("\\@char ordgroup must contain only textord or mathord nodes")]
+    #[error("\\@char has non-numeric argument")]
     CharOrdGroupContentInvalid,
     #[error("Missing arrow character after @")]
     MissingArrowCharacterAfterAt,
@@ -322,7 +325,7 @@ pub enum ParseErrorKind {
     ExpectedAlignmentSpecifier,
     #[error("{subarray} can contain only one column")]
     SubarrayTooManyColumns { subarray: &'static str },
-    #[error("Invalid number of columns")]
+    #[error("Number of columns should be a positive integer")]
     InvalidNumberOfColumns,
     #[error("Failed to create combined token")]
     FailedToCreateCombinedToken,

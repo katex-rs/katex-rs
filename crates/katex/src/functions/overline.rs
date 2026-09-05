@@ -81,7 +81,7 @@ fn html_builder(
     )?;
 
     Ok(make_span(
-        ClassList::Const(&["mord", "overline"]),
+        ClassList::Const(&["mord", "katex-overline"]),
         vec![vlist.into()],
         Some(options),
         None,

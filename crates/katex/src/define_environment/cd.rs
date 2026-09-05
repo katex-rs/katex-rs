@@ -44,6 +44,7 @@ const CD_ARROW_FUNCTION_NAMES: phf::Map<&str, &str> = phf_map!(
 /// Create an empty cell for CD environment
 const fn new_cell() -> ParseNode {
     ParseNode::Styling(ParseNodeStyling {
+        reset_font: true,
         mode: Mode::Math,
         loc: None,
         style: DISPLAY,
@@ -245,6 +246,7 @@ pub fn parse_cd(parser: &mut Parser) -> Result<AnyParseNode, ParseError> {
 
                 // Wrap arrow in styling
                 let wrapped_arrow = ParseNode::Styling(ParseNodeStyling {
+                    reset_font: true,
                     mode: Mode::Math,
                     loc: None,
                     style: DISPLAY,
@@ -369,8 +371,9 @@ pub fn define_cd(ctx: &mut crate::KatexContext) {
                 .node_type(MathNodeType::Mpadded)
                 .children(vec![label.into()])
                 .build();
+            label.set_attribute("width", "0");
             if group.side == "left" {
-                label.set_attribute("width", "-1width");
+                label.set_attribute("lspace", "-1width");
             }
             label.set_attribute("voffset", "0.7em");
             let mut label = MathNode::builder()

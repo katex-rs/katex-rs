@@ -164,7 +164,7 @@ fn html_builder(
 
     // Add a class surrounding it so we can add on the appropriate
     // kerning
-    let root_v_list_wrap = make_span("root", vec![root_v_list.into()], Some(options), None);
+    let root_v_list_wrap = make_span("katex-root", vec![root_v_list.into()], Some(options), None);
 
     Ok(make_span(
         ClassList::Const(&["mord", "sqrt"]),

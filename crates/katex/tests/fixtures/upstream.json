@@ -1,0 +1,1224 @@
+{
+  "revision": "49904aa2b6c5d82ba0c5a1bc3a4d9b3353a1401c",
+  "version": "0.18.5",
+  "cases": [
+    {
+      "expression": "x^{\\dfrac{1}{2}}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.1152em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:2.1152em;\"><span style=\"top:-4.1152em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:3.3214em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord katex-sizing reset-size3 size6\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.3214em;\"><span style=\"top:-2.314em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">2</span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.677em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.686em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span></span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "x^{\\dfrac{1}{2}}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msup><mi>x</mi><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mfrac><mn>1</mn><mn>2</mn></mfrac></mstyle></msup></mrow><annotation encoding=\"application/x-tex\">x^{\\dfrac{1}{2}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "x^{\\dfrac{1}{2}}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.1152em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:2.1152em;\"><span style=\"top:-4.1152em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:3.3214em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord katex-sizing reset-size3 size6\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.3214em;\"><span style=\"top:-2.314em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">2</span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.677em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.686em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span></span></span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "x^{\\dfrac{1}{2}}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><msup><mi>x</mi><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mfrac><mn>1</mn><mn>2</mn></mfrac></mstyle></msup></mrow><annotation encoding=\"application/x-tex\">x^{\\dfrac{1}{2}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "x^{\\tfrac{1}{2}}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.2979em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.2979em;\"><span style=\"top:-3.4527em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord katex-sizing reset-size3 size6\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8451em;\"><span style=\"top:-2.655em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">2</span></span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.394em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">1</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.345em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span></span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "x^{\\tfrac{1}{2}}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msup><mi>x</mi><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mfrac><mn>1</mn><mn>2</mn></mfrac></mstyle></msup></mrow><annotation encoding=\"application/x-tex\">x^{\\tfrac{1}{2}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "x^{\\tfrac{1}{2}}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.2979em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.2979em;\"><span style=\"top:-3.4527em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord katex-sizing reset-size3 size6\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8451em;\"><span style=\"top:-2.655em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">2</span></span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.394em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">1</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.345em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span></span></span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "x^{\\tfrac{1}{2}}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><msup><mi>x</mi><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mfrac><mn>1</mn><mn>2</mn></mfrac></mstyle></msup></mrow><annotation encoding=\"application/x-tex\">x^{\\tfrac{1}{2}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "x^{\\cfrac{1}{2}}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.3838em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:2.3838em;\"><span style=\"top:-4.3838em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:3.59em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord katex-sizing reset-size3 size6\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.59em;\"><span style=\"top:-2.314em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">2</span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.74em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.686em;\"><span></span></span></span></span></span><span></span></span></span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "x^{\\cfrac{1}{2}}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msup><mi>x</mi><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mfrac><mn>1</mn><mn>2</mn></mfrac></mstyle></msup></mrow><annotation encoding=\"application/x-tex\">x^{\\cfrac{1}{2}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "x^{\\cfrac{1}{2}}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.3838em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:2.3838em;\"><span style=\"top:-4.3838em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:3.59em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord katex-sizing reset-size3 size6\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.59em;\"><span style=\"top:-2.314em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">2</span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.74em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.686em;\"><span></span></span></span></span></span><span></span></span></span></span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "x^{\\cfrac{1}{2}}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><msup><mi>x</mi><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mfrac><mn>1</mn><mn>2</mn></mfrac></mstyle></msup></mrow><annotation encoding=\"application/x-tex\">x^{\\cfrac{1}{2}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "x^{\\dbinom{1}{2}}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.5078em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:2.5078em;\"><span style=\"top:-4.5078em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:3.45em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord katex-sizing reset-size3 size6\"><span class=\"mopen delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size3\">(</span></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.3214em;\"><span style=\"top:-2.314em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">2</span></span></span><span style=\"top:-3.677em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.686em;\"><span></span></span></span></span></span><span class=\"mclose delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size3\">)</span></span></span></span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "x^{\\dbinom{1}{2}}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msup><mi>x</mi><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mrow><mo fence=\"true\">(</mo><mfrac linethickness=\"0px\"><mn>1</mn><mn>2</mn></mfrac><mo fence=\"true\">)</mo></mrow></mstyle></msup></mrow><annotation encoding=\"application/x-tex\">x^{\\dbinom{1}{2}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "x^{\\dbinom{1}{2}}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.5078em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:2.5078em;\"><span style=\"top:-4.5078em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:3.45em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord katex-sizing reset-size3 size6\"><span class=\"mopen delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size3\">(</span></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.3214em;\"><span style=\"top:-2.314em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">2</span></span></span><span style=\"top:-3.677em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.686em;\"><span></span></span></span></span></span><span class=\"mclose delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size3\">)</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "x^{\\dbinom{1}{2}}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><msup><mi>x</mi><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mrow><mo fence=\"true\">(</mo><mfrac linethickness=\"0px\"><mn>1</mn><mn>2</mn></mfrac><mo fence=\"true\">)</mo></mrow></mstyle></msup></mrow><annotation encoding=\"application/x-tex\">x^{\\dbinom{1}{2}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\genfrac{(}{)}{0.04em}{2}{a}{b}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.2em;vertical-align:-0.4025em;\"></span><span class=\"mord mtight katex-sizing reset-size6 size3\"><span class=\"mopen katex-sizing reset-size3 size6 mtight delimcenter\" style=\"top:0.075em;\"><span class=\"delimsizing size1 mtight\"><span class=\"mtight\">(</span></span></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6915em;\"><span style=\"top:-2.656em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size3 size1 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">b</span></span></span></span><span style=\"top:-3.2214em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line mtight\" style=\"border-bottom-width:0.0571em;\"></span></span><span style=\"top:-3.384em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size3 size1 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">a</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.344em;\"><span></span></span></span></span></span><span class=\"mclose katex-sizing reset-size3 size6 mtight delimcenter\" style=\"top:0.075em;\"><span class=\"delimsizing size1 mtight\"><span class=\"mtight\">)</span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\genfrac{(}{)}{0.04em}{2}{a}{b}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mstyle scriptlevel=\"1\" displaystyle=\"false\"><mrow><mo fence=\"true\">(</mo><mfrac linethickness=\"0.0571em\"><mi>a</mi><mi>b</mi></mfrac><mo fence=\"true\">)</mo></mrow></mstyle></mrow><annotation encoding=\"application/x-tex\">\\genfrac{(}{)}{0.04em}{2}{a}{b}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\genfrac{(}{)}{0.04em}{2}{a}{b}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.2em;vertical-align:-0.4025em;\"></span><span class=\"mord mtight katex-sizing reset-size6 size3\"><span class=\"mopen katex-sizing reset-size3 size6 mtight delimcenter\" style=\"top:0.075em;\"><span class=\"delimsizing size1 mtight\"><span class=\"mtight\">(</span></span></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6915em;\"><span style=\"top:-2.656em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size3 size1 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">b</span></span></span></span><span style=\"top:-3.2214em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line mtight\" style=\"border-bottom-width:0.0571em;\"></span></span><span style=\"top:-3.384em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size3 size1 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">a</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.344em;\"><span></span></span></span></span></span><span class=\"mclose katex-sizing reset-size3 size6 mtight delimcenter\" style=\"top:0.075em;\"><span class=\"delimsizing size1 mtight\"><span class=\"mtight\">)</span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\genfrac{(}{)}{0.04em}{2}{a}{b}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mstyle scriptlevel=\"1\" displaystyle=\"false\"><mrow><mo fence=\"true\">(</mo><mfrac linethickness=\"0.0571em\"><mi>a</mi><mi>b</mi></mfrac><mo fence=\"true\">)</mo></mrow></mstyle></mrow><annotation encoding=\"application/x-tex\">\\genfrac{(}{)}{0.04em}{2}{a}{b}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathbf{\\scriptstyle x}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.3111em;\"></span><span class=\"mord mathbf mtight katex-sizing reset-size6 size3\">x</span></span></span></span>"
+    },
+    {
+      "expression": "\\mathbf{\\scriptstyle x}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mstyle scriptlevel=\"1\" displaystyle=\"false\"><mi mathvariant=\"bold\">x</mi></mstyle></mrow><annotation encoding=\"application/x-tex\">\\mathbf{\\scriptstyle x}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathbf{\\scriptstyle x}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.3111em;\"></span><span class=\"mord mathbf mtight katex-sizing reset-size6 size3\">x</span></span></span></span></span>"
+    },
+    {
+      "expression": "\\mathbf{\\scriptstyle x}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mstyle scriptlevel=\"1\" displaystyle=\"false\"><mi mathvariant=\"bold\">x</mi></mstyle></mrow><annotation encoding=\"application/x-tex\">\\mathbf{\\scriptstyle x}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathbb{\\displaystyle R}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6889em;\"></span><span class=\"mord mathbb\">R</span></span></span></span>"
+    },
+    {
+      "expression": "\\mathbb{\\displaystyle R}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi mathvariant=\"double-struck\">R</mi></mstyle></mrow><annotation encoding=\"application/x-tex\">\\mathbb{\\displaystyle R}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathbb{\\displaystyle R}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6889em;\"></span><span class=\"mord mathbb\">R</span></span></span></span></span>"
+    },
+    {
+      "expression": "\\mathbb{\\displaystyle R}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi mathvariant=\"double-struck\">R</mi></mstyle></mrow><annotation encoding=\"application/x-tex\">\\mathbb{\\displaystyle R}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathbf{\\hbox{$x$}}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"mord mathnormal\">x</span></span></span></span>"
+    },
+    {
+      "expression": "\\mathbf{\\hbox{$x$}}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>x</mi></mstyle></mrow><annotation encoding=\"application/x-tex\">\\mathbf{\\hbox{$x$}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathbf{\\hbox{$x$}}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"mord mathnormal\">x</span></span></span></span></span>"
+    },
+    {
+      "expression": "\\mathbf{\\hbox{$x$}}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>x</mi></mstyle></mrow><annotation encoding=\"application/x-tex\">\\mathbf{\\hbox{$x$}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathbf{\\colorbox{red}{$x$}}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.0306em;vertical-align:-0.3em;\"></span><span class=\"mord\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7306em;\"><span style=\"top:-2.7306em;\"><span class=\"pstrut\" style=\"height:3.0306em;\"></span><span class=\"katex-stretchy colorbox\" style=\"height:1.0306em;background-color:red;\"></span></span><span style=\"top:-3.0306em;\"><span class=\"pstrut\" style=\"height:3.0306em;\"></span><span class=\"boxpad\"><span class=\"mord\"><span class=\"mord mathnormal\">x</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.3em;\"><span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\mathbf{\\colorbox{red}{$x$}}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mpadded width=\"+6pt\" height=\"+6pt\" lspace=\"3pt\" voffset=\"3pt\" mathbackground=\"red\"><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>x</mi></mstyle></mstyle></mpadded></mrow><annotation encoding=\"application/x-tex\">\\mathbf{\\colorbox{red}{$x$}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathbf{\\colorbox{red}{$x$}}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.0306em;vertical-align:-0.3em;\"></span><span class=\"mord\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7306em;\"><span style=\"top:-2.7306em;\"><span class=\"pstrut\" style=\"height:3.0306em;\"></span><span class=\"katex-stretchy colorbox\" style=\"height:1.0306em;background-color:red;\"></span></span><span style=\"top:-3.0306em;\"><span class=\"pstrut\" style=\"height:3.0306em;\"></span><span class=\"boxpad\"><span class=\"mord\"><span class=\"mord mathnormal\">x</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.3em;\"><span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\mathbf{\\colorbox{red}{$x$}}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mpadded width=\"+6pt\" height=\"+6pt\" lspace=\"3pt\" voffset=\"3pt\" mathbackground=\"red\"><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>x</mi></mstyle></mstyle></mpadded></mrow><annotation encoding=\"application/x-tex\">\\mathbf{\\colorbox{red}{$x$}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\textbf{$x$}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"mord text\"><span class=\"mord mathnormal\">x</span></span></span></span></span>"
+    },
+    {
+      "expression": "\\textbf{$x$}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>x</mi></mstyle></mrow><annotation encoding=\"application/x-tex\">\\textbf{$x$}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\textbf{$x$}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"mord text\"><span class=\"mord mathnormal\">x</span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\textbf{$x$}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>x</mi></mstyle></mrow><annotation encoding=\"application/x-tex\">\\textbf{$x$}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathbf{\\begin{matrix}x\\end{matrix}}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.2em;vertical-align:-0.35em;\"></span><span class=\"mord\"><span class=\"mtable\"><span class=\"col-align-c\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.85em;\"><span style=\"top:-3.01em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.35em;\"><span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\mathbf{\\begin{matrix}x\\end{matrix}}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mtable rowspacing=\"0.16em\" columnalign=\"center\" columnspacing=\"1em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>x</mi></mstyle></mtd></mtr></mtable><annotation encoding=\"application/x-tex\">\\mathbf{\\begin{matrix}x\\end{matrix}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathbf{\\begin{matrix}x\\end{matrix}}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.2em;vertical-align:-0.35em;\"></span><span class=\"mord\"><span class=\"mtable\"><span class=\"col-align-c\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.85em;\"><span style=\"top:-3.01em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.35em;\"><span></span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\mathbf{\\begin{matrix}x\\end{matrix}}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mtable rowspacing=\"0.16em\" columnalign=\"center\" columnspacing=\"1em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>x</mi></mstyle></mtd></mtr></mtable><annotation encoding=\"application/x-tex\">\\mathbf{\\begin{matrix}x\\end{matrix}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\hat{\\mathbb{R}}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.9523em;\"></span><span class=\"mord katex-accent\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.9523em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord mathbb\">R</span></span><span style=\"top:-3.2579em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"accent-body\" style=\"left:-0.25em;\"><span class=\"mord\">^</span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\hat{\\mathbb{R}}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mover accent=\"true\"><mi mathvariant=\"double-struck\">R</mi><mo>^</mo></mover></mrow><annotation encoding=\"application/x-tex\">\\hat{\\mathbb{R}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\hat{\\mathbb{R}}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.9523em;\"></span><span class=\"mord katex-accent\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.9523em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord mathbb\">R</span></span><span style=\"top:-3.2579em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"accent-body\" style=\"left:-0.25em;\"><span class=\"mord\">^</span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\hat{\\mathbb{R}}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mover accent=\"true\"><mi mathvariant=\"double-struck\">R</mi><mo>^</mo></mover></mrow><annotation encoding=\"application/x-tex\">\\hat{\\mathbb{R}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\hat{\\mathbf{x}}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.7079em;\"></span><span class=\"mord katex-accent\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7079em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord mathbf\">x</span></span><span style=\"top:-3.0134em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"accent-body\" style=\"left:-0.25em;\"><span class=\"mord\">^</span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\hat{\\mathbf{x}}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mover accent=\"true\"><mi mathvariant=\"bold\">x</mi><mo>^</mo></mover></mrow><annotation encoding=\"application/x-tex\">\\hat{\\mathbf{x}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\hat{\\mathbf{x}}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.7079em;\"></span><span class=\"mord katex-accent\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7079em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord mathbf\">x</span></span><span style=\"top:-3.0134em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"accent-body\" style=\"left:-0.25em;\"><span class=\"mord\">^</span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\hat{\\mathbf{x}}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mover accent=\"true\"><mi mathvariant=\"bold\">x</mi><mo>^</mo></mover></mrow><annotation encoding=\"application/x-tex\">\\hat{\\mathbf{x}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathnormal{ff}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.8889em;vertical-align:-0.1944em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right:0.1076em;\">f</span><span class=\"mord mathnormal\" style=\"margin-right:0.1076em;\">f</span></span></span></span></span>"
+    },
+    {
+      "expression": "\\mathnormal{ff}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>f</mi><mi>f</mi></mrow><annotation encoding=\"application/x-tex\">\\mathnormal{ff}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathnormal{ff}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.8889em;vertical-align:-0.1944em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right:0.1076em;\">f</span><span class=\"mord mathnormal\" style=\"margin-right:0.1076em;\">f</span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\mathnormal{ff}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>f</mi><mi>f</mi></mrow><annotation encoding=\"application/x-tex\">\\mathnormal{ff}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\sqrt\\imath",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.04em;vertical-align:-0.2397em;\"></span><span class=\"mord sqrt\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8003em;\"><span class=\"svg-align\" style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span style=\"padding-left:0.833em;\"><span class=\"mord mathnormal\"></span></span></span><span style=\"top:-2.7603em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"hide-tail\" style=\"min-width:0.853em;height:1.08em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"1.08em\" viewBox=\"0 0 400000 1080\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M95,702\nc-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14\nc0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54\nc44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10\ns173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429\nc69,-144,104.5,-217.7,106.5,-221\nl0 -0\nc5.3,-9.3,12,-14,20,-14\nH400000v40H845.2724\ns-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7\nc-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z\nM834 80h400000v40h-400000z\"/></svg></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.2397em;\"><span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\sqrt\\imath",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msqrt><mi mathvariant=\"normal\">ı</mi></msqrt></mrow><annotation encoding=\"application/x-tex\">\\sqrt\\imath</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\sqrt\\imath",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.04em;vertical-align:-0.1908em;\"></span><span class=\"mord sqrt\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8492em;\"><span class=\"svg-align\" style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span style=\"padding-left:0.833em;\"><span class=\"mord mathnormal\"></span></span></span><span style=\"top:-2.8092em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"hide-tail\" style=\"min-width:0.853em;height:1.08em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"1.08em\" viewBox=\"0 0 400000 1080\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M95,702\nc-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14\nc0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54\nc44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10\ns173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429\nc69,-144,104.5,-217.7,106.5,-221\nl0 -0\nc5.3,-9.3,12,-14,20,-14\nH400000v40H845.2724\ns-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7\nc-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z\nM834 80h400000v40h-400000z\"/></svg></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.1908em;\"><span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\sqrt\\imath",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><msqrt><mi mathvariant=\"normal\">ı</mi></msqrt></mrow><annotation encoding=\"application/x-tex\">\\sqrt\\imath</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathop\\int",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.1111em;vertical-align:-0.3061em;\"></span><span class=\"mop op-symbol small-op\" style=\"margin-right:0.1945em;position:relative;top:-0.0006em;\">∫</span></span></span></span>"
+    },
+    {
+      "expression": "\\mathop\\int",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mo><mo>∫</mo></mo></mrow><annotation encoding=\"application/x-tex\">\\mathop\\int</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathop\\int",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.2222em;vertical-align:-0.8622em;\"></span><span class=\"mop op-symbol large-op\" style=\"margin-right:0.4445em;position:relative;top:-0.0011em;\">∫</span></span></span></span></span>"
+    },
+    {
+      "expression": "\\mathop\\int",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mo><mo>∫</mo></mo></mrow><annotation encoding=\"application/x-tex\">\\mathop\\int</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\bigl{(}x\\bigr{)}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.2em;vertical-align:-0.35em;\"></span><span class=\"mopen\"><span class=\"delimsizing size1\">(</span></span><span class=\"mord mathnormal\">x</span><span class=\"mclose\"><span class=\"delimsizing size1\">)</span></span></span></span></span>"
+    },
+    {
+      "expression": "\\bigl{(}x\\bigr{)}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mo fence=\"true\" stretchy=\"true\" minsize=\"1.2em\" maxsize=\"1.2em\">(</mo><mi>x</mi><mo fence=\"true\" stretchy=\"true\" minsize=\"1.2em\" maxsize=\"1.2em\">)</mo></mrow><annotation encoding=\"application/x-tex\">\\bigl{(}x\\bigr{)}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\bigl{(}x\\bigr{)}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.2em;vertical-align:-0.35em;\"></span><span class=\"mopen\"><span class=\"delimsizing size1\">(</span></span><span class=\"mord mathnormal\">x</span><span class=\"mclose\"><span class=\"delimsizing size1\">)</span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\bigl{(}x\\bigr{)}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mo fence=\"true\" stretchy=\"true\" minsize=\"1.2em\" maxsize=\"1.2em\">(</mo><mi>x</mi><mo fence=\"true\" stretchy=\"true\" minsize=\"1.2em\" maxsize=\"1.2em\">)</mo></mrow><annotation encoding=\"application/x-tex\">\\bigl{(}x\\bigr{)}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\left[\\rule{1em}{4em}\\right]",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:7.35em;vertical-align:-3.35em;\"></span><span class=\"minner\"><span class=\"mopen\"><span class=\"delimsizing mult\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:3.85em;\"><span style=\"top:-5.8499em;\"><span class=\"pstrut\" style=\"height:9.2em;\"></span><span style=\"width:0.667em;height:7.2em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"0.667em\" height=\"7.2em\" viewBox=\"0 0 667 7200\"><path d=\"M403 1759 V84 H666 V0 H319 V1759 v3600 v1759 v84 h347 v-84\nH403z M403 1759 V0 H319 V1759 v3600 v1759 v84 h84z\"/></svg></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:3.35em;\"><span></span></span></span></span></span></span><span class=\"mord katex-rule\" style=\"border-right-width:1em;border-top-width:4em;bottom:0em;\"></span><span class=\"mclose\"><span class=\"delimsizing mult\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:3.85em;\"><span style=\"top:-5.8499em;\"><span class=\"pstrut\" style=\"height:9.2em;\"></span><span style=\"width:0.667em;height:7.2em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"0.667em\" height=\"7.2em\" viewBox=\"0 0 667 7200\"><path d=\"M347 1759 V0 H0 V84 H263 V1759 v3600 v1759 H0 v84 H347z\nM347 1759 V0 H263 V1759 v3600 v1759 h84z\"/></svg></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:3.35em;\"><span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\left[\\rule{1em}{4em}\\right]",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mo fence=\"true\">[</mo><mpadded height=\"0em\" voffset=\"0em\"><mspace mathbackground=\"black\" width=\"1em\" height=\"4em\"></mspace></mpadded><mo fence=\"true\">]</mo></mrow><annotation encoding=\"application/x-tex\">\\left[\\rule{1em}{4em}\\right]</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\left[\\rule{1em}{4em}\\right]",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:7.35em;vertical-align:-3.35em;\"></span><span class=\"minner\"><span class=\"mopen\"><span class=\"delimsizing mult\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:3.85em;\"><span style=\"top:-5.8499em;\"><span class=\"pstrut\" style=\"height:9.2em;\"></span><span style=\"width:0.667em;height:7.2em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"0.667em\" height=\"7.2em\" viewBox=\"0 0 667 7200\"><path d=\"M403 1759 V84 H666 V0 H319 V1759 v3600 v1759 v84 h347 v-84\nH403z M403 1759 V0 H319 V1759 v3600 v1759 v84 h84z\"/></svg></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:3.35em;\"><span></span></span></span></span></span></span><span class=\"mord katex-rule\" style=\"border-right-width:1em;border-top-width:4em;bottom:0em;\"></span><span class=\"mclose\"><span class=\"delimsizing mult\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:3.85em;\"><span style=\"top:-5.8499em;\"><span class=\"pstrut\" style=\"height:9.2em;\"></span><span style=\"width:0.667em;height:7.2em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"0.667em\" height=\"7.2em\" viewBox=\"0 0 667 7200\"><path d=\"M347 1759 V0 H0 V84 H263 V1759 v3600 v1759 H0 v84 H347z\nM347 1759 V0 H263 V1759 v3600 v1759 h84z\"/></svg></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:3.35em;\"><span></span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\left[\\rule{1em}{4em}\\right]",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mo fence=\"true\">[</mo><mpadded height=\"0em\" voffset=\"0em\"><mspace mathbackground=\"black\" width=\"1em\" height=\"4em\"></mspace></mpadded><mo fence=\"true\">]</mo></mrow><annotation encoding=\"application/x-tex\">\\left[\\rule{1em}{4em}\\right]</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\not=",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.8889em;vertical-align:-0.1944em;\"></span><span class=\"mrel\"><span class=\"mord katex-vbox\"><span class=\"katex-thinbox\"><span class=\"rlap\"><span class=\"katex-strut\" style=\"height:0.8889em;vertical-align:-0.1944em;\"></span><span class=\"katex-inner\"><span class=\"mord\"><span class=\"mrel\"></span></span></span><span class=\"katex-fix\"></span></span></span></span></span><span class=\"mspace nobreak\"></span><span class=\"mrel\">=</span></span></span></span>"
+    },
+    {
+      "expression": "\\not=",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mo>≠</mo></mrow><annotation encoding=\"application/x-tex\">\\not=</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\not=",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.8889em;vertical-align:-0.1944em;\"></span><span class=\"mrel\"><span class=\"mord katex-vbox\"><span class=\"katex-thinbox\"><span class=\"rlap\"><span class=\"katex-strut\" style=\"height:0.8889em;vertical-align:-0.1944em;\"></span><span class=\"katex-inner\"><span class=\"mord\"><span class=\"mrel\"></span></span></span><span class=\"katex-fix\"></span></span></span></span></span><span class=\"mspace nobreak\"></span><span class=\"mrel\">=</span></span></span></span></span>"
+    },
+    {
+      "expression": "\\not=",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mo>≠</mo></mrow><annotation encoding=\"application/x-tex\">\\not=</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\text{a·b}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6944em;\"></span><span class=\"mord text\"><span class=\"mord\">a⋅b</span></span></span></span></span>"
+    },
+    {
+      "expression": "\\text{a·b}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mtext>a⋅b</mtext></mrow><annotation encoding=\"application/x-tex\">\\text{a·b}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\text{a·b}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6944em;\"></span><span class=\"mord text\"><span class=\"mord\">a⋅b</span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\text{a·b}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mtext>a⋅b</mtext></mrow><annotation encoding=\"application/x-tex\">\\text{a·b}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "a·b",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6944em;\"></span><span class=\"mord mathnormal\">a</span><span class=\"mpunct\">⋅</span><span class=\"mspace\" style=\"margin-right:0.1667em;\"></span><span class=\"mord mathnormal\">b</span></span></span></span>"
+    },
+    {
+      "expression": "a·b",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>a</mi><mo separator=\"true\">⋅</mo><mi>b</mi></mrow><annotation encoding=\"application/x-tex\">a·b</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "a·b",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6944em;\"></span><span class=\"mord mathnormal\">a</span><span class=\"mpunct\">⋅</span><span class=\"mspace\" style=\"margin-right:0.1667em;\"></span><span class=\"mord mathnormal\">b</span></span></span></span></span>"
+    },
+    {
+      "expression": "a·b",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>a</mi><mo separator=\"true\">⋅</mo><mi>b</mi></mrow><annotation encoding=\"application/x-tex\">a·b</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\text{♥️}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0em;\"></span><span class=\"mord text\"><span class=\"mord\">♥️</span></span></span></span></span>"
+    },
+    {
+      "expression": "\\text{♥️}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mtext>♥️</mtext></mrow><annotation encoding=\"application/x-tex\">\\text{♥️}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\text{♥️}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0em;\"></span><span class=\"mord text\"><span class=\"mord\">♥️</span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\text{♥️}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mtext>♥️</mtext></mrow><annotation encoding=\"application/x-tex\">\\text{♥️}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\char\"10FFFF",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0em;\"></span><span class=\"mord\">􏿿</span></span></span></span>"
+    },
+    {
+      "expression": "\\char\"10FFFF",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi mathvariant=\"normal\">􏿿</mi></mrow><annotation encoding=\"application/x-tex\">\\char&quot;10FFFF</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\char\"10FFFF",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0em;\"></span><span class=\"mord\">􏿿</span></span></span></span></span>"
+    },
+    {
+      "expression": "\\char\"10FFFF",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi mathvariant=\"normal\">􏿿</mi></mrow><annotation encoding=\"application/x-tex\">\\char&quot;10FFFF</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\smash{gj}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0em;\"></span><span class=\"mord katex-smash\"><span><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">g</span><span class=\"mord mathnormal\" style=\"margin-right:0.0572em;\">j</span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\smash{gj}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mpadded height=\"0px\" depth=\"0px\"><mrow><mi>g</mi><mi>j</mi></mrow></mpadded></mrow><annotation encoding=\"application/x-tex\">\\smash{gj}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\smash{gj}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0em;\"></span><span class=\"mord katex-smash\"><span><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">g</span><span class=\"mord mathnormal\" style=\"margin-right:0.0572em;\">j</span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\smash{gj}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mpadded height=\"0px\" depth=\"0px\"><mrow><mi>g</mi><mi>j</mi></mrow></mpadded></mrow><annotation encoding=\"application/x-tex\">\\smash{gj}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\smash[t]{gj}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.1944em;vertical-align:-0.1944em;\"></span><span class=\"mord\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">g</span><span class=\"mord mathnormal\" style=\"margin-right:0.0572em;\">j</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.1944em;\"><span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\smash[t]{gj}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mpadded height=\"0px\"><mrow><mi>g</mi><mi>j</mi></mrow></mpadded></mrow><annotation encoding=\"application/x-tex\">\\smash[t]{gj}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\smash[t]{gj}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.1944em;vertical-align:-0.1944em;\"></span><span class=\"mord\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">g</span><span class=\"mord mathnormal\" style=\"margin-right:0.0572em;\">j</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.1944em;\"><span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\smash[t]{gj}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mpadded height=\"0px\"><mrow><mi>g</mi><mi>j</mi></mrow></mpadded></mrow><annotation encoding=\"application/x-tex\">\\smash[t]{gj}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\smash[b]{gj}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6595em;\"></span><span class=\"mord\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6595em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">g</span><span class=\"mord mathnormal\" style=\"margin-right:0.0572em;\">j</span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\smash[b]{gj}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mpadded depth=\"0px\"><mrow><mi>g</mi><mi>j</mi></mrow></mpadded></mrow><annotation encoding=\"application/x-tex\">\\smash[b]{gj}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\smash[b]{gj}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6595em;\"></span><span class=\"mord\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6595em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">g</span><span class=\"mord mathnormal\" style=\"margin-right:0.0572em;\">j</span></span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\smash[b]{gj}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mpadded depth=\"0px\"><mrow><mi>g</mi><mi>j</mi></mrow></mpadded></mrow><annotation encoding=\"application/x-tex\">\\smash[b]{gj}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "a\\hphantom{\\kern-1em}b",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6944em;\"></span><span class=\"mord mathnormal\">a</span><span class=\"mord katex-smash\"><span><span class=\"mord\"><span class=\"mspace\" style=\"color:transparent;margin-right:-1em;\"></span></span></span></span><span class=\"mord mathnormal\">b</span></span></span></span>"
+    },
+    {
+      "expression": "a\\hphantom{\\kern-1em}b",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>a</mi><mpadded height=\"0px\" depth=\"0px\"><mphantom><mspace width=\"-1em\"/></mphantom></mpadded><mi>b</mi></mrow><annotation encoding=\"application/x-tex\">a\\hphantom{\\kern-1em}b</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "a\\hphantom{\\kern-1em}b",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6944em;\"></span><span class=\"mord mathnormal\">a</span><span class=\"mord katex-smash\"><span><span class=\"mord\"><span class=\"mspace\" style=\"color:transparent;margin-right:-1em;\"></span></span></span></span><span class=\"mord mathnormal\">b</span></span></span></span></span>"
+    },
+    {
+      "expression": "a\\hphantom{\\kern-1em}b",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>a</mi><mpadded height=\"0px\" depth=\"0px\"><mphantom><mspace width=\"-1em\"/></mphantom></mpadded><mi>b</mi></mrow><annotation encoding=\"application/x-tex\">a\\hphantom{\\kern-1em}b</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\text{\\sout{abc}}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6944em;\"></span><span class=\"mord text\"><span class=\"mord\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6944em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">abc</span></span></span><span style=\"top:-3.2155em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-stretchy katex-sout\"></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\text{\\sout{abc}}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><menclose notation=\"horizontalstrike\"><mtext>abc</mtext></menclose></mrow><annotation encoding=\"application/x-tex\">\\text{\\sout{abc}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\text{\\sout{abc}}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6944em;\"></span><span class=\"mord text\"><span class=\"mord\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6944em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">abc</span></span></span><span style=\"top:-3.2155em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-stretchy katex-sout\"></span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\text{\\sout{abc}}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><menclose notation=\"horizontalstrike\"><mtext>abc</mtext></menclose></mrow><annotation encoding=\"application/x-tex\">\\text{\\sout{abc}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\sout{x}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"mord\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.4306em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span></span></span><span style=\"top:-3.2155em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-stretchy katex-sout\"></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\sout{x}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><menclose notation=\"horizontalstrike\"><mi>x</mi></menclose></mrow><annotation encoding=\"application/x-tex\">\\sout{x}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\sout{x}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"mord\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.4306em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span></span></span><span style=\"top:-3.2155em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-stretchy katex-sout\"></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\sout{x}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><menclose notation=\"horizontalstrike\"><mi>x</mi></menclose></mrow><annotation encoding=\"application/x-tex\">\\sout{x}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\vcenter{x}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4653em;\"></span><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.4653em;\"><span style=\"top:-3.0347em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\vcenter{x}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mpadded class =\"vcenter\"><mi>x</mi></mpadded></mrow><annotation encoding=\"application/x-tex\">\\vcenter{x}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\vcenter{x}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4653em;\"></span><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.4653em;\"><span style=\"top:-3.0347em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\vcenter{x}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mpadded class =\"vcenter\"><mi>x</mi></mpadded></mrow><annotation encoding=\"application/x-tex\">\\vcenter{x}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathrel{\\vcenter{x}}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4653em;\"></span><span class=\"mrel\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.4653em;\"><span style=\"top:-3.0347em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\mathrel{\\vcenter{x}}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mo><mrow><mpadded class =\"vcenter\"><mi>x</mi></mpadded></mrow></mo></mrow><annotation encoding=\"application/x-tex\">\\mathrel{\\vcenter{x}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mathrel{\\vcenter{x}}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4653em;\"></span><span class=\"mrel\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.4653em;\"><span style=\"top:-3.0347em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\mathrel{\\vcenter{x}}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mo><mrow><mpadded class =\"vcenter\"><mi>x</mi></mpadded></mrow></mo></mrow><annotation encoding=\"application/x-tex\">\\mathrel{\\vcenter{x}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\overbracket{a+b}^{n}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.8192em;vertical-align:-0.0833em;\"></span><span class=\"minner mover\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.7358em;\"><span style=\"top:-3.2344em;\"><span class=\"pstrut\" style=\"height:3.2344em;\"></span><span class=\"minner mover\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.2344em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mord mathnormal\">b</span></span></span><span class=\"svg-align\" style=\"top:-3.7944em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-stretchy\" style=\"height:0.44em;min-width:1.6em;\"><span class=\"halfarrow-left\" style=\"height:0.44em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.44em\" viewBox=\"0 0 400000 440\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M0 440 h120 V150 H399995 v-120 H0z M0 440 h120 V150 H399995 v-120 H0z\"/></svg></span><span class=\"halfarrow-right\" style=\"height:0.44em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.44em\" viewBox=\"0 0 400000 440\" preserveAspectRatio=\"xMaxYMin slice\"><path d=\"M399995 440 h-120 V150 H0 v-120 H399995z M399995 440 h-120 V150 H0 v-120 H399995z\"/></svg></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.0833em;\"><span></span></span></span></span></span></span><span style=\"top:-4.6689em;\"><span class=\"pstrut\" style=\"height:3.2344em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">n</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.0833em;\"><span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\overbracket{a+b}^{n}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mover><mover><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow><mo stretchy=\"true\">⎴</mo></mover><mi>n</mi></mover></mrow><annotation encoding=\"application/x-tex\">\\overbracket{a+b}^{n}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\overbracket{a+b}^{n}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.8192em;vertical-align:-0.0833em;\"></span><span class=\"minner mover\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.7358em;\"><span style=\"top:-3.2344em;\"><span class=\"pstrut\" style=\"height:3.2344em;\"></span><span class=\"minner mover\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.2344em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mord mathnormal\">b</span></span></span><span class=\"svg-align\" style=\"top:-3.7944em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-stretchy\" style=\"height:0.44em;min-width:1.6em;\"><span class=\"halfarrow-left\" style=\"height:0.44em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.44em\" viewBox=\"0 0 400000 440\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M0 440 h120 V150 H399995 v-120 H0z M0 440 h120 V150 H399995 v-120 H0z\"/></svg></span><span class=\"halfarrow-right\" style=\"height:0.44em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.44em\" viewBox=\"0 0 400000 440\" preserveAspectRatio=\"xMaxYMin slice\"><path d=\"M399995 440 h-120 V150 H0 v-120 H399995z M399995 440 h-120 V150 H0 v-120 H399995z\"/></svg></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.0833em;\"><span></span></span></span></span></span></span><span style=\"top:-4.6689em;\"><span class=\"pstrut\" style=\"height:3.2344em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">n</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.0833em;\"><span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\overbracket{a+b}^{n}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mover><mover><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow><mo stretchy=\"true\">⎴</mo></mover><mi>n</mi></mover></mrow><annotation encoding=\"application/x-tex\">\\overbracket{a+b}^{n}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\underbracket{a+b}_{n}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.7892em;vertical-align:-1.0947em;\"></span><span class=\"minner munder\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6944em;\"><span style=\"top:-1.9053em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">n</span></span></span></span><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"minner munder\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6944em;\"><span class=\"svg-align\" style=\"top:-2.4067em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-stretchy\" style=\"height:0.41em;min-width:1.6em;\"><span class=\"halfarrow-left\" style=\"height:0.41em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.41em\" viewBox=\"0 0 400000 410\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M0 0 h120 V290 H399995 v120 H0z M0 0 h120 V290 H399995 v120 H0z\"/></svg></span><span class=\"halfarrow-right\" style=\"height:0.41em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.41em\" viewBox=\"0 0 400000 410\" preserveAspectRatio=\"xMaxYMin slice\"><path d=\"M399995 0 h-120 V290 H0 v120 H400000z M399995 0 h-120 V290 H0 v120 H400000z\"/></svg></span></span></span><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mord mathnormal\">b</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.5933em;\"><span></span></span></span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.0947em;\"><span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\underbracket{a+b}_{n}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><munder><munder><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow><mo stretchy=\"true\">⎵</mo></munder><mi>n</mi></munder></mrow><annotation encoding=\"application/x-tex\">\\underbracket{a+b}_{n}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\underbracket{a+b}_{n}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.7892em;vertical-align:-1.0947em;\"></span><span class=\"minner munder\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6944em;\"><span style=\"top:-1.9053em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">n</span></span></span></span><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"minner munder\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6944em;\"><span class=\"svg-align\" style=\"top:-2.4067em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-stretchy\" style=\"height:0.41em;min-width:1.6em;\"><span class=\"halfarrow-left\" style=\"height:0.41em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.41em\" viewBox=\"0 0 400000 410\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M0 0 h120 V290 H399995 v120 H0z M0 0 h120 V290 H399995 v120 H0z\"/></svg></span><span class=\"halfarrow-right\" style=\"height:0.41em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.41em\" viewBox=\"0 0 400000 410\" preserveAspectRatio=\"xMaxYMin slice\"><path d=\"M399995 0 h-120 V290 H0 v120 H400000z M399995 0 h-120 V290 H0 v120 H400000z\"/></svg></span></span></span><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mord mathnormal\">b</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.5933em;\"><span></span></span></span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.0947em;\"><span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\underbracket{a+b}_{n}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><munder><munder><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow><mo stretchy=\"true\">⎵</mo></munder><mi>n</mi></munder></mrow><annotation encoding=\"application/x-tex\">\\underbracket{a+b}_{n}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\overbrace{x+y}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.4258em;vertical-align:-0.1944em;\"></span><span class=\"minner mover\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.2313em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">y</span></span></span><span class=\"svg-align\" style=\"top:-3.6833em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-stretchy\" style=\"height:0.548em;min-width:1.6em;\"><span class=\"brace-left\" style=\"height:0.548em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.548em\" viewBox=\"0 0 400000 548\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M6 548l-6-6v-35l6-11c56-104 135.3-181.3 238-232 57.3-28.7 117\n-45 179-50h399577v120H403c-43.3 7-81 15-113 26-100.7 33-179.7 91-237 174-2.7\n 5-6 9-10 13-.7 1-7.3 1-20 1H6z\"/></svg></span><span class=\"brace-center\" style=\"height:0.548em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.548em\" viewBox=\"0 0 400000 548\" preserveAspectRatio=\"xMidYMin slice\"><path d=\"M200428 334\nc-100.7-8.3-195.3-44-280-108-55.3-42-101.7-93-139-153l-9-14c-2.7 4-5.7 8.7-9 14\n-53.3 86.7-123.7 153-211 199-66.7 36-137.3 56.3-212 62H0V214h199568c178.3-11.7\n 311.7-78.3 403-201 6-8 9.7-12 11-12 .7-.7 6.7-1 18-1s17.3.3 18 1c1.3 0 5 4 11\n 12 44.7 59.3 101.3 106.3 170 141s145.3 54.3 229 60h199572v120z\"/></svg></span><span class=\"brace-right\" style=\"height:0.548em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.548em\" viewBox=\"0 0 400000 548\" preserveAspectRatio=\"xMaxYMin slice\"><path d=\"M400000 542l\n-6 6h-17c-12.7 0-19.3-.3-20-1-4-4-7.3-8.3-10-13-35.3-51.3-80.8-93.8-136.5-127.5\ns-117.2-55.8-184.5-66.5c-.7 0-2-.3-4-1-18.7-2.7-76-4.3-172-5H0V214h399571l6 1\nc124.7 8 235 61.7 331 161 31.3 33.3 59.7 72.7 85 118l7 13v35z\"/></svg></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.1944em;\"><span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\overbrace{x+y}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mover><mrow><mi>x</mi><mo>+</mo><mi>y</mi></mrow><mo stretchy=\"true\">⏞</mo></mover></mrow><annotation encoding=\"application/x-tex\">\\overbrace{x+y}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\overbrace{x+y}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.4258em;vertical-align:-0.1944em;\"></span><span class=\"minner mover\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.2313em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">y</span></span></span><span class=\"svg-align\" style=\"top:-3.6833em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-stretchy\" style=\"height:0.548em;min-width:1.6em;\"><span class=\"brace-left\" style=\"height:0.548em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.548em\" viewBox=\"0 0 400000 548\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M6 548l-6-6v-35l6-11c56-104 135.3-181.3 238-232 57.3-28.7 117\n-45 179-50h399577v120H403c-43.3 7-81 15-113 26-100.7 33-179.7 91-237 174-2.7\n 5-6 9-10 13-.7 1-7.3 1-20 1H6z\"/></svg></span><span class=\"brace-center\" style=\"height:0.548em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.548em\" viewBox=\"0 0 400000 548\" preserveAspectRatio=\"xMidYMin slice\"><path d=\"M200428 334\nc-100.7-8.3-195.3-44-280-108-55.3-42-101.7-93-139-153l-9-14c-2.7 4-5.7 8.7-9 14\n-53.3 86.7-123.7 153-211 199-66.7 36-137.3 56.3-212 62H0V214h199568c178.3-11.7\n 311.7-78.3 403-201 6-8 9.7-12 11-12 .7-.7 6.7-1 18-1s17.3.3 18 1c1.3 0 5 4 11\n 12 44.7 59.3 101.3 106.3 170 141s145.3 54.3 229 60h199572v120z\"/></svg></span><span class=\"brace-right\" style=\"height:0.548em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.548em\" viewBox=\"0 0 400000 548\" preserveAspectRatio=\"xMaxYMin slice\"><path d=\"M400000 542l\n-6 6h-17c-12.7 0-19.3-.3-20-1-4-4-7.3-8.3-10-13-35.3-51.3-80.8-93.8-136.5-127.5\ns-117.2-55.8-184.5-66.5c-.7 0-2-.3-4-1-18.7-2.7-76-4.3-172-5H0V214h399571l6 1\nc124.7 8 235 61.7 331 161 31.3 33.3 59.7 72.7 85 118l7 13v35z\"/></svg></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.1944em;\"><span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\overbrace{x+y}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mover><mrow><mi>x</mi><mo>+</mo><mi>y</mi></mrow><mo stretchy=\"true\">⏞</mo></mover></mrow><annotation encoding=\"application/x-tex\">\\overbrace{x+y}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\underbrace{x+y}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.4258em;vertical-align:-0.8424em;\"></span><span class=\"minner munder\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.5833em;\"><span class=\"svg-align\" style=\"top:-2.1576em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-stretchy\" style=\"height:0.548em;min-width:1.6em;\"><span class=\"brace-left\" style=\"height:0.548em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.548em\" viewBox=\"0 0 400000 548\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M0 6l6-6h17c12.688 0 19.313.3 20 1 4 4 7.313 8.3 10 13\n 35.313 51.3 80.813 93.8 136.5 127.5 55.688 33.7 117.188 55.8 184.5 66.5.688\n 0 2 .3 4 1 18.688 2.7 76 4.3 172 5h399450v120H429l-6-1c-124.688-8-235-61.7\n-331-161C60.687 138.7 32.312 99.3 7 54L0 41V6z\"/></svg></span><span class=\"brace-center\" style=\"height:0.548em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.548em\" viewBox=\"0 0 400000 548\" preserveAspectRatio=\"xMidYMin slice\"><path d=\"M199572 214\nc100.7 8.3 195.3 44 280 108 55.3 42 101.7 93 139 153l9 14c2.7-4 5.7-8.7 9-14\n 53.3-86.7 123.7-153 211-199 66.7-36 137.3-56.3 212-62h199568v120H200432c-178.3\n 11.7-311.7 78.3-403 201-6 8-9.7 12-11 12-.7.7-6.7 1-18 1s-17.3-.3-18-1c-1.3 0\n-5-4-11-12-44.7-59.3-101.3-106.3-170-141s-145.3-54.3-229-60H0V214z\"/></svg></span><span class=\"brace-right\" style=\"height:0.548em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.548em\" viewBox=\"0 0 400000 548\" preserveAspectRatio=\"xMaxYMin slice\"><path d=\"M399994 0l6 6v35l-6 11c-56 104-135.3 181.3-238 232-57.3\n 28.7-117 45-179 50H-300V214h399897c43.3-7 81-15 113-26 100.7-33 179.7-91 237\n-174 2.7-5 6-9 10-13 .7-1 7.3-1 20-1h17z\"/></svg></span></span></span><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">y</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8424em;\"><span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\underbrace{x+y}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><munder><mrow><mi>x</mi><mo>+</mo><mi>y</mi></mrow><mo stretchy=\"true\">⏟</mo></munder></mrow><annotation encoding=\"application/x-tex\">\\underbrace{x+y}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\underbrace{x+y}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.4258em;vertical-align:-0.8424em;\"></span><span class=\"minner munder\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.5833em;\"><span class=\"svg-align\" style=\"top:-2.1576em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-stretchy\" style=\"height:0.548em;min-width:1.6em;\"><span class=\"brace-left\" style=\"height:0.548em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.548em\" viewBox=\"0 0 400000 548\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M0 6l6-6h17c12.688 0 19.313.3 20 1 4 4 7.313 8.3 10 13\n 35.313 51.3 80.813 93.8 136.5 127.5 55.688 33.7 117.188 55.8 184.5 66.5.688\n 0 2 .3 4 1 18.688 2.7 76 4.3 172 5h399450v120H429l-6-1c-124.688-8-235-61.7\n-331-161C60.687 138.7 32.312 99.3 7 54L0 41V6z\"/></svg></span><span class=\"brace-center\" style=\"height:0.548em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.548em\" viewBox=\"0 0 400000 548\" preserveAspectRatio=\"xMidYMin slice\"><path d=\"M199572 214\nc100.7 8.3 195.3 44 280 108 55.3 42 101.7 93 139 153l9 14c2.7-4 5.7-8.7 9-14\n 53.3-86.7 123.7-153 211-199 66.7-36 137.3-56.3 212-62h199568v120H200432c-178.3\n 11.7-311.7 78.3-403 201-6 8-9.7 12-11 12-.7.7-6.7 1-18 1s-17.3-.3-18-1c-1.3 0\n-5-4-11-12-44.7-59.3-101.3-106.3-170-141s-145.3-54.3-229-60H0V214z\"/></svg></span><span class=\"brace-right\" style=\"height:0.548em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"0.548em\" viewBox=\"0 0 400000 548\" preserveAspectRatio=\"xMaxYMin slice\"><path d=\"M399994 0l6 6v35l-6 11c-56 104-135.3 181.3-238 232-57.3\n 28.7-117 45-179 50H-300V214h399897c43.3-7 81-15 113-26 100.7-33 179.7-91 237\n-174 2.7-5 6-9 10-13 .7-1 7.3-1 20-1h17z\"/></svg></span></span></span><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">y</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8424em;\"><span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\underbrace{x+y}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><munder><mrow><mi>x</mi><mo>+</mo><mi>y</mi></mrow><mo stretchy=\"true\">⏟</mo></munder></mrow><annotation encoding=\"application/x-tex\">\\underbrace{x+y}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\begin{aligned}a&=b\\\\c&=d\\end{aligned}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.7em;vertical-align:-1.1em;\"></span><span class=\"mord\"><span class=\"mtable\"><span class=\"col-align-r\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.6em;\"><span style=\"top:-3.76em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span></span></span><span style=\"top:-2.26em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">c</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.1em;\"><span></span></span></span></span></span><span class=\"col-align-l\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.6em;\"><span style=\"top:-3.76em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\"></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mord mathnormal\">b</span></span></span><span style=\"top:-2.26em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\"></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mord mathnormal\">d</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.1em;\"><span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\begin{aligned}a&=b\\\\c&=d\\end{aligned}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mtable rowspacing=\"0.25em\" columnalign=\"right left\" columnspacing=\"0em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>a</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mrow><mrow></mrow><mo>=</mo><mi>b</mi></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>c</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mrow><mrow></mrow><mo>=</mo><mi>d</mi></mrow></mstyle></mtd></mtr></mtable><annotation encoding=\"application/x-tex\">\\begin{aligned}a&amp;=b\\\\c&amp;=d\\end{aligned}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\begin{aligned}a&=b\\\\c&=d\\end{aligned}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.7em;vertical-align:-1.1em;\"></span><span class=\"mord\"><span class=\"mtable\"><span class=\"col-align-r\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.6em;\"><span style=\"top:-3.76em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span></span></span><span style=\"top:-2.26em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">c</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.1em;\"><span></span></span></span></span></span><span class=\"col-align-l\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.6em;\"><span style=\"top:-3.76em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\"></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mord mathnormal\">b</span></span></span><span style=\"top:-2.26em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\"></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mord mathnormal\">d</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.1em;\"><span></span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\begin{aligned}a&=b\\\\c&=d\\end{aligned}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mtable rowspacing=\"0.25em\" columnalign=\"right left\" columnspacing=\"0em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>a</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mrow><mrow></mrow><mo>=</mo><mi>b</mi></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>c</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mrow><mrow></mrow><mo>=</mo><mi>d</mi></mrow></mstyle></mtd></mtr></mtable><annotation encoding=\"application/x-tex\">\\begin{aligned}a&amp;=b\\\\c&amp;=d\\end{aligned}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\begin{gathered}a\\\\b\\end{gathered}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.7em;vertical-align:-1.1em;\"></span><span class=\"mord\"><span class=\"mtable\"><span class=\"col-align-c\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.6em;\"><span style=\"top:-3.76em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span></span></span><span style=\"top:-2.26em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">b</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.1em;\"><span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\begin{gathered}a\\\\b\\end{gathered}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mtable rowspacing=\"0.25em\" columnalign=\"center\" columnspacing=\"0em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>a</mi></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>b</mi></mstyle></mtd></mtr></mtable><annotation encoding=\"application/x-tex\">\\begin{gathered}a\\\\b\\end{gathered}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\begin{gathered}a\\\\b\\end{gathered}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.7em;vertical-align:-1.1em;\"></span><span class=\"mord\"><span class=\"mtable\"><span class=\"col-align-c\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.6em;\"><span style=\"top:-3.76em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span></span></span><span style=\"top:-2.26em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">b</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.1em;\"><span></span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\begin{gathered}a\\\\b\\end{gathered}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mtable rowspacing=\"0.25em\" columnalign=\"center\" columnspacing=\"0em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>a</mi></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>b</mi></mstyle></mtd></mtr></mtable><annotation encoding=\"application/x-tex\">\\begin{gathered}a\\\\b\\end{gathered}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\htmlData{ a= x=y ,b=one{,}two}{x}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"enclosing\" data-a=\" x=y \" data-b=\"one,two\"><span class=\"mord mathnormal\">x</span></span></span></span></span>"
+    },
+    {
+      "expression": "\\htmlData{ a= x=y ,b=one{,}two}{x}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>x</mi></mrow><annotation encoding=\"application/x-tex\">\\htmlData{ a= x=y ,b=one{,}two}{x}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\htmlData{ a= x=y ,b=one{,}two}{x}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"enclosing\" data-a=\" x=y \" data-b=\"one,two\"><span class=\"mord mathnormal\">x</span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\htmlData{ a= x=y ,b=one{,}two}{x}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>x</mi></mrow><annotation encoding=\"application/x-tex\">\\htmlData{ a= x=y ,b=one{,}two}{x}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\fcolorbox{red}{blue}{x}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.1106em;vertical-align:-0.34em;\"></span><span class=\"mord\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7706em;\"><span style=\"top:-2.7706em;\"><span class=\"pstrut\" style=\"height:3.1106em;\"></span><span class=\"katex-stretchy fcolorbox\" style=\"height:1.1106em;border-style:solid;border-width:0.04em;background-color:blue;border-color:red;\"></span></span><span style=\"top:-3.1106em;\"><span class=\"pstrut\" style=\"height:3.1106em;\"></span><span class=\"boxpad\"><span class=\"mord\"><span class=\"mord\">x</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.34em;\"><span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\fcolorbox{red}{blue}{x}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mpadded width=\"+6pt\" height=\"+6pt\" lspace=\"3pt\" voffset=\"3pt\" style=\"border: 0.04em solid red\" mathbackground=\"blue\"><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mtext>x</mtext></mstyle></mpadded></mrow><annotation encoding=\"application/x-tex\">\\fcolorbox{red}{blue}{x}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\fcolorbox{red}{blue}{x}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.1106em;vertical-align:-0.34em;\"></span><span class=\"mord\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7706em;\"><span style=\"top:-2.7706em;\"><span class=\"pstrut\" style=\"height:3.1106em;\"></span><span class=\"katex-stretchy fcolorbox\" style=\"height:1.1106em;border-style:solid;border-width:0.04em;background-color:blue;border-color:red;\"></span></span><span style=\"top:-3.1106em;\"><span class=\"pstrut\" style=\"height:3.1106em;\"></span><span class=\"boxpad\"><span class=\"mord\"><span class=\"mord\">x</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.34em;\"><span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\fcolorbox{red}{blue}{x}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mpadded width=\"+6pt\" height=\"+6pt\" lspace=\"3pt\" voffset=\"3pt\" style=\"border: 0.04em solid red\" mathbackground=\"blue\"><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mtext>x</mtext></mstyle></mpadded></mrow><annotation encoding=\"application/x-tex\">\\fcolorbox{red}{blue}{x}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\color{#1234}x",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"mord mathnormal\" style=\"color:#1234;\">x</span></span></span></span>"
+    },
+    {
+      "expression": "\\color{#1234}x",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mstyle mathcolor=\"#1234\"><mi>x</mi></mstyle></mrow><annotation encoding=\"application/x-tex\">\\color{#1234}x</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\color{#1234}x",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"mord mathnormal\" style=\"color:#1234;\">x</span></span></span></span></span>"
+    },
+    {
+      "expression": "\\color{#1234}x",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mstyle mathcolor=\"#1234\"><mi>x</mi></mstyle></mrow><annotation encoding=\"application/x-tex\">\\color{#1234}x</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\begin{alignedat}{1}x&=y\\end{alignedat}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.2em;vertical-align:-0.35em;\"></span><span class=\"mord\"><span class=\"mtable\"><span class=\"col-align-r\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.85em;\"><span style=\"top:-3.01em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.35em;\"><span></span></span></span></span></span><span class=\"col-align-l\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.85em;\"><span style=\"top:-3.01em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\"></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">y</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.35em;\"><span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\begin{alignedat}{1}x&=y\\end{alignedat}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mtable rowspacing=\"0.25em\" columnalign=\"right left\" columnspacing=\"0em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>x</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mrow><mrow></mrow><mo>=</mo><mi>y</mi></mrow></mstyle></mtd></mtr></mtable><annotation encoding=\"application/x-tex\">\\begin{alignedat}{1}x&amp;=y\\end{alignedat}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\begin{alignedat}{1}x&=y\\end{alignedat}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.2em;vertical-align:-0.35em;\"></span><span class=\"mord\"><span class=\"mtable\"><span class=\"col-align-r\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.85em;\"><span style=\"top:-3.01em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.35em;\"><span></span></span></span></span></span><span class=\"col-align-l\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.85em;\"><span style=\"top:-3.01em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\"></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">y</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.35em;\"><span></span></span></span></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\begin{alignedat}{1}x&=y\\end{alignedat}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mtable rowspacing=\"0.25em\" columnalign=\"right left\" columnspacing=\"0em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>x</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mrow><mrow></mrow><mo>=</mo><mi>y</mi></mrow></mstyle></mtd></mtr></mtable><annotation encoding=\"application/x-tex\">\\begin{alignedat}{1}x&amp;=y\\end{alignedat}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\sqrt[3]{x}+\\overline{x}+\\underline{y}+\\mathllap{z}",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.04em;vertical-align:-0.2397em;\"></span><span class=\"mord sqrt\"><span class=\"katex-root\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6586em;\"><span style=\"top:-2.8363em;\"><span class=\"pstrut\" style=\"height:2.5em;\"></span><span class=\"katex-sizing reset-size6 size1 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">3</span></span></span></span></span></span></span></span><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8003em;\"><span class=\"svg-align\" style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\" style=\"padding-left:0.833em;\"><span class=\"mord mathnormal\">x</span></span></span><span style=\"top:-2.7603em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"hide-tail\" style=\"min-width:0.853em;height:1.08em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"1.08em\" viewBox=\"0 0 400000 1080\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M95,702\nc-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14\nc0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54\nc44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10\ns173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429\nc69,-144,104.5,-217.7,106.5,-221\nl0 -0\nc5.3,-9.3,12,-14,20,-14\nH400000v40H845.2724\ns-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7\nc-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z\nM834 80h400000v40h-400000z\"/></svg></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.2397em;\"><span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.7139em;vertical-align:-0.0833em;\"></span><span class=\"mord katex-overline\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6306em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span></span></span><span style=\"top:-3.5506em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"overline-line\" style=\"border-bottom-width:0.04em;\"></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.9778em;vertical-align:-0.3944em;\"></span><span class=\"mord katex-underline\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.4306em;\"><span style=\"top:-2.6456em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"underline-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">y</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.3944em;\"><span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"mord katex-vbox\"><span class=\"katex-thinbox\"><span class=\"llap\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"katex-inner\"><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right:0.044em;\">z</span></span></span><span class=\"katex-fix\"></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\sqrt[3]{x}+\\overline{x}+\\underline{y}+\\mathllap{z}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mroot><mi>x</mi><mn>3</mn></mroot><mo>+</mo><mover accent=\"true\"><mi>x</mi><mo stretchy=\"true\">‾</mo></mover><mo>+</mo><munder accentunder=\"true\"><mi>y</mi><mo stretchy=\"true\">‾</mo></munder><mo>+</mo><mpadded lspace=\"-1width\" width=\"0px\"><mi>z</mi></mpadded></mrow><annotation encoding=\"application/x-tex\">\\sqrt[3]{x}+\\overline{x}+\\underline{y}+\\mathllap{z}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\sqrt[3]{x}+\\overline{x}+\\underline{y}+\\mathllap{z}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.04em;vertical-align:-0.1908em;\"></span><span class=\"mord sqrt\"><span class=\"katex-root\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7172em;\"><span style=\"top:-2.895em;\"><span class=\"pstrut\" style=\"height:2.5em;\"></span><span class=\"katex-sizing reset-size6 size1 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">3</span></span></span></span></span></span></span></span><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8492em;\"><span class=\"svg-align\" style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\" style=\"padding-left:0.833em;\"><span class=\"mord mathnormal\">x</span></span></span><span style=\"top:-2.8092em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"hide-tail\" style=\"min-width:0.853em;height:1.08em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"1.08em\" viewBox=\"0 0 400000 1080\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M95,702\nc-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14\nc0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54\nc44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10\ns173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429\nc69,-144,104.5,-217.7,106.5,-221\nl0 -0\nc5.3,-9.3,12,-14,20,-14\nH400000v40H845.2724\ns-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7\nc-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z\nM834 80h400000v40h-400000z\"/></svg></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.1908em;\"><span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.7139em;vertical-align:-0.0833em;\"></span><span class=\"mord katex-overline\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6306em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span></span></span><span style=\"top:-3.5506em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"overline-line\" style=\"border-bottom-width:0.04em;\"></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.9778em;vertical-align:-0.3944em;\"></span><span class=\"mord katex-underline\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.4306em;\"><span style=\"top:-2.6456em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"underline-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">y</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.3944em;\"><span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"mord katex-vbox\"><span class=\"katex-thinbox\"><span class=\"llap\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"katex-inner\"><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right:0.044em;\">z</span></span></span><span class=\"katex-fix\"></span></span></span></span></span></span></span></span>"
+    },
+    {
+      "expression": "\\sqrt[3]{x}+\\overline{x}+\\underline{y}+\\mathllap{z}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mroot><mi>x</mi><mn>3</mn></mroot><mo>+</mo><mover accent=\"true\"><mi>x</mi><mo stretchy=\"true\">‾</mo></mover><mo>+</mo><munder accentunder=\"true\"><mi>y</mi><mo stretchy=\"true\">‾</mo></munder><mo>+</mo><mpadded lspace=\"-1width\" width=\"0px\"><mi>z</mi></mpadded></mrow><annotation encoding=\"application/x-tex\">\\sqrt[3]{x}+\\overline{x}+\\underline{y}+\\mathllap{z}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "x\\\\y\\tag{1}",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"mord mathnormal\">x</span></span><span class=\"mspace katex-newline\"></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.625em;vertical-align:-0.1944em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">y</span></span><span class=\"katex-tag\"><span class=\"katex-strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord text\"><span class=\"mord\">(</span><span class=\"mord\"><span class=\"mord\">1</span></span><span class=\"mord\">)</span></span></span></span></span></span>"
+    },
+    {
+      "expression": "x\\\\y\\tag{1}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mtable width=\"100%\"><mtr><mtd width=\"50%\"></mtd><mtd><mrow><mi>x</mi><mspace linebreak=\"newline\"></mspace><mi>y</mi></mrow></mtd><mtd width=\"50%\"></mtd><mtd><mtext>(1)</mtext></mtd></mtr></mtable><annotation encoding=\"application/x-tex\">x\\\\y\\tag{1}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\vec{x}+\\Huge y",
+      "output": "html",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.7973em;vertical-align:-0.0833em;\"></span><span class=\"mord katex-accent\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.714em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord mathnormal\">x</span></span><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"accent-body\" style=\"left:-0.2077em;\"><span class=\"katex-overlay\" style=\"height:0.714em;width:0.471em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"0.471em\" height=\"0.714em\" style=\"width:0.471em\" viewBox=\"0 0 471 714\" preserveAspectRatio=\"xMinYMin\"><path d=\"M377 20c0-5.333 1.833-10 5.5-14S391 0 397 0c4.667 0 8.667 1.667 12 5\n3.333 2.667 6.667 9 10 19 6.667 24.667 20.333 43.667 41 57 7.333 4.667 11\n10.667 11 18 0 6-1 10-3 12s-6.667 5-14 9c-28.667 14.667-53.667 35.667-75 63\n-1.333 1.333-3.167 3.5-5.5 6.5s-4 4.833-5 5.5c-1 .667-2.5 1.333-4.5 2s-4.333 1\n-7 1c-4.667 0-9.167-1.833-13.5-5.5S337 184 337 178c0-12.667 15.667-32.333 47-59\nH213l-171-1c-8.667-6-13-12.333-13-19 0-4.667 4.333-11.333 13-20h359\nc-16-25.333-24-45-24-59z\"/></svg></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.555em;vertical-align:-0.4838em;\"></span><span class=\"mord mathnormal katex-sizing reset-size6 size11\" style=\"margin-right:0.0359em;\">y</span></span></span></span>"
+    },
+    {
+      "expression": "\\vec{x}+\\Huge y",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mover accent=\"true\"><mi>x</mi><mo>⃗</mo></mover><mo>+</mo><mstyle mathsize=\"2.488em\"><mi>y</mi></mstyle></mrow><annotation encoding=\"application/x-tex\">\\vec{x}+\\Huge y</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\vec{x}+\\Huge y",
+      "output": "html",
+      "displayMode": true,
+      "expected": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.7973em;vertical-align:-0.0833em;\"></span><span class=\"mord katex-accent\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.714em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord mathnormal\">x</span></span><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"accent-body\" style=\"left:-0.2077em;\"><span class=\"katex-overlay\" style=\"height:0.714em;width:0.471em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"0.471em\" height=\"0.714em\" style=\"width:0.471em\" viewBox=\"0 0 471 714\" preserveAspectRatio=\"xMinYMin\"><path d=\"M377 20c0-5.333 1.833-10 5.5-14S391 0 397 0c4.667 0 8.667 1.667 12 5\n3.333 2.667 6.667 9 10 19 6.667 24.667 20.333 43.667 41 57 7.333 4.667 11\n10.667 11 18 0 6-1 10-3 12s-6.667 5-14 9c-28.667 14.667-53.667 35.667-75 63\n-1.333 1.333-3.167 3.5-5.5 6.5s-4 4.833-5 5.5c-1 .667-2.5 1.333-4.5 2s-4.333 1\n-7 1c-4.667 0-9.167-1.833-13.5-5.5S337 184 337 178c0-12.667 15.667-32.333 47-59\nH213l-171-1c-8.667-6-13-12.333-13-19 0-4.667 4.333-11.333 13-20h359\nc-16-25.333-24-45-24-59z\"/></svg></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.555em;vertical-align:-0.4838em;\"></span><span class=\"mord mathnormal katex-sizing reset-size6 size11\" style=\"margin-right:0.0359em;\">y</span></span></span></span></span>"
+    },
+    {
+      "expression": "\\vec{x}+\\Huge y",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mover accent=\"true\"><mi>x</mi><mo>⃗</mo></mover><mo>+</mo><mstyle mathsize=\"2.488em\"><mi>y</mi></mstyle></mrow><annotation encoding=\"application/x-tex\">\\vec{x}+\\Huge y</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "a\\,b\\:c\\;d\\!e\\quad f",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>a</mi><mtext> </mtext><mi>b</mi><mtext> </mtext><mi>c</mi><mtext>  </mtext><mi>d</mi><mtext> ⁣</mtext><mi>e</mi><mspace width=\"1em\"/><mi>f</mi></mrow><annotation encoding=\"application/x-tex\">a\\,b\\:c\\;d\\!e\\quad f</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "a\\,b\\:c\\;d\\!e\\quad f",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>a</mi><mtext> </mtext><mi>b</mi><mtext> </mtext><mi>c</mi><mtext>  </mtext><mi>d</mi><mtext> ⁣</mtext><mi>e</mi><mspace width=\"1em\"/><mi>f</mi></mrow><annotation encoding=\"application/x-tex\">a\\,b\\:c\\;d\\!e\\quad f</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mkern1mu a\\mkern-1mu b\\mkern-4mu c\\mkern-5mu d",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mtext> </mtext><mi>a</mi><mtext> ⁣</mtext><mi>b</mi><mtext> ⁣</mtext><mi>c</mi><mtext> ⁣</mtext><mi>d</mi></mrow><annotation encoding=\"application/x-tex\">\\mkern1mu a\\mkern-1mu b\\mkern-4mu c\\mkern-5mu d</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\mkern1mu a\\mkern-1mu b\\mkern-4mu c\\mkern-5mu d",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mtext> </mtext><mi>a</mi><mtext> ⁣</mtext><mi>b</mi><mtext> ⁣</mtext><mi>c</mi><mtext> ⁣</mtext><mi>d</mi></mrow><annotation encoding=\"application/x-tex\">\\mkern1mu a\\mkern-1mu b\\mkern-4mu c\\mkern-5mu d</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\limsup_{x\\to\\infty}x+\\operatorname{a\\,b}x",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msub><mrow><mi mathvariant=\"normal\">lim sup</mi><mo>⁡</mo></mrow><mrow><mi>x</mi><mo>→</mo><mi mathvariant=\"normal\">∞</mi></mrow></msub><mi>x</mi><mo>+</mo><mi mathvariant=\"normal\">a b</mi><mo>⁡</mo><mi>x</mi></mrow><annotation encoding=\"application/x-tex\">\\limsup_{x\\to\\infty}x+\\operatorname{a\\,b}x</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\limsup_{x\\to\\infty}x+\\operatorname{a\\,b}x",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><munder><mrow><mi mathvariant=\"normal\">lim sup</mi><mo>⁡</mo></mrow><mrow><mi>x</mi><mo>→</mo><mi mathvariant=\"normal\">∞</mi></mrow></munder><mi>x</mi><mo>+</mo><mi mathvariant=\"normal\">a b</mi><mo>⁡</mo><mi>x</mi></mrow><annotation encoding=\"application/x-tex\">\\limsup_{x\\to\\infty}x+\\operatorname{a\\,b}x</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "a\\neq b\\notin c+\\mathrel{x}+\\mathord{+}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>a</mi><mo mathvariant=\"normal\">≠</mo><mi>b</mi><mo mathvariant=\"normal\">∉</mo><mi>c</mi><mo>+</mo><mo>x</mo><mo>+</mo><mi>+</mi></mrow><annotation encoding=\"application/x-tex\">a\\neq b\\notin c+\\mathrel{x}+\\mathord{+}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "a\\neq b\\notin c+\\mathrel{x}+\\mathord{+}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>a</mi><mo mathvariant=\"normal\">≠</mo><mi>b</mi><mo mathvariant=\"normal\">∉</mo><mi>c</mi><mo>+</mo><mo>x</mo><mo>+</mo><mi>+</mi></mrow><annotation encoding=\"application/x-tex\">a\\neq b\\notin c+\\mathrel{x}+\\mathord{+}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\boldsymbol{+}\\mathbin{\\mathbf{x}}\\mathopen{\\mathbf{y}}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mo mathvariant=\"bold-italic\" lspace=\"0.22em\" rspace=\"0.22em\">+</mo><mo mathvariant=\"bold\" lspace=\"0.22em\" rspace=\"0.22em\">x</mo><mo mathvariant=\"bold\" lspace=\"0em\" rspace=\"0em\">y</mo></mrow><annotation encoding=\"application/x-tex\">\\boldsymbol{+}\\mathbin{\\mathbf{x}}\\mathopen{\\mathbf{y}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\boldsymbol{+}\\mathbin{\\mathbf{x}}\\mathopen{\\mathbf{y}}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mo mathvariant=\"bold-italic\" lspace=\"0.22em\" rspace=\"0.22em\">+</mo><mo mathvariant=\"bold\" lspace=\"0.22em\" rspace=\"0.22em\">x</mo><mo mathvariant=\"bold\" lspace=\"0em\" rspace=\"0em\">y</mo></mrow><annotation encoding=\"application/x-tex\">\\boldsymbol{+}\\mathbin{\\mathbf{x}}\\mathopen{\\mathbf{y}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\left(x\\middle|y\\middle\\vert z\\right)",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mo fence=\"true\">(</mo><mi>x</mi><mo fence=\"true\" lspace=\"0.05em\" rspace=\"0.05em\">|</mo><mi>y</mi><mo fence=\"true\" lspace=\"0.05em\" rspace=\"0.05em\">|</mo><mi>z</mi><mo fence=\"true\">)</mo></mrow><annotation encoding=\"application/x-tex\">\\left(x\\middle|y\\middle\\vert z\\right)</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\left(x\\middle|y\\middle\\vert z\\right)",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mo fence=\"true\">(</mo><mi>x</mi><mo fence=\"true\" lspace=\"0.05em\" rspace=\"0.05em\">|</mo><mi>y</mi><mo fence=\"true\" lspace=\"0.05em\" rspace=\"0.05em\">|</mo><mi>z</mi><mo fence=\"true\">)</mo></mrow><annotation encoding=\"application/x-tex\">\\left(x\\middle|y\\middle\\vert z\\right)</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\begin{array}{|rl:c||}1&2&3\\\\\\hline a&b&c\\end{array}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><menclose notation=\"top bottom\"><mtable rowspacing=\"0.16em\" columnalign=\"right left center\" columnlines=\"none dashed solid\" columnspacing=\"1em\" rowlines=\"solid\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>1</mn></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>2</mn></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>3</mn></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>a</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>b</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>c</mi></mstyle></mtd></mtr></mtable></menclose></mrow><annotation encoding=\"application/x-tex\">\\begin{array}{|rl:c||}1&amp;2&amp;3\\\\\\hline a&amp;b&amp;c\\end{array}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\begin{array}{|rl:c||}1&2&3\\\\\\hline a&b&c\\end{array}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><menclose notation=\"top bottom\"><mtable rowspacing=\"0.16em\" columnalign=\"right left center\" columnlines=\"none dashed solid\" columnspacing=\"1em\" rowlines=\"solid\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>1</mn></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>2</mn></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>3</mn></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>a</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>b</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>c</mi></mstyle></mtd></mtr></mtable></menclose></mrow><annotation encoding=\"application/x-tex\">\\begin{array}{|rl:c||}1&amp;2&amp;3\\\\\\hline a&amp;b&amp;c\\end{array}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\begin{array}{c|c}a&b\\end{array}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mtable rowspacing=\"0.16em\" columnalign=\"center center\" columnlines=\"solid\" columnspacing=\"1em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>a</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>b</mi></mstyle></mtd></mtr></mtable><annotation encoding=\"application/x-tex\">\\begin{array}{c|c}a&amp;b\\end{array}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\begin{array}{c|c}a&b\\end{array}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mtable rowspacing=\"0.16em\" columnalign=\"center center\" columnlines=\"solid\" columnspacing=\"1em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>a</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>b</mi></mstyle></mtd></mtr></mtable><annotation encoding=\"application/x-tex\">\\begin{array}{c|c}a&amp;b\\end{array}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\begin{array}{cc|}a&b\\end{array}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><menclose notation=\"bottom\"><mtable rowspacing=\"0.16em\" columnalign=\"center center\" columnspacing=\"1em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>a</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>b</mi></mstyle></mtd></mtr></mtable></menclose></mrow><annotation encoding=\"application/x-tex\">\\begin{array}{cc|}a&amp;b\\end{array}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\begin{array}{cc|}a&b\\end{array}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><menclose notation=\"bottom\"><mtable rowspacing=\"0.16em\" columnalign=\"center center\" columnspacing=\"1em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>a</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>b</mi></mstyle></mtd></mtr></mtable></menclose></mrow><annotation encoding=\"application/x-tex\">\\begin{array}{cc|}a&amp;b\\end{array}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\begin{array}{c||c:c}a&b&c\\end{array}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mtable rowspacing=\"0.16em\" columnalign=\"center center center\" columnlines=\"solid dashed\" columnspacing=\"1em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>a</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>b</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>c</mi></mstyle></mtd></mtr></mtable><annotation encoding=\"application/x-tex\">\\begin{array}{c||c:c}a&amp;b&amp;c\\end{array}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\begin{array}{c||c:c}a&b&c\\end{array}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mtable rowspacing=\"0.16em\" columnalign=\"center center center\" columnlines=\"solid dashed\" columnspacing=\"1em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>a</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>b</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>c</mi></mstyle></mtd></mtr></mtable><annotation encoding=\"application/x-tex\">\\begin{array}{c||c:c}a&amp;b&amp;c\\end{array}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\begin{CD} A @<a<< B @>>b> C \\\\ @| @AcAA @VVdV \\\\ D @= E @>>> F \\end{CD}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mtable rowspacing=\"0.25em\" columnalign=\"center center center center center\" columnspacing=\"0.5em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>A</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><munderover><mo stretchy=\"true\" minsize=\"3.0em\">←</mo><mpadded width=\"+0.6em\" lspace=\"0.3em\"><mrow></mrow></mpadded><mpadded width=\"+0.6em\" lspace=\"0.3em\"><mi>a</mi></mpadded></munderover></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>B</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><munderover><mo stretchy=\"true\" minsize=\"3.0em\">→</mo><mpadded width=\"+0.6em\" lspace=\"0.3em\"><mi>b</mi></mpadded><mpadded width=\"+0.6em\" lspace=\"0.3em\"><mrow></mrow></mpadded></munderover></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>C</mi></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mo fence=\"false\" stretchy=\"true\" minsize=\"1.8em\" maxsize=\"1.8em\">∥</mo></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mrow><mrow><mstyle displaystyle=\"false\" scriptlevel=\"1\"><mpadded width=\"0\" lspace=\"-1width\" voffset=\"0.7em\"><mrow><mi>c</mi></mrow></mpadded></mstyle><mo fence=\"false\" stretchy=\"true\" minsize=\"1.8em\" maxsize=\"1.8em\">↑</mo><mstyle displaystyle=\"false\" scriptlevel=\"1\"><mpadded width=\"0\" voffset=\"0.7em\"><mrow><mrow></mrow></mrow></mpadded></mstyle></mrow></mrow></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mrow><mrow><mstyle displaystyle=\"false\" scriptlevel=\"1\"><mpadded width=\"0\" lspace=\"-1width\" voffset=\"0.7em\"><mrow><mrow></mrow></mrow></mpadded></mstyle><mo fence=\"false\" stretchy=\"true\" minsize=\"1.8em\" maxsize=\"1.8em\">↓</mo><mstyle displaystyle=\"false\" scriptlevel=\"1\"><mpadded width=\"0\" voffset=\"0.7em\"><mrow><mi>d</mi></mrow></mpadded></mstyle></mrow></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>D</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mover><mo stretchy=\"true\" minsize=\"3.0em\">=</mo><mpadded width=\"+0.6em\" lspace=\"0.3em\"></mpadded></mover></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>E</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><munderover><mo stretchy=\"true\" minsize=\"3.0em\">→</mo><mpadded width=\"+0.6em\" lspace=\"0.3em\"><mrow></mrow></mpadded><mpadded width=\"+0.6em\" lspace=\"0.3em\"><mrow></mrow></mpadded></munderover></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"true\"><mi>F</mi></mstyle></mtd></mtr><mtr></mtr></mtable><annotation encoding=\"application/x-tex\">\\begin{CD} A @&lt;a&lt;&lt; B @&gt;&gt;b&gt; C \\\\ @| @AcAA @VVdV \\\\ D @= E @&gt;&gt;&gt; F \\end{CD}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\xrightarrow[ab]{ABC}+\\xleftarrow{x}+\\xrightleftarrows{y}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><munderover><mo stretchy=\"true\" minsize=\"3.0em\">→</mo><mpadded width=\"+0.6em\" lspace=\"0.3em\"><mrow><mi>a</mi><mi>b</mi></mrow></mpadded><mpadded width=\"+0.6em\" lspace=\"0.3em\"><mrow><mi>A</mi><mi>B</mi><mi>C</mi></mrow></mpadded></munderover><mo>+</mo><mover><mo stretchy=\"true\" minsize=\"3.0em\">←</mo><mpadded width=\"+0.6em\" lspace=\"0.3em\"><mi>x</mi></mpadded></mover><mo>+</mo><mover><mo stretchy=\"true\" minsize=\"3.0em\">⇄</mo><mpadded width=\"+0.6em\" lspace=\"0.3em\"><mi>y</mi></mpadded></mover></mrow><annotation encoding=\"application/x-tex\">\\xrightarrow[ab]{ABC}+\\xleftarrow{x}+\\xrightleftarrows{y}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\xrightarrow[ab]{ABC}+\\xleftarrow{x}+\\xrightleftarrows{y}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><munderover><mo stretchy=\"true\" minsize=\"3.0em\">→</mo><mpadded width=\"+0.6em\" lspace=\"0.3em\"><mrow><mi>a</mi><mi>b</mi></mrow></mpadded><mpadded width=\"+0.6em\" lspace=\"0.3em\"><mrow><mi>A</mi><mi>B</mi><mi>C</mi></mrow></mpadded></munderover><mo>+</mo><mover><mo stretchy=\"true\" minsize=\"3.0em\">←</mo><mpadded width=\"+0.6em\" lspace=\"0.3em\"><mi>x</mi></mpadded></mover><mo>+</mo><mover><mo stretchy=\"true\" minsize=\"3.0em\">⇄</mo><mpadded width=\"+0.6em\" lspace=\"0.3em\"><mi>y</mi></mpadded></mover></mrow><annotation encoding=\"application/x-tex\">\\xrightarrow[ab]{ABC}+\\xleftarrow{x}+\\xrightleftarrows{y}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\textbf{a b}\\texttt{a b}\\textit{a b}\\textsf{a b}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mrow><mtext mathvariant=\"bold\">a</mtext><mtext> </mtext><mtext mathvariant=\"bold\">b</mtext></mrow><mrow><mtext mathvariant=\"monospace\">a</mtext><mtext> </mtext><mtext mathvariant=\"monospace\">b</mtext></mrow><mrow><mtext mathvariant=\"italic\">a</mtext><mtext> </mtext><mtext mathvariant=\"italic\">b</mtext></mrow><mrow><mtext mathvariant=\"sans-serif\">a</mtext><mtext> </mtext><mtext mathvariant=\"sans-serif\">b</mtext></mrow></mrow><annotation encoding=\"application/x-tex\">\\textbf{a b}\\texttt{a b}\\textit{a b}\\textsf{a b}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\textbf{a b}\\texttt{a b}\\textit{a b}\\textsf{a b}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mrow><mtext mathvariant=\"bold\">a</mtext><mtext> </mtext><mtext mathvariant=\"bold\">b</mtext></mrow><mrow><mtext mathvariant=\"monospace\">a</mtext><mtext> </mtext><mtext mathvariant=\"monospace\">b</mtext></mrow><mrow><mtext mathvariant=\"italic\">a</mtext><mtext> </mtext><mtext mathvariant=\"italic\">b</mtext></mrow><mrow><mtext mathvariant=\"sans-serif\">a</mtext><mtext> </mtext><mtext mathvariant=\"sans-serif\">b</mtext></mrow></mrow><annotation encoding=\"application/x-tex\">\\textbf{a b}\\texttt{a b}\\textit{a b}\\textsf{a b}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\textsf{a \\textbf{b} \\textit{c}}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mtext mathvariant=\"sans-serif\">a</mtext><mtext> </mtext><mtext mathvariant=\"bold-sans-serif\">b</mtext><mtext> </mtext><mtext mathvariant=\"sans-serif-italic\">c</mtext></mrow><annotation encoding=\"application/x-tex\">\\textsf{a \\textbf{b} \\textit{c}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\textsf{a \\textbf{b} \\textit{c}}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mtext mathvariant=\"sans-serif\">a</mtext><mtext> </mtext><mtext mathvariant=\"bold-sans-serif\">b</mtext><mtext> </mtext><mtext mathvariant=\"sans-serif-italic\">c</mtext></mrow><annotation encoding=\"application/x-tex\">\\textsf{a \\textbf{b} \\textit{c}}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\text{\\it a b}\\text{\\tt a b}",
+      "output": "mathml",
+      "displayMode": false,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mrow><mtext mathvariant=\"italic\">a</mtext><mtext> </mtext><mtext mathvariant=\"italic\">b</mtext></mrow><mrow><mtext mathvariant=\"monospace\">a</mtext><mtext> </mtext><mtext mathvariant=\"monospace\">b</mtext></mrow></mrow><annotation encoding=\"application/x-tex\">\\text{\\it a b}\\text{\\tt a b}</annotation></semantics></math></span>"
+    },
+    {
+      "expression": "\\text{\\it a b}\\text{\\tt a b}",
+      "output": "mathml",
+      "displayMode": true,
+      "expected": "<span class=\"katex\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mrow><mtext mathvariant=\"italic\">a</mtext><mtext> </mtext><mtext mathvariant=\"italic\">b</mtext></mrow><mrow><mtext mathvariant=\"monospace\">a</mtext><mtext> </mtext><mtext mathvariant=\"monospace\">b</mtext></mrow></mrow><annotation encoding=\"application/x-tex\">\\text{\\it a b}\\text{\\tt a b}</annotation></semantics></math></span>"
+    }
+  ]
+}

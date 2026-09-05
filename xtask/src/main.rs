@@ -22,6 +22,9 @@ enum Command {
     Screenshotter(Box<screenshotter::ScreenshotterArgs>),
     /// Regenerate JSON data extracted from the upstream KaTeX repository.
     ExtractData(extract_data::ExtractDataArgs),
+    /// Build and revision-stamp the pinned upstream JS/CSS without launching a
+    /// browser.
+    BuildKatex,
 }
 
 fn main() -> Result<()> {
@@ -32,5 +35,6 @@ fn main() -> Result<()> {
     match cli.command {
         Command::Screenshotter(args) => screenshotter::run(*args),
         Command::ExtractData(args) => extract_data::run(args),
+        Command::BuildKatex => screenshotter::build_katex(),
     }
 }

@@ -16,6 +16,7 @@ use crate::parser::parse_node::{
     AnyParseNode, NodeType, ParseNode, ParseNodeDelimsizing, ParseNodeLeftRight,
     ParseNodeLeftRightRight, ParseNodeMiddle, check_symbol_node_type,
 };
+use crate::types::Mode;
 use crate::types::{ArgType, ParseError, ParseErrorKind};
 use crate::units::make_em;
 use crate::{ClassList, KatexContext, build_html, build_mathml};
@@ -97,7 +98,10 @@ pub fn define_delimsizing(ctx: &mut KatexContext) {
             ..Default::default()
         },
         handler: Some(|context, args, _opt_args| {
-            let delim_text = check_delimiter(args.first(), &context)?;
+            let delim_text = check_delimiter(
+                args.first().map(crate::define_function::normalize_argument),
+                &context,
+            )?;
 
             let (mclass, size) = DELIMITER_SIZES[context.func_name];
 
@@ -483,7 +487,8 @@ fn middle_mathml_builder(
         &group.delim
     };
 
-    let text_node = make_text(text, group.mode, None, &ctx.symbols);
+    let mode = if text == "|" { Mode::Text } else { group.mode };
+    let text_node = make_text(text, mode, None, &ctx.symbols);
     let mut middle_node = MathNode::builder()
         .node_type(MathNodeType::Mo)
         .children(vec![text_node.into()])

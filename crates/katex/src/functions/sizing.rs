@@ -53,7 +53,7 @@ pub fn sizing_group(
         let Some(classes) = item.classes_mut() else {
             continue;
         };
-        let pos = classes.into_iter().position(|c| c == "sizing");
+        let pos = classes.into_iter().position(|c| c == "katex-sizing");
 
         if let Some(pos) = pos {
             let expected = format!("reset-size{}", options.size);

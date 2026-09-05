@@ -11,7 +11,7 @@ use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType, TextNode};
 use crate::options::Options;
 use crate::parser::parse_node::{NodeType, ParseNode, ParseNodeGenfrac, ParseNodeInfix};
-use crate::style::{DISPLAY, SCRIPT, SCRIPTSCRIPT, Style, TEXT};
+use crate::style::{DISPLAY, SCRIPT, SCRIPTSCRIPT, TEXT};
 use crate::symbols::Atom;
 use crate::types::ClassList;
 use crate::types::{ArgType, Mode, ParseError, ParseErrorKind};
@@ -35,28 +35,22 @@ const INFIX_REPLACE_MAP: Map<&'static str, &'static str> = phf::phf_map! {
     "\\brack" => r"\\brackfrac",
 };
 
-/// Adjusts the style based on the fraction size and original style
-const fn adjust_style<'a>(size: Option<&'a Style>, original_style: &'a Style) -> &'a Style {
-    let mut style = original_style;
-    if let Some(size) = size {
-        if size.id == DISPLAY.id {
-            // Get display style as a default.
-            // If incoming style is sub/sup, use text() to get correct size.
-            style = if style.id >= SCRIPT.id {
-                style.text()
-            } else {
-                DISPLAY
-            };
-        } else if size.id == TEXT.id && style.size == DISPLAY.size {
-            // We're in a \tfrac but incoming style is displaystyle, so:
-            style = TEXT;
-        } else if size.id == SCRIPT.id {
-            style = SCRIPT;
-        } else if size.id == SCRIPTSCRIPT.id {
-            style = SCRIPTSCRIPT;
-        }
+fn wrap_with_style(mut frac: ParseNodeGenfrac) -> ParseNode {
+    let size = frac.size.take();
+    let mode = frac.mode;
+    let loc = frac.loc.clone();
+    let node = ParseNode::Genfrac(Box::new(frac));
+    if let Some(style) = size {
+        ParseNode::Styling(crate::parser::parse_node::ParseNodeStyling {
+            mode,
+            loc,
+            style,
+            reset_font: false,
+            body: vec![node],
+        })
+    } else {
+        node
     }
-    style
 }
 
 /// Infix generalized fractions -- these are not rendered directly, but replaced
@@ -108,7 +102,7 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
                 _ => None,
             };
 
-            Ok(ParseNode::Genfrac(Box::new(ParseNodeGenfrac {
+            Ok(wrap_with_style(ParseNodeGenfrac {
                 mode: context.parser.mode,
                 loc: context.loc(),
                 continued: false,
@@ -119,7 +113,7 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
                 right_delim,
                 size,
                 bar_size: None,
-            })))
+            }))
         }),
         html_builder: Some(html_builder),
         mathml_builder: Some(mathml_builder),
@@ -130,13 +124,14 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
         names: &["\\cfrac"],
         props: FunctionPropSpec {
             num_args: 2,
+            allowed_in_argument: true,
             ..Default::default()
         },
         handler: Some(|context, args, _opt_args| {
             let numer = args[0].clone();
             let denom = args[1].clone();
 
-            Ok(ParseNode::Genfrac(Box::new(ParseNodeGenfrac {
+            Ok(wrap_with_style(ParseNodeGenfrac {
                 mode: context.parser.mode,
                 loc: context.loc(),
                 continued: true,
@@ -147,7 +142,7 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
                 right_delim: None,
                 size: Some(DISPLAY),
                 bar_size: None,
-            })))
+            }))
         }),
         html_builder: Some(html_builder),
         mathml_builder: Some(mathml_builder),
@@ -241,7 +236,7 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
                 .as_ref()
                 .is_some_and(|measurement| measurement.number > 0.0);
 
-            Ok(ParseNode::Genfrac(Box::new(ParseNodeGenfrac {
+            Ok(wrap_with_style(ParseNodeGenfrac {
                 mode: context.parser.mode,
                 loc: context.loc(),
                 continued: false,
@@ -252,7 +247,7 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
                 right_delim: None,
                 size: None,
                 bar_size,
-            })))
+            }))
         }),
         html_builder: Some(html_builder),
         mathml_builder: Some(mathml_builder),
@@ -336,7 +331,7 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
                 _ => {}
             }
 
-            Ok(ParseNode::Genfrac(Box::new(ParseNodeGenfrac {
+            Ok(wrap_with_style(ParseNodeGenfrac {
                 mode: context.parser.mode,
                 loc: context.loc(),
                 continued: false,
@@ -347,7 +342,7 @@ pub fn define_genfrac(ctx: &mut crate::KatexContext) {
                 right_delim,
                 size,
                 bar_size,
-            })))
+            }))
         }),
         html_builder: Some(html_builder),
         mathml_builder: Some(mathml_builder),
@@ -367,7 +362,7 @@ fn html_builder(
     };
 
     // Adjust style based on fraction size (like JavaScript version)
-    let style = adjust_style(group.size, options.style);
+    let style = options.style;
 
     // Get numerator and denominator styles
     let nstyle = style.frac_num();
@@ -409,25 +404,24 @@ fn html_builder(
         (None, 0.0, options.font_metrics().default_rule_thickness)
     };
 
-    let (mut num_shift, mut denom_shift, clearance) =
-        if style.id == DISPLAY.id || group.size == Some(DISPLAY) {
-            let num_shift = fm.num1;
-            let clearance = if rule_width > 0.0 {
-                3.0 * rule_spacing
-            } else {
-                7.0 * rule_spacing
-            };
-            let denom_shift = fm.denom1;
-            (num_shift, denom_shift, clearance)
+    let (mut num_shift, mut denom_shift, clearance) = if style.size == DISPLAY.size {
+        let num_shift = fm.num1;
+        let clearance = if rule_width > 0.0 {
+            3.0 * rule_spacing
         } else {
-            let (num_shift, clearance) = if rule_width > 0.0 {
-                (fm.num2, rule_spacing)
-            } else {
-                (fm.num3, 3.0 * rule_spacing)
-            };
-            let denom_shift = fm.denom2;
-            (num_shift, denom_shift, clearance)
+            7.0 * rule_spacing
         };
+        let denom_shift = fm.denom1;
+        (num_shift, denom_shift, clearance)
+    } else {
+        let (num_shift, clearance) = if rule_width > 0.0 {
+            (fm.num2, rule_spacing)
+        } else {
+            (fm.num3, 3.0 * rule_spacing)
+        };
+        let denom_shift = fm.denom2;
+        (num_shift, denom_shift, clearance)
+    };
 
     if group.has_bar_line {
         // Rule 15d: With fraction bar
@@ -553,16 +547,9 @@ fn mathml_builder(
         }));
     };
 
-    // Adjust style based on fraction size (like JavaScript version)
-    let style = adjust_style(genfrac_node.size, options.style);
-
-    // Create new options with adjusted styles for numerator and denominator
-    let numer_options = options.having_style(style.frac_num());
-    let denom_options = options.having_style(style.frac_den());
-
-    // Build numerator and denominator with adjusted styles
-    let numer = build_mathml::build_group(ctx, &genfrac_node.numer, &numer_options)?;
-    let denom = build_mathml::build_group(ctx, &genfrac_node.denom, &denom_options)?;
+    // MathML's mfrac handles the numerator/denominator style transition.
+    let numer = build_mathml::build_group(ctx, &genfrac_node.numer, options)?;
+    let denom = build_mathml::build_group(ctx, &genfrac_node.denom, options)?;
 
     // Create mfrac element
     let mut mfrac_node = MathNode::builder()
@@ -579,23 +566,7 @@ fn mathml_builder(
         mfrac_node.set_attribute("linethickness", make_em(size));
     }
 
-    // Handle style changes (like JavaScript version)
-    let mut final_node = mfrac_node;
-    if style.size != options.style.size {
-        let mut mstyle_node = MathNode::builder()
-            .node_type(MathNodeType::Mstyle)
-            .children(vec![MathDomNode::Math(final_node)])
-            .build();
-
-        let is_display = if style.size == DISPLAY.size {
-            "true"
-        } else {
-            "false"
-        };
-        mstyle_node.set_attribute("displaystyle", is_display);
-        mstyle_node.set_attribute("scriptlevel", "0");
-        final_node = mstyle_node;
-    }
+    let final_node = mfrac_node;
 
     // Handle delimiters
     if genfrac_node.left_delim.is_some() || genfrac_node.right_delim.is_some() {

@@ -1,6 +1,5 @@
 ---
 source: crates/katex/tests/katex_spec.rs
-assertion_line: 457
 expression: "format!(\"{:#?}\", parsed)"
 ---
 [
@@ -34,6 +33,7 @@ expression: "format!(\"{:#?}\", parsed)"
                         body: [
                             Styling(
                                 ParseNodeStyling {
+                                    reset_font: false,
                                     mode: Math,
                                     loc: None,
                                     style: Style {

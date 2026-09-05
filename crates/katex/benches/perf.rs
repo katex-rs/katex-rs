@@ -43,13 +43,7 @@ fn load_cases() -> Result<Vec<PreparedCase>, Box<dyn Error>> {
 
 fn bench_rendering(c: &mut Criterion) {
     let ctx = Arc::new(KatexContext::default());
-    let cases = match load_cases() {
-        Ok(cases) => cases,
-        Err(err) => {
-            eprintln!("failed to load KaTeX screenshotter cases: {err}");
-            return;
-        }
-    };
+    let cases = load_cases().expect("failed to load KaTeX screenshotter cases");
 
     let mut group = c.benchmark_group("katex_render");
     for PreparedCase {
@@ -62,16 +56,12 @@ fn bench_rendering(c: &mut Criterion) {
         let tex_for_case = Arc::clone(&tex);
         let settings_for_case = Rc::clone(&settings);
 
-        if let Err(err) = render_to_string(
+        render_to_string(
             ctx.as_ref(),
             tex_for_case.as_ref(),
             settings_for_case.as_ref(),
-        ) {
-            eprintln!(
-                "skipping benchmark for {name}: failed to render test case while priming caches: {err}"
-            );
-            continue;
-        }
+        )
+        .unwrap_or_else(|err| panic!("failed to prime benchmark {name}: {err}"));
 
         group.bench_function(name, move |b| {
             let ctx = Arc::clone(&ctx);
@@ -79,11 +69,10 @@ fn bench_rendering(c: &mut Criterion) {
             let settings = Rc::clone(&settings);
 
             b.iter(|| {
-                if let Ok(rendered) =
-                    render_to_string(ctx.as_ref(), tex.as_ref(), settings.as_ref())
-                {
-                    black_box(rendered.len());
-                }
+                black_box(
+                    render_to_string(ctx.as_ref(), black_box(tex.as_ref()), settings.as_ref())
+                        .unwrap_or_else(|err| panic!("benchmark {name} failed: {err}")),
+                );
             });
         });
     }

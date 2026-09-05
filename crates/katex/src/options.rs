@@ -329,7 +329,7 @@ impl Options {
             vec![]
         } else {
             vec![
-                Cow::Borrowed("sizing"),
+                Cow::Borrowed("katex-sizing"),
                 Cow::Owned(format!("reset-size{}", old_options.size)),
                 Cow::Owned(format!("size{}", self.size)),
             ]
@@ -344,7 +344,7 @@ impl Options {
             vec![]
         } else {
             vec![
-                Cow::Borrowed("sizing"),
+                Cow::Borrowed("katex-sizing"),
                 Cow::Owned(format!("reset-size{}", self.size)),
                 Cow::Owned(format!("size{}", Self::BASESIZE)),
             ]

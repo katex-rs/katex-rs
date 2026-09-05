@@ -10,7 +10,6 @@ description = "Build and development utilities for the katex-rs project"
 color-eyre = "0.6.5"
 camino = "1.2.5"
 clap = { version = "4.6.6", features = ["derive"] }
-inferno = "0.12.8"
 axum = "0.8.9"
 image = "0.25.10"
 serde = { version = "1.0.229", features = ["derive"] }
@@ -21,9 +20,7 @@ tokio = { version = "1.53.1", features = ["macros", "rt-multi-thread", "signal",
 tower = "0.5.3"
 tower-http = { version = "0.7.1", features = ["fs"] }
 url = "2.5.8"
-xshell = "0.2.7"
 futures = "0.3.34"
-strum = "0.28.0"
 strum_macros = "0.28.0"
 atty = "0.2.14"
 indicatif = "0.18.6"

@@ -1,6 +1,6 @@
 ---
 source: crates/katex/tests/katex_spec.rs
-expression: "&built"
+expression: snapshot
 ---
 [
     DomSpan(
@@ -8,6 +8,7 @@ expression: "&built"
             children: [
                 Symbol(
                     SymbolNode {
+                        is_text_ord: false,
                         text: "x",
                         height: 0.43056,
                         depth: 0.0,
@@ -44,6 +45,7 @@ expression: "&built"
                 ),
                 Symbol(
                     SymbolNode {
+                        is_text_ord: false,
                         text: "+",
                         height: 0.58333,
                         depth: 0.08333,
@@ -95,6 +97,7 @@ expression: "&built"
     ),
     Symbol(
         SymbolNode {
+            is_text_ord: false,
             text: "y",
             height: 0.43056,
             depth: 0.19444,

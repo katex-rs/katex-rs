@@ -27,7 +27,7 @@ pub fn define_enclose(ctx: &mut KatexContext) {
         props: FunctionPropSpec {
             num_args: 2,
             allowed_in_text: true,
-            arg_types: Some(vec![ArgType::Color, ArgType::Mode(Mode::Text)]),
+            arg_types: Some(vec![ArgType::Color, ArgType::Hbox]),
             ..Default::default()
         },
         handler: Some(|context, args, _opt_args| {
@@ -62,11 +62,7 @@ pub fn define_enclose(ctx: &mut KatexContext) {
         props: FunctionPropSpec {
             num_args: 3,
             allowed_in_text: true,
-            arg_types: Some(vec![
-                ArgType::Color,
-                ArgType::Color,
-                ArgType::Mode(Mode::Text),
-            ]),
+            arg_types: Some(vec![ArgType::Color, ArgType::Color, ArgType::Hbox]),
             ..Default::default()
         },
         handler: Some(|context, args, _opt_args| {
@@ -132,7 +128,7 @@ pub fn define_enclose(ctx: &mut KatexContext) {
     // Cancel functions: \cancel, \bcancel, \xcancel, \sout, \phase
     ctx.define_function(FunctionDefSpec {
         node_type: Some(NodeType::Enclose),
-        names: &["\\cancel", "\\bcancel", "\\xcancel", "\\sout", "\\phase"],
+        names: &["\\cancel", "\\bcancel", "\\xcancel", "\\phase"],
         props: FunctionPropSpec {
             num_args: 1,
             ..Default::default()
@@ -144,6 +140,44 @@ pub fn define_enclose(ctx: &mut KatexContext) {
                 ));
             }
 
+            let body = args[0].clone();
+
+            Ok(ParseNode::Enclose(ParseNodeEnclose {
+                mode: context.parser.mode,
+                loc: context.loc(),
+                label: context.func_name.to_owned(),
+                background_color: None,
+                border_color: None,
+                body: Box::new(body),
+            }))
+        }),
+        html_builder: Some(html_builder),
+        mathml_builder: Some(mathml_builder),
+    });
+
+    // Cancel functions: \cancel, \bcancel, \xcancel, \sout, \phase
+    ctx.define_function(FunctionDefSpec {
+        node_type: Some(NodeType::Enclose),
+        names: &["\\sout"],
+        props: FunctionPropSpec {
+            num_args: 1,
+            allowed_in_text: true,
+            ..Default::default()
+        },
+        handler: Some(|context, args, _opt_args| {
+            if args.len() != 1 {
+                return Err(ParseError::new(
+                    ParseErrorKind::CancelFunctionSingleArgument,
+                ));
+            }
+
+            if context.parser.mode == Mode::Math {
+                context.parser.settings.report_nonstrict(
+                    "mathVsSout",
+                    "LaTeX's \\sout works only in text mode",
+                    None,
+                )?;
+            }
             let body = args[0].clone();
 
             Ok(ParseNode::Enclose(ParseNodeEnclose {
@@ -212,7 +246,12 @@ fn html_builder(
     let is_single_char = enclose_node.body.is_character_box()?;
 
     if label == "sout" {
-        let mut img = make_span(ClassList::Const(&["stretchy", "sout"]), vec![], None, None);
+        let mut img = make_span(
+            ClassList::Const(&["katex-stretchy", "katex-sout"]),
+            vec![],
+            None,
+            None,
+        );
         img.height = options.font_metrics().default_rule_thickness / scale;
         img_shift = -0.5 * options.font_metrics().x_height;
 
@@ -524,7 +563,10 @@ fn mathml_builder(
                     .fboxrule
                     .max(options.min_rule_thickness);
                 let border_color = enclose_node.border_color.as_deref().unwrap_or("");
-                math_node.set_attribute("style", format!("border: {thk}em solid {border_color}"));
+                math_node.set_attribute(
+                    "style",
+                    format!("border: {} solid {border_color}", units_make_em(thk)),
+                );
             }
         }
         "\\xcancel" => {

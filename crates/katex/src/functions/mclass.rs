@@ -102,7 +102,11 @@ fn mathml_builder(
                     .build()
                     .into()
             } else {
-                inner[0].clone()
+                let mut node = inner[0].clone();
+                if let MathDomNode::Math(math_node) = &mut node {
+                    math_node.node_type = MathNodeType::Mi;
+                }
+                node
             }
         } else {
             MathNode::builder()
@@ -121,7 +125,11 @@ fn mathml_builder(
                     .build()
                     .into()
             } else {
-                inner[0].clone()
+                let mut node = inner[0].clone();
+                if let MathDomNode::Math(math_node) = &mut node {
+                    math_node.node_type = MathNodeType::Mo;
+                }
+                node
             }
         } else {
             MathNode::builder()
@@ -160,7 +168,7 @@ fn mathml_builder(
             // Ref: https://developer.mozilla.org/en-US/docs/Web/MathML/Element/mo
 
             if !attributes.is_empty() {
-                math_node.attributes = attributes;
+                math_node.attributes.extend(attributes);
             }
         }
 

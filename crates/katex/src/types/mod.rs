@@ -7,10 +7,8 @@ use core::fmt;
 
 use crate::define_environment::EnvSpec;
 use crate::define_function::FunctionSpec;
-use crate::namespace::KeyMap;
 use crate::parser::parse_node::NodeType;
 use crate::utils::escape_into;
-use rapidhash::HashMapExt as _;
 pub use source_location::{LexerInterface, SourceLocation};
 use strum::AsRefStr;
 use strum::Display;
@@ -108,14 +106,11 @@ pub enum CssProperty {
     VerticalAlign,
 }
 
-/// A type alias representing CSS style properties for HTML nodes in KaTeX
-/// rendering.
+/// A compact map of CSS properties for HTML nodes.
 ///
-/// This `HashMap` maps CSS property names (as strings) to their corresponding
-/// values, enabling dynamic styling of mathematical expressions rendered as
-/// HTML. It is used throughout the KaTeX rendering pipeline to apply visual
-/// styles such as colors, fonts, spacing, and positioning to generated HTML
-/// elements.
+/// Styles typically contain only one or two properties. A compact vector avoids
+/// hash-table overhead. Serialization preserves insertion order (important for
+/// CSS shorthands); equality, like a map, is independent of insertion order.
 ///
 /// # LaTeX/KaTeX Context
 /// In mathematical typesetting, CSS styles are crucial for controlling the
@@ -128,17 +123,28 @@ pub enum CssProperty {
 /// - Used in [`TrustContext`] for inline style validation.
 /// - See [`Settings`] for global styling options.
 /// - Related to [`FontVariant`] for font-specific styling.
-#[derive(Clone, PartialEq, Eq, Default)]
+#[derive(Clone, Default)]
 pub struct CssStyle {
-    map: KeyMap<CssProperty, String>,
+    entries: Vec<(CssProperty, String)>,
 }
+
+impl PartialEq for CssStyle {
+    fn eq(&self, other: &Self) -> bool {
+        self.entries.len() == other.entries.len()
+            && self
+                .entries
+                .iter()
+                .all(|(key, value)| other.get(*key) == Some(value.as_str()))
+    }
+}
+
+impl Eq for CssStyle {}
 
 impl fmt::Debug for CssStyle {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ds = f.debug_struct("CssStyle");
-        // Sort the keys for consistent output
-        let mut entries: Vec<(&CssProperty, &String)> = self.map.iter().collect();
-        entries.sort_by_key(|(k, _)| *k);
+        let mut entries: Vec<_> = self.entries.iter().collect();
+        entries.sort_unstable_by_key(|(key, _)| *key);
         for (key, value) in entries {
             ds.field(key.as_ref(), value);
         }
@@ -158,7 +164,7 @@ impl CssStyle {
     #[must_use]
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
-            map: KeyMap::with_capacity(capacity),
+            entries: Vec::with_capacity(capacity),
         }
     }
 
@@ -168,34 +174,44 @@ impl CssStyle {
     where
         T: Into<String>,
     {
-        self.map.insert(property, value.into());
+        if let Some((_, old_value)) = self.entries.iter_mut().find(|(key, _)| *key == property) {
+            *old_value = value.into();
+        } else {
+            if self.entries.is_empty() {
+                self.entries.reserve_exact(1);
+            }
+            self.entries.push((property, value.into()));
+        }
     }
 
     /// Checks if the style contains a specific CSS property.
     #[inline]
     #[must_use]
     pub fn contains_key(&self, property: CssProperty) -> bool {
-        self.map.contains_key(&property)
+        self.get(property).is_some()
     }
 
     /// Retrieves the value of a specific CSS property, if it exists.
     #[inline]
     #[must_use]
     pub fn get(&self, property: CssProperty) -> Option<&str> {
-        self.map.get(&property).map(AsRef::as_ref)
+        self.entries
+            .iter()
+            .find(|(key, _)| *key == property)
+            .map(|(_, value)| value.as_str())
     }
 
     /// Checks if the style is empty (contains no properties).
     #[inline]
     #[must_use]
     pub fn is_empty(&self) -> bool {
-        self.map.is_empty()
+        self.entries.is_empty()
     }
 
     /// Writes the CSS style as a string to the provided formatter.
     #[inline]
     pub fn write_to<W: fmt::Write>(&self, writer: &mut W) -> fmt::Result {
-        for (key, value) in &self.map {
+        for (key, value) in &self.entries {
             writer.write_str(key.as_ref())?;
             writer.write_char(':')?;
             escape_into(writer, value)?;

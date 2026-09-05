@@ -60,10 +60,9 @@ phf = { version = "0.14.0", features = ["macros"] }
 phf_codegen = "0.14.0"
 
 [dev-dependencies]
+serde_json = "1.0.151"
 btparse = "0.2.0"
 wasm-bindgen-test = "0.3.78"
-gungraun = "0.19.4"
-criterion = { version = "0.8.2", default-features = false }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_yaml = { version = "0.9.34" }
 regex = "1.13.1"
@@ -71,6 +70,9 @@ insta = { version = "1.48.0", features = ["glob"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 gag = "1.0.0"
+# Native benchmark runners cannot compile for wasm32 browser tests.
+gungraun = "0.19.4"
+criterion = { version = "0.8.2", default-features = false }
 
 [lints]
 workspace = true

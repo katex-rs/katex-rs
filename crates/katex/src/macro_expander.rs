@@ -48,7 +48,7 @@ impl<'a> MacroExpander<'a> {
         let globals = settings.macros.borrow_mut();
         let macros = Namespace::new(&BUILTIN_MACROS, globals);
 
-        let mut me = Self {
+        Self {
             lexer: Lexer::new(Arc::from(input), settings),
             settings,
             expansion_count: 0,
@@ -57,10 +57,7 @@ impl<'a> MacroExpander<'a> {
             stack: Vec::new(),
 
             ctx,
-        };
-        // Initialize by feeding the input
-        me.feed(input);
-        me
+        }
     }
 
     /// Feed a new input string to the same MacroExpander (with existing macros
@@ -174,11 +171,11 @@ impl<'a> MacroExpander<'a> {
     /// Expand the next token only once if possible
     fn expand_once_internal(&mut self, expandable_only: bool) -> Result<Option<isize>, ParseError> {
         let top_token = self.pop_token()?;
-        let name = top_token.text.to_owned_string();
+        let name = top_token.text.as_str();
         let expansion = if top_token.noexpand == Some(true) {
             None
         } else {
-            self.get_expansion(&name)
+            self.get_expansion(name)
         };
 
         let expansion = match expansion {
@@ -187,10 +184,12 @@ impl<'a> MacroExpander<'a> {
                 if expandable_only
                     && expansion.is_none()
                     && name.starts_with('\\')
-                    && !self.is_defined(&name)
+                    && !self.is_defined(name)
                 {
                     return Err(ParseError::with_token(
-                        ParseErrorKind::UndefinedControlSequence { name: name.clone() },
+                        ParseErrorKind::UndefinedControlSequence {
+                            name: name.to_owned(),
+                        },
                         &top_token,
                     ));
                 }
@@ -200,7 +199,7 @@ impl<'a> MacroExpander<'a> {
         };
 
         self.count_expansion(1)?;
-        let mut tokens = expansion.tokens.clone();
+        let mut tokens = expansion.tokens;
         let args =
             self.consume_args_with_delims(expansion.num_args, expansion.delimiters.as_ref())?;
         if expansion.num_args > 0 {
@@ -227,7 +226,10 @@ impl<'a> MacroExpander<'a> {
                         // replace placeholder (#n) with arg tokens
                         // remove the two tokens (# and n) at positions i-1 and
                         // i
-                        tokens.splice((i as usize - 1)..=(i as usize), args[arg_index].clone());
+                        tokens.splice(
+                            (i as usize - 1)..=(i as usize),
+                            args[arg_index].iter().cloned(),
+                        );
                         i -= 2; // step past inserted
                         continue;
                     }
@@ -242,8 +244,9 @@ impl<'a> MacroExpander<'a> {
                 i -= 1;
             }
         }
-        self.push_tokens(tokens.clone());
-        Ok(Some(tokens.len() as isize))
+        let count = tokens.len();
+        self.push_tokens(tokens);
+        Ok(Some(count as isize))
     }
 
     /// Fully expand the given token stream to forward-order tokens
@@ -358,10 +361,11 @@ impl<'a> MacroContextInterface<'a> for MacroExpander<'a> {
     }
 
     fn pop_token(&mut self) -> Result<Token, ParseError> {
-        self.future_mut()?;
-        self.stack
-            .pop()
-            .ok_or_else(|| ParseError::new(ParseErrorKind::EmptyMacroExpanderStack))
+        // No lookahead clone is needed when the token is immediately consumed.
+        match self.stack.pop() {
+            Some(token) => Ok(token),
+            None => self.lexer.lex(),
+        }
     }
 
     fn consume_spaces(&mut self) -> Result<(), ParseError> {

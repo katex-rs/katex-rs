@@ -5,5 +5,12 @@ slow-timeout = { period = "200ms", terminate-after = 4 }
 filter = 'binary_id(katex-rs::unicode_spec)'
 slow-timeout = { period = "500ms", terminate-after = 4 }
 
+# This test renders and normalizes the entire pinned HTML/MathML fixture corpus.
+# Keep a bounded timeout with headroom for shared CI runners, not the 800ms
+# per-test default. The CI profile inherits this override.
+[[profile.default.overrides]]
+filter = 'binary_id(katex-rs::upstream_spec) & test(pinned_upstream_rendering)'
+slow-timeout = { period = "2s", terminate-after = 5 }
+
 [profile.ci.junit]  # this can be some other profile, too
 path = "junit.xml"

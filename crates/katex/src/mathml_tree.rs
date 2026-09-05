@@ -305,11 +305,17 @@ impl VirtualNode for MathNode {
                 if i + 1 < self.children.len()
                     && let MathDomNode::Text(next_text_node) = &self.children[i + 1]
                 {
-                    // Combine them
-                    let combined_text = format!("{}{}", text_node.text, next_text_node.text);
+                    // Merge the entire run, not just pairs. Text boundaries
+                    // affect native MathML layout and
+                    // screen-reader word segmentation.
+                    let mut combined_text = format!("{}{}", text_node.text, next_text_node.text);
+                    i += 2;
+                    while let Some(MathDomNode::Text(next)) = self.children.get(i) {
+                        combined_text.push_str(&next.text);
+                        i += 1;
+                    }
                     let text_node = ctx.document.create_text_node(&combined_text);
                     append_child(&element, &text_node);
-                    i += 2; // Skip the next one
                     continue;
                 }
             }

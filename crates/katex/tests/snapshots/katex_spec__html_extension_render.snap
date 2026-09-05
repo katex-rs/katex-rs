@@ -8,6 +8,7 @@ expression: snapshot
             children: [
                 Symbol(
                     SymbolNode {
+                        is_text_ord: false,
                         text: "x",
                         height: 0.43056,
                         depth: 0.0,
@@ -45,6 +46,7 @@ expression: snapshot
             children: [
                 Symbol(
                     SymbolNode {
+                        is_text_ord: false,
                         text: "x",
                         height: 0.43056,
                         depth: 0.0,
@@ -83,6 +85,7 @@ expression: snapshot
             children: [
                 Symbol(
                     SymbolNode {
+                        is_text_ord: false,
                         text: "x",
                         height: 0.43056,
                         depth: 0.0,
@@ -120,6 +123,7 @@ expression: snapshot
             children: [
                 Symbol(
                     SymbolNode {
+                        is_text_ord: false,
                         text: "x",
                         height: 0.43056,
                         depth: 0.0,

@@ -56,7 +56,7 @@ fn html_builder(
     let elements = build_html::build_expression(
         ctx,
         &hbox_node.body,
-        options,
+        &options.with_font(String::new()),
         build_html::GroupType::False,
         (None, None),
     )?;
@@ -75,7 +75,12 @@ fn mathml_builder(
         }));
     };
 
-    let children = build_mathml::build_expression(ctx, &hbox_node.body, options, None)?;
+    let children = build_mathml::build_expression(
+        ctx,
+        &hbox_node.body,
+        &options.with_font(String::new()),
+        None,
+    )?;
     let mrow = MathNode::builder()
         .node_type(MathNodeType::Mrow)
         .children(children)

@@ -29,19 +29,19 @@ fn mathml_under_accents_and_text_fonts() -> TestResult<()> {
             r"\textbf{\text{a}}",
             "<mtext mathvariant=\"bold\">a</mtext>",
         ),
-        // Plain \\text resets shape, not family or weight, in KaTeX.js.
+        // Plain \text resets shape, not family or weight, in KaTeX.js.
         (r"\textit{\text{a}}", "<mtext>a</mtext>"),
         (
             r"\textbf{a b}",
-            "<mtext mathvariant=\"bold\">a\u{a0}b</mtext>",
+            "<mtext mathvariant=\"bold\">a</mtext><mtext>\u{a0}</mtext><mtext mathvariant=\"bold\">b</mtext>",
         ),
         (
             r"\texttt{a b}",
-            "<mtext mathvariant=\"monospace\">a\u{a0}b</mtext>",
+            "<mtext mathvariant=\"monospace\">a</mtext><mtext>\u{a0}</mtext><mtext mathvariant=\"monospace\">b</mtext>",
         ),
         (
             r"\textit{a b}",
-            "<mtext mathvariant=\"italic\">a\u{a0}b</mtext>",
+            "<mtext mathvariant=\"italic\">a</mtext><mtext>\u{a0}</mtext><mtext mathvariant=\"italic\">b</mtext>",
         ),
     ] {
         let markup = mathml_markup(expr, &settings)?;
@@ -141,7 +141,7 @@ fn a_mathml_builder() {
         "should output \\limsup_{x \\rightarrow \\infty} correctly in \\textstyle",
         || {
             let settings = Settings::default();
-            let markup = mathml_markup(r"\limsup_{x \\rightarrow \\infty}", &settings)?;
+            let markup = mathml_markup(r"\limsup_{x \rightarrow \infty}", &settings)?;
             insta::assert_snapshot!("mathml_spec__limsup_textstyle", markup);
             Ok(())
         },
@@ -151,7 +151,7 @@ fn a_mathml_builder() {
         "should output \\limsup_{x \\rightarrow \\infty} in displaymode correctly",
         || {
             let settings = Settings::builder().display_mode(true).build();
-            let markup = mathml_markup(r"\limsup_{x \\rightarrow \\infty}", &settings)?;
+            let markup = mathml_markup(r"\limsup_{x \rightarrow \infty}", &settings)?;
             insta::assert_snapshot!("mathml_spec__limsup_displaymode", markup);
             Ok(())
         },
@@ -167,7 +167,7 @@ fn a_mathml_builder() {
     it("should size delimiters correctly", || {
         let settings = Settings::default();
         let markup = mathml_markup(
-            r"(M) \\big(M\\big) \\Big(M\\Big) \\bigg(M\\bigg) \\Bigg(M\\Bigg)",
+            r"(M) \big(M\big) \Big(M\Big) \bigg(M\bigg) \Bigg(M\Bigg)",
             &settings,
         )?;
         insta::assert_snapshot!("mathml_spec__sized_delimiters", markup);
@@ -187,7 +187,7 @@ fn a_mathml_builder() {
             .strict(StrictSetting::Bool(false))
             .build();
         let markup = mathml_markup(
-            r"\begin{CD} A @>a>> B\\\\ @VVbV @VVcV\\\\ C @>d>> D \end{CD}",
+            r"\begin{CD} A @>a>> B\\ @VVbV @VVcV\\ C @>d>> D \end{CD}",
             &settings,
         )?;
         insta::assert_snapshot!("mathml_spec__cd_environment", markup);

@@ -178,23 +178,26 @@ pub fn get_variant(
     // Handle \text... font specifiers
     // MathML has a limited list of allowable mathvariant specifiers; see
     // https://www.w3.org/TR/MathML3/chapter3.html#presm.commatt
-    if options.font_family == "texttt" {
-        return Ok(Some("monospace"));
-    } else if options.font_family == "textsf" {
-        return Ok(Some(match (&options.font_shape, &options.font_weight) {
-            (FontShape::TextIt, FontWeight::TextBf) => "sans-serif-bold-italic",
-            (FontShape::TextIt, _) => "sans-serif-italic",
-            (_, FontWeight::TextBf) => "bold-sans-serif",
-            _ => "sans-serif",
-        }));
-    } else if options.font_shape == FontShape::TextIt && options.font_weight == FontWeight::TextBf {
-        return Ok(Some("bold-italic"));
-    } else if options.font_shape == FontShape::TextIt {
-        return Ok(Some("italic"));
-    } else if options.font_weight == FontWeight::TextBf {
-        return Ok(Some("bold"));
+    if group.mode() == Mode::Text {
+        if options.font_family == "texttt" {
+            return Ok(Some("monospace"));
+        } else if options.font_family == "textsf" {
+            return Ok(Some(match (&options.font_shape, &options.font_weight) {
+                (FontShape::TextIt, FontWeight::TextBf) => "sans-serif-bold-italic",
+                (FontShape::TextIt, _) => "sans-serif-italic",
+                (_, FontWeight::TextBf) => "bold-sans-serif",
+                _ => "sans-serif",
+            }));
+        } else if options.font_shape == FontShape::TextIt
+            && options.font_weight == FontWeight::TextBf
+        {
+            return Ok(Some("bold-italic"));
+        } else if options.font_shape == FontShape::TextIt {
+            return Ok(Some("italic"));
+        } else if options.font_weight == FontWeight::TextBf {
+            return Ok(Some("bold"));
+        }
     }
-
     let font = &options.font;
     if font.is_empty() || font == "mathnormal" {
         return Ok(None);

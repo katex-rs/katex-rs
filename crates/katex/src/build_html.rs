@@ -661,7 +661,7 @@ where
 
         if !nonspace && is_root {
             let is_newline = node_ref_by_path(root, &current_path)
-                .is_some_and(|node_ref| node_ref.has_class("newline"));
+                .is_some_and(|node_ref| node_ref.has_class("katex-newline"));
             if is_newline {
                 prev.set_owned_dummy(
                     build_common::make_span("leftmost", vec![], None, None).into(),
@@ -947,12 +947,12 @@ pub fn build_group(
 /// .base
 fn build_html_unbreakable(children: Vec<HtmlDomNode>, options: &Options) -> HtmlDomNode {
     // Compute height and depth of this chunk.
-    let mut body = make_span("base", children, Some(options), None);
+    let mut body = make_span("katex-base", children, Some(options), None);
 
     // Add strut, which ensures that the top of the HTML element falls at
     // the height of the expression, and the bottom of the HTML element
     // falls at the depth of the expression.
-    let mut strut = make_span("strut", vec![], Some(options), None);
+    let mut strut = make_span("katex-strut", vec![], Some(options), None);
 
     strut
         .style
@@ -1029,7 +1029,7 @@ pub fn build_html(
 
     let eqn_num = if expression.len() == 2
         && let Some(second) = expression.get(1)
-        && second.has_class("tag")
+        && second.has_class("katex-tag")
     {
         // An environment with automatic equation numbers, e.g. {gather}.
         expression.pop()
@@ -1050,7 +1050,7 @@ pub fn build_html(
     while let Some(node) = iter.next() {
         let is_break_candidate =
             node.has_class("mbin") || node.has_class("mrel") || node.has_class("allowbreak");
-        let is_newline = node.has_class("newline");
+        let is_newline = node.has_class("katex-newline");
 
         parts.push(node);
 
@@ -1059,7 +1059,7 @@ pub fn build_html(
             // Watch for \nobreak along the way, and stop at \newline.
             let mut nobreak = false;
             while let Some(next) =
-                iter.next_if(|n| n.has_class("mspace") && !n.has_class("newline"))
+                iter.next_if(|n| n.has_class("mspace") && !n.has_class("katex-newline"))
             {
                 if next.has_class("nobreak") {
                     nobreak = true;
@@ -1098,7 +1098,7 @@ pub fn build_html(
         let tag_html = build_expression(ctx, tag_ref, options, GroupType::True, (None, None))?;
         let mut unbreakable = build_html_unbreakable(tag_html, options);
         if let HtmlDomNode::DomSpan(span) = &mut unbreakable {
-            span.classes = ClassList::Static("tag");
+            span.classes = ClassList::Static("katex-tag");
         }
         children.push(unbreakable);
         Some(children.len() - 1)

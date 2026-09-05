@@ -182,6 +182,7 @@ pub fn parse_array(
         parser.gullet.begin_group();
 
         let cell = ParseNode::Styling(ParseNodeStyling {
+            reset_font: true,
             mode: parser.mode,
             loc: None,
             style,
@@ -406,7 +407,7 @@ fn html_builder(
         // In AMS multiline environments such as aligned and gathered, rows
         // correspond to lines that have additional \jot added to the
         // \baselineskip via \openup.
-        if array_node.add_jot.unwrap_or(false) {
+        if array_node.add_jot.unwrap_or(false) && r + 1 < array_node.body.len() {
             depth += jot;
         }
 
@@ -622,8 +623,8 @@ fn html_builder(
 
     // Add \hline(s), if any.
     if !hlines.is_empty() {
-        let line = make_line_span("hline", options, Some(rule_thickness));
-        let dashes = make_line_span("hdashline", options, Some(rule_thickness));
+        let line = make_line_span("katex-hline", options, Some(rule_thickness));
+        let dashes = make_line_span("katex-hdashline", options, Some(rule_thickness));
         let mut v_list_elems = vec![
             VListElemAndShift::builder()
                 .elem(mtable.into())
@@ -663,7 +664,7 @@ fn html_builder(
             },
             options,
         )?;
-        let tag_span = make_span("tag", vec![eqn_num_col.into()], Some(options), None);
+        let tag_span = make_span("katex-tag", vec![eqn_num_col.into()], Some(options), None);
         Ok(make_fragment(vec![mtable.into(), tag_span.into()]).into())
     }
 }
@@ -800,7 +801,7 @@ fn mathml_builder(
         let mut column_lines = String::new();
         let mut prev_type_was_align = false;
         let mut i_start = 0;
-        let i_end = cols.len();
+        let mut i_end = cols.len();
 
         if let Some(first_col) = cols.first()
             && matches!(first_col, AlignSpec::Separator { .. })
@@ -813,6 +814,7 @@ fn mathml_builder(
             && matches!(last_col, AlignSpec::Separator { .. })
         {
             menclose.push_str("bottom ");
+            i_end -= 1;
         }
 
         for col in cols.iter().take(i_end).skip(i_start) {
@@ -829,7 +831,7 @@ fn mathml_builder(
                         tmp.push(' ');
                         align.push_str(&tmp);
                         if prev_type_was_align {
-                            // columnLines += "none ";
+                            column_lines.push_str("none ");
                         }
                         prev_type_was_align = true;
                         continue;
@@ -838,7 +840,7 @@ fn mathml_builder(
                 align.push_str(mapped_align);
 
                 if prev_type_was_align {
-                    // columnLines += "none ";
+                    column_lines.push_str("none ");
                 }
                 prev_type_was_align = true;
             } else if let AlignSpec::Separator { separator } = col {
@@ -856,16 +858,13 @@ fn mathml_builder(
             }
         }
 
-        // cdlongequal: path not found
-        // !TODO
-        // 'c' differs from 'center'
         table
             .attributes
             .insert("columnalign".to_owned(), align.trim().to_owned());
 
-        // if /[sd]/.test(columnLines) {
-        //     table.setAttribute("columnlines", columnLines.trim());
-        // }
+        if column_lines.contains(['s', 'd']) {
+            table.set_attribute("columnlines", column_lines.trim());
+        }
     }
 
     // Set column spacing.
@@ -1020,12 +1019,19 @@ const ALIGNED_HANDLER: EnvHandler = |context, args, _opt_args| {
         for node in &ord.body {
             if let ParseNode::TextOrd(text) = node {
                 num_str.push_str(text.text.as_str());
+            } else {
+                return Err(ParseError::new(ParseErrorKind::InvalidNumberOfColumns));
             }
         }
         num_maths = num_str
             .parse::<usize>()
             .map_err(|_| ParseError::new(ParseErrorKind::InvalidNumberOfColumns))?;
-        num_cols = num_maths * 2;
+        if num_maths == 0 || !num_str.bytes().all(|b| b.is_ascii_digit()) {
+            return Err(ParseError::new(ParseErrorKind::InvalidNumberOfColumns));
+        }
+        num_cols = num_maths
+            .checked_mul(2)
+            .ok_or_else(|| ParseError::new(ParseErrorKind::InvalidNumberOfColumns))?;
     }
 
     let is_aligned = num_cols == 0;

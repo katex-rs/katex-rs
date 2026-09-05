@@ -54,13 +54,14 @@ pub fn hyphenate(s: &str) -> String {
 #[inline]
 pub fn escape_into<W: fmt::Write>(writer: &mut W, text: &str) -> fmt::Result {
     let mut last = 0;
-    for (idx, ch) in text.char_indices() {
-        let replacement = match ch {
-            '&' => Some("&amp;"),
-            '>' => Some("&gt;"),
-            '<' => Some("&lt;"),
-            '"' => Some("&quot;"),
-            '\'' => Some("&#x27;"),
+    // All escaped characters are ASCII, so matches are UTF-8 boundaries.
+    for (idx, byte) in text.bytes().enumerate() {
+        let replacement = match byte {
+            b'&' => Some("&amp;"),
+            b'>' => Some("&gt;"),
+            b'<' => Some("&lt;"),
+            b'"' => Some("&quot;"),
+            b'\'' => Some("&#x27;"),
             _ => None,
         };
 
@@ -69,7 +70,7 @@ pub fn escape_into<W: fmt::Write>(writer: &mut W, text: &str) -> fmt::Result {
                 writer.write_str(&text[last..idx])?;
             }
             writer.write_str(rep)?;
-            last = idx + ch.len_utf8();
+            last = idx + 1;
         }
     }
 

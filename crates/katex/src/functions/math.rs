@@ -48,6 +48,7 @@ fn define_math_open(ctx: &mut KatexContext) {
             context.parser.consume();
             context.parser.switch_mode(outer_mode);
             Ok(ParseNode::Styling(ParseNodeStyling {
+                reset_font: true,
                 mode: context.parser.mode,
                 loc: context.loc(),
                 style: TEXT,

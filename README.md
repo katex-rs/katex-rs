@@ -10,8 +10,8 @@
 KaTeX-rs is a Rust re-implementation of the
 [KaTeX](https://github.com/KaTeX/KaTeX) rendering engine. It converts LaTeX math
 into HTML and MathML and is designed for server-side rendering, command-line
-tools, and WebAssembly targets. The project currently tracks KaTeX commit
-[785315c0f630f65347cac14b3ec72629cfe7631e](https://github.com/KaTeX/KaTeX/commit/785315c0f630f65347cac14b3ec72629cfe7631e).
+tools, and WebAssembly targets. The project currently tracks KaTeX 0.18.5, upstream main commit
+[49904aa2b6c5d82ba0c5a1bc3a4d9b3353a1401c](https://github.com/KaTeX/KaTeX/commit/49904aa2b6c5d82ba0c5a1bc3a4d9b3353a1401c).
 
 ## Highlights
 

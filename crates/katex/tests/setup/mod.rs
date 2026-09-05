@@ -126,7 +126,7 @@ impl From<ParseError> for TestError {
 
 pub type TestResult<T> = Result<T, TestError>;
 
-/// Set all `loc` to None for easier comparison
+/// Strip source positions and normalize symbol storage for semantic snapshots.
 pub fn strip_positions(nodes: &mut [ParseNode]) {
     for node in nodes.iter_mut() {
         match node {
@@ -182,9 +182,11 @@ pub fn strip_positions(nodes: &mut [ParseNode]) {
             }
             katex::parser::parse_node::AnyParseNode::Atom(parse_node_atom) => {
                 parse_node_atom.loc = None;
+                parse_node_atom.text = parse_node_atom.text.to_owned_string().into();
             }
             katex::parser::parse_node::AnyParseNode::MathOrd(parse_node_math_ord) => {
                 parse_node_math_ord.loc = None;
+                parse_node_math_ord.text = parse_node_math_ord.text.to_owned_string().into();
             }
             katex::parser::parse_node::AnyParseNode::Op(parse_node_op) => match parse_node_op {
                 katex::parser::parse_node::ParseNodeOp::Symbol { loc, .. } => *loc = None,
@@ -195,6 +197,7 @@ pub fn strip_positions(nodes: &mut [ParseNode]) {
             },
             katex::parser::parse_node::AnyParseNode::Spacing(parse_node_spacing) => {
                 parse_node_spacing.loc = None;
+                parse_node_spacing.text = parse_node_spacing.text.to_owned_string().into();
             }
             katex::parser::parse_node::AnyParseNode::Text(parse_node_text) => {
                 parse_node_text.loc = None;
@@ -269,12 +272,16 @@ pub fn strip_positions(nodes: &mut [ParseNode]) {
             }
             katex::parser::parse_node::AnyParseNode::TextOrd(parse_node_text_ord) => {
                 parse_node_text_ord.loc = None;
+                parse_node_text_ord.text = parse_node_text_ord.text.to_owned_string().into();
             }
             katex::parser::parse_node::AnyParseNode::AccentToken(parse_node_accent_token) => {
                 parse_node_accent_token.loc = None;
+                parse_node_accent_token.text =
+                    parse_node_accent_token.text.to_owned_string().into();
             }
             katex::parser::parse_node::AnyParseNode::OpToken(parse_node_op_token) => {
                 parse_node_op_token.loc = None;
+                parse_node_op_token.text = parse_node_op_token.text.to_owned_string().into();
             }
             katex::parser::parse_node::AnyParseNode::AccentUnder(parse_node_accent_under) => {
                 parse_node_accent_under.loc = None;
@@ -724,7 +731,7 @@ pub fn get_built(expr: &str, settings: &Settings) -> TestResult<Vec<HtmlDomNode>
     for child in &built_html.children {
         if let HtmlDomNode::DomSpan(span) = child {
             for grandchild in &span.children {
-                if !grandchild.classes().contains("strut") {
+                if !grandchild.classes().contains("katex-strut") {
                     children.push(grandchild.clone());
                 }
             }
@@ -881,7 +888,8 @@ pub fn assert_html_eq_unordered_styles(markup: &str, rendered: &str) {
 /// Normalize style attribute values by sorting declarations for stable
 /// comparisons
 pub fn normalize_style_attributes(markup: &str) -> String {
-    let style_regex = Regex::new(r#"style="([^"]*)""#).unwrap();
+    static STYLE_REGEX: OnceLock<Regex> = OnceLock::new();
+    let style_regex = STYLE_REGEX.get_or_init(|| Regex::new(r#"style="([^"]*)""#).unwrap());
     style_regex
         .replace_all(markup, |caps: &Captures<'_>| {
             let had_trailing_semicolon = caps[1].trim_end().ends_with(';');
@@ -902,8 +910,11 @@ pub fn normalize_style_attributes(markup: &str) -> String {
 
 /// Normalize attribute order within HTML tags for deterministic comparisons
 pub fn normalize_html_attributes(markup: &str) -> String {
-    let tag_regex = Regex::new("<([a-zA-Z0-9]+)([^>]*)>").unwrap();
-    let attr_regex = Regex::new(r#"([^\s"'=<>]+)="([^"]*)""#).unwrap();
+    static TAG_REGEX: OnceLock<Regex> = OnceLock::new();
+    static ATTR_REGEX: OnceLock<Regex> = OnceLock::new();
+    let tag_regex = TAG_REGEX.get_or_init(|| Regex::new("<([a-zA-Z0-9]+)([^>]*)>").unwrap());
+    let attr_regex =
+        ATTR_REGEX.get_or_init(|| Regex::new(r#"([^\s"'=<>]+)\s*=\s*"([^"]*)""#).unwrap());
 
     tag_regex
         .replace_all(markup, |caps: &Captures<'_>| {

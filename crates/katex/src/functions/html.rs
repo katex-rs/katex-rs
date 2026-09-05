@@ -77,17 +77,30 @@ pub fn define_html(ctx: &mut crate::KatexContext) {
                     }
                 }
                 "\\htmlData" => {
-                    let data_parts: Vec<&str> = value.split(',').collect();
-                    for part in data_parts {
-                        let key_val: Vec<&str> = part.split('=').collect();
-                        if key_val.len() != 2 {
-                            return Err(ParseError::new(
-                                ParseErrorKind::HtmlDataKeyValueParseError,
-                            ));
+                    let mut data_parts = Vec::new();
+                    let mut current = String::new();
+                    let mut rest = value.as_str();
+                    while !rest.is_empty() {
+                        if let Some(tail) = rest.strip_prefix("{,}") {
+                            current.push(',');
+                            rest = tail;
+                        } else if let Some(tail) = rest.strip_prefix(',') {
+                            data_parts.push(core::mem::take(&mut current));
+                            rest = tail;
+                        } else {
+                            let Some(ch) = rest.chars().next() else { break };
+                            current.push(ch);
+                            rest = &rest[ch.len_utf8()..];
                         }
-                        let key = format!("data-{}", key_val[0].trim());
-                        let val = key_val[1].trim().to_owned();
-                        attributes.insert(key, val);
+                    }
+                    data_parts.push(current);
+                    for part in data_parts {
+                        let Some((key, val)) = part.split_once('=') else {
+                            return Err(ParseError::new(ParseErrorKind::HtmlDataMissingEquals {
+                                item: part,
+                            }));
+                        };
+                        attributes.insert(format!("data-{}", key.trim()), val.to_owned());
                     }
                     TrustContext {
                         command: "\\htmlData".to_owned(),

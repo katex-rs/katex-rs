@@ -33,6 +33,26 @@ DOM for the failing case. Diagnostics explicitly re-render the case because
 asynchronous image comparison may finish after another case is on screen.
 CI uploads all three directories, with separate artifact names for each mode.
 
+## Known upstream MathML warnings
+
+`LowerAccent` and `StretchyAccent` contain line-segment accents whose MathML
+code points are missing in the pinned JS reference, which emits literal
+`undefined` where Rust emits a blank fallback.
+
+With `--allow-js-fallback` (as used in CI), these two MathML pixel mismatches
+are warnings rather than failures, but only when the successfully rendered
+JS DOM still contains the known `undefined` operator. GitHub Actions receives
+a `::warning` annotation and the summary counts warnings separately. A run
+with only these warnings exits successfully. PNG/diff/HTML artifacts are
+retained and uploaded normally; neither case is skipped and no baseline or
+pixel tolerance is changed.
+
+HTML-mode mismatches, other case names, rendering/timeouts/comparison errors,
+and mismatches after the reference stops emitting `undefined` remain errors.
+Baseline-only comparisons without JS fallback are not waived.
+
+Regression tests: `cargo test -p xtask`.
+
 ## Readiness contract
 
 Previously, the runner waited only for the existence of `window.runCase`.

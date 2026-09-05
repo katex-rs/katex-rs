@@ -165,8 +165,8 @@ fn html_builder_vphantom(
 
     let phantom_options = options.with_phantom();
     let inner = build_html::build_group(ctx, &vphantom_node.body, &phantom_options, None)?;
-    let inner_span = make_span("inner", vec![inner], None, None);
-    let fix = make_span("fix", vec![], None, None);
+    let inner_span = make_span("katex-inner", vec![inner], None, None);
+    let fix = make_span("katex-fix", vec![], None, None);
 
     Ok(make_span(
         ClassList::Const(&["mord", "rlap"]),

@@ -96,7 +96,7 @@ fn html_builder(
         Ok(HtmlDomNode::DomSpan(
             Span::builder()
                 .children(vec![]) // Empty content for the rule
-                .classes(ClassList::Const(&["mord", "rule"]))
+                .classes(ClassList::Const(&["mord", "katex-rule"]))
                 .height(height + shift)
                 .depth(-shift)
                 .width(Some(width))

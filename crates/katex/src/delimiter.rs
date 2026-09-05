@@ -563,8 +563,8 @@ pub fn make_stacked_delim<T: Into<ClassList>>(
             alternate: Some(path_str),
         };
         // const width = (viewBoxWidth / 1000).toFixed(3) + "em";
-        let width = format!("{:.3}em", view_box_width / 1000.0);
-        let height = format!("{:.3}em", view_box_height / 1000.0);
+        let width = make_em(view_box_width / 1000.0);
+        let height = make_em(view_box_height / 1000.0);
 
         let mut svg_attributes = KeyMap::default();
         svg_attributes.extend([

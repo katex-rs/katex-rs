@@ -5,7 +5,6 @@
 //! for spacing elements.
 
 use crate::build_common::{make_ord, make_span, mathsym};
-use crate::build_mathml::get_variant;
 use crate::context::KatexContext;
 use crate::dom_tree::HtmlDomNode;
 use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType, TextNode};
@@ -91,8 +90,8 @@ fn html_builder(
 /// MathML builder for spacing elements
 fn mathml_builder(
     node: &ParseNode,
-    options: &Options,
-    ctx: &KatexContext,
+    _options: &Options,
+    _ctx: &KatexContext,
 ) -> Result<MathDomNode, ParseError> {
     let ParseNode::Spacing(spacing_node) = node else {
         return Err(ParseError::new(ParseErrorKind::ExpectedNode {
@@ -102,19 +101,12 @@ fn mathml_builder(
 
     if REGULAR_SPACE.contains_key(&spacing_node.text) {
         // Regular spaces use mtext with non-breaking space
-        let mut math_node = MathNode::builder()
+        let math_node = MathNode::builder()
             .node_type(MathNodeType::Mtext)
             .children(vec![MathDomNode::Text(TextNode {
                 text: "\u{00a0}".to_owned(), // Non-breaking space
             })])
             .build();
-
-        if spacing_node.mode == Mode::Text {
-            let variant = get_variant(ctx, node, options)?.unwrap_or("normal");
-            if variant != "normal" {
-                math_node.set_attribute("mathvariant".to_owned(), variant.to_owned());
-            }
-        }
 
         Ok(math_node.into())
     } else if CSS_SPACE.contains_key(&spacing_node.text) {

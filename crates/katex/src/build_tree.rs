@@ -79,7 +79,7 @@ pub fn build_tree(
     let katex_node = match settings.output {
         OutputFormat::Mathml => {
             // MathML only
-            build_mathml(ctx, tree, expression, &options, settings.display_mode, true)?
+            return build_mathml(ctx, tree, expression, &options, settings.display_mode, true);
         }
         OutputFormat::Html => {
             // HTML only

@@ -1201,6 +1201,7 @@ impl<'a> Parser<'a> {
                 .parse_argument_group(optional, Some(Mode::Text))?
                 .map_or(Ok(None), |group| {
                     Ok(Some(ParseNode::Styling(parse_node::ParseNodeStyling {
+                        reset_font: true,
                         mode: group.mode(),
                         loc: None,
                         style: TEXT,
@@ -1465,11 +1466,12 @@ impl<'a> Parser<'a> {
             accents
         });
 
-        let text = text.into_owned();
-
         // Recognize base symbol via symbol table
         let mut symbol_node = if let Some(info) = self.ctx.symbols.get(self.mode, &text) {
-            let token_text = TokenText::from(text.clone());
+            let token_text = match &text {
+                Cow::Borrowed(_) => nucleus.text.clone(),
+                Cow::Owned(text) => TokenText::from(text.clone()),
+            };
             match info.group {
                 Group::Atom(atom) => ParseNode::Atom(parse_node::ParseNodeAtom {
                     family: atom,
@@ -1533,7 +1535,10 @@ impl<'a> Parser<'a> {
                         .map(|loc| loc as &dyn ErrorLocationProvider),
                 )?;
             }
-            let token_text = TokenText::from(text.clone());
+            let token_text = match &text {
+                Cow::Borrowed(_) => nucleus.text.clone(),
+                Cow::Owned(text) => TokenText::from(text.clone()),
+            };
             ParseNode::TextOrd(parse_node::ParseNodeTextOrd {
                 mode: Mode::Text,
                 loc: nucleus.loc.clone(),

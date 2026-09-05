@@ -703,10 +703,13 @@ fn both_single_same_mbin_or_mord(a: &ClassList, b: &ClassList) -> bool {
 
 #[inline]
 fn can_combine_symbols(prev: &SymbolNode, next: &SymbolNode) -> bool {
-    if both_single_same_mbin_or_mord(&prev.classes, &next.classes) {
+    if !prev.is_text_ord && both_single_same_mbin_or_mord(&prev.classes, &next.classes) {
         return false;
     }
-    if prev.skew != next.skew || prev.max_font_size != next.max_font_size {
+    if prev.skew != next.skew
+        || prev.max_font_size != next.max_font_size
+        || (prev.italic != 0.0 && prev.classes.contains("mathnormal"))
+    {
         return false;
     }
 
@@ -763,6 +766,20 @@ impl KatexContext {
 /// Makes either a mathord or textord in the correct font and color.
 /// Corresponds to the JavaScript `makeOrd` function.
 pub fn make_ord(
+    ctx: &KatexContext,
+    node: &AnyParseNode,
+    options: &Options,
+) -> Result<HtmlDomNode, ParseError> {
+    let mut result = make_ord_inner(ctx, node, options)?;
+    if matches!(node, AnyParseNode::TextOrd(_) | AnyParseNode::Spacing(_))
+        && let HtmlDomNode::Symbol(symbol) = &mut result
+    {
+        symbol.is_text_ord = true;
+    }
+    Ok(result)
+}
+
+fn make_ord_inner(
     ctx: &KatexContext,
     node: &AnyParseNode,
     options: &Options,
@@ -1033,7 +1050,7 @@ pub fn static_svg(path_name: &str, options: &Options) -> Result<DomSpan, ParseEr
             .children(vec![SvgChildNode::Path(path)])
             .attributes(svg_attributes)
             .build();
-        let mut span = make_svg_span("overlay", vec![svg_node], options);
+        let mut span = make_svg_span("katex-overlay", vec![svg_node], options);
         span.height = *height;
         span.style.insert(CssProperty::Height, make_em(*height));
         span.style.insert(CssProperty::Width, make_em(*width));
