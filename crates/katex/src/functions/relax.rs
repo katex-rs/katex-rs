@@ -19,8 +19,9 @@ pub fn define_relax(ctx: &mut KatexContext) {
             ..Default::default()
         },
         handler: Some(|context, _args, _opt_args| {
-            // \relax is a no-op function that doesn't produce any visible output
-            // but affects the parsing process by stopping expansion in certain contexts
+            // \relax is a no-op function that doesn't produce any visible
+            // output but affects the parsing process by stopping
+            // expansion in certain contexts
             Ok(ParseNode::Internal(ParseNodeInternal {
                 mode: context.parser.mode, // Use the current parser mode
                 loc: context.loc(),

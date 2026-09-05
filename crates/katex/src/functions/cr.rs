@@ -105,7 +105,8 @@ fn mathml_builder(
                     let height = make_em(size_value);
                     attributes.insert("height".to_owned(), height);
                 } else {
-                    // If calculate_size fails, fall back to a simple calculation
+                    // If calculate_size fails, fall back to a simple
+                    // calculation
                     attributes.insert("height".to_owned(), make_em(size.number));
                 }
             }

@@ -71,7 +71,8 @@ fn html_builder(
 
     // Create inner span
     let inner = if lap_node.alignment == LapAlignment::Center {
-        // For clap, wrap the body in an intermediate span so CSS centering works
+        // For clap, wrap the body in an intermediate span so CSS centering
+        // works
         let base = make_span(vec![], vec![body], Some(options), None);
         make_span("inner", vec![base.into()], Some(options), None)
     } else {

@@ -479,8 +479,8 @@ pub fn get_v_list_children_and_depth(
             position_data,
             children: vlist_children,
         } => {
-            // We always start at the bottom, so calculate the bottom by adding up
-            // all the sizes
+            // We always start at the bottom, so calculate the bottom by adding
+            // up all the sizes
             let mut bottom = position_data;
             for child in &vlist_children {
                 bottom -= match child {
@@ -1103,8 +1103,8 @@ pub fn make_line_span(
 ) -> DomSpan {
     let mut line = make_span(class_name, vec![], Some(options), None);
 
-    // Calculate line height: use thickness, or default rule thickness, with minimum
-    // threshold
+    // Calculate line height: use thickness, or default rule thickness, with
+    // minimum threshold
     let default_thickness = options.font_metrics().default_rule_thickness;
     let line_thickness = thickness.unwrap_or(default_thickness);
     line.height = line_thickness.max(options.min_rule_thickness);

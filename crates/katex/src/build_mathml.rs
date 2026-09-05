@@ -59,8 +59,8 @@ pub fn make_text(text: &str, mode: Mode, options: Option<&Options>, symbols: &Sy
     if let Some(char_info) = symbols.get(mode, text)
         && let Some(replace) = &char_info.replace
     {
-        // Check if first character is not in the Unicode Mathematical Alphanumeric
-        // Symbols block (U+1D400-U+1D7FF)
+        // Check if first character is not in the Unicode Mathematical
+        // Alphanumeric Symbols block (U+1D400-U+1D7FF)
         let char_code = text.chars().next().unwrap_or('\0') as u32;
         if !(0x1D400..=0x1D7FF).contains(&char_code) {
             // Check for ligature + typewriter font condition

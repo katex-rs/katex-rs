@@ -3,7 +3,6 @@ use image::GenericImageView;
 use indicatif::ProgressBar;
 use serde_json::json;
 use thirtyfour::WebDriver;
-use thirtyfour::extensions::cdp::ChromeDevTools;
 use url::form_urlencoded::byte_serialize;
 
 use crate::screenshotter::args::{
@@ -82,10 +81,10 @@ pub async fn calibrate_browser_viewport(
 }
 
 pub async fn configure_chrome_viewport(driver: &WebDriver) -> Result<()> {
-    let devtools = ChromeDevTools::new(driver.handle.clone());
+    let devtools = driver.cdp();
 
     devtools
-        .execute_cdp_with_params(
+        .send_raw(
             "Emulation.setDeviceMetricsOverride",
             json!({
                 "mobile": false,
@@ -100,7 +99,7 @@ pub async fn configure_chrome_viewport(driver: &WebDriver) -> Result<()> {
         .map_err(Report::from)?;
 
     devtools
-        .execute_cdp_with_params(
+        .send_raw(
             "Emulation.setVisibleSize",
             json!({
                 "width": VIEWPORT_WIDTH,

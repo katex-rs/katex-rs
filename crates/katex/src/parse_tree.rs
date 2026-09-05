@@ -19,7 +19,8 @@ pub fn parse_tree(
     // Blank out any \df@tag to avoid spurious "Duplicate \tag" errors
     parser.gullet.macros_mut().purge("\\df@tag");
     let tree = parser.parse()?;
-    // Prevent a color definition from persisting between calls to katex.render().
+    // Prevent a color definition from persisting between calls to
+    // katex.render().
     parser.gullet.macros_mut().purge("\\current@color");
     parser.gullet.macros_mut().purge("\\color");
     // If the input used \tag, it will set the \df@tag macro to the tag.

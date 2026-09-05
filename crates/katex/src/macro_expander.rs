@@ -43,7 +43,8 @@ impl<'a> MacroExpander<'a> {
     /// Create a new MacroExpander (also creates a new Lexer)
     #[must_use]
     pub fn new(input: &str, settings: &'a Settings, mode: Mode, ctx: &'a KatexContext) -> Self {
-        // Build macros namespace: builtins from context, globals from settings.macros
+        // Build macros namespace: builtins from context, globals from
+        // settings.macros
         let globals = settings.macros.borrow_mut();
         let macros = Namespace::new(&BUILTIN_MACROS, globals);
 
@@ -224,7 +225,8 @@ impl<'a> MacroExpander<'a> {
                     {
                         let arg_index = parsed - 1;
                         // replace placeholder (#n) with arg tokens
-                        // remove the two tokens (# and n) at positions i-1 and i
+                        // remove the two tokens (# and n) at positions i-1 and
+                        // i
                         tokens.splice((i as usize - 1)..=(i as usize), args[arg_index].clone());
                         i -= 2; // step past inserted
                         continue;
@@ -269,7 +271,8 @@ impl<'a> MacroExpander<'a> {
 
     /// Compute expansion for a name
     fn get_expansion(&mut self, name: &str) -> Option<MacroExpansion> {
-        // If single character has a catcode other than 13 (active), don't expand it
+        // If single character has a catcode other than 13 (active), don't
+        // expand it
         if name.chars().count() == 1
             && let Some(ch) = name.chars().next()
             && let Some(catcode) = self.lexer.get_catcode(ch)

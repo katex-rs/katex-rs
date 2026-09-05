@@ -29,8 +29,9 @@ pub fn define_verb(ctx: &mut KatexContext) {
         handler: Some(
             |_context, _args: Vec<ParseNode>, _opt_args: Vec<Option<ParseNode>>| {
                 // \verb and \verb* are dealt with directly in Parser.js.
-                // If we end up here, it's because of a failure to match the two delimiters
-                // in the regex in Lexer.js.  LaTeX raises the following error when \verb is
+                // If we end up here, it's because of a failure to match the two
+                // delimiters in the regex in Lexer.js.  LaTeX
+                // raises the following error when \verb is
                 // terminated by end of line (or file).
                 Err(ParseError::new(ParseErrorKind::VerbMissingDelimiter))
             },

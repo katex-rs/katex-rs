@@ -2229,8 +2229,9 @@ fn an_html_font_tree_builder() {
     it(
         "should throw TypeError when the expression is of the wrong type",
         || {
-            // In Rust, this would be compile-time or runtime panic, but for test, skip or
-            // use result For now, assume it's handled in the API
+            // In Rust, this would be compile-time or runtime panic, but for
+            // test, skip or use result For now, assume it's handled
+            // in the API
             Ok(())
         },
     );
@@ -2524,7 +2525,8 @@ fn an_html_extension_builder() {
         }
         // built[1] is \htmlClass{foo}{x} - should have class containing "foo"
         assert!(built[1].classes().contains("foo"));
-        // built[2] is \htmlStyle{color: red;}{x} - should have style="color: red"
+        // built[2] is \htmlStyle{color: red;}{x} - should have style="color:
+        // red"
         if let Some(style) = built[2].attributes().unwrap().get("style") {
             assert!(style.contains("color: red"));
         } else {
@@ -3550,8 +3552,8 @@ fn operatorname_support() {
         expect!(r"\operatorname*{x*Π∑\Pi\sum\frac a b}").to_build(&strict_settings())?;
         expect!(r"\operatorname*{x*Π∑\Pi\sum\frac a b}_y x").to_build(&strict_settings())?;
         expect!(r"\operatorname*{x*Π∑\Pi\sum\frac a b}\limits_y x").to_build(&strict_settings())?;
-        // The following does not actually render with limits. But it does not crash
-        // either.
+        // The following does not actually render with limits. But it does not
+        // crash either.
         expect!(r"\operatorname{sn}\limits_{b>c}(b+c)").to_build(&strict_settings())
     });
 }
@@ -3718,8 +3720,8 @@ fn href_and_url_commands() {
         },
     );
 
-    // For getProtocolViaTrust, implement a helper to extract protocol from parsed
-    // node
+    // For getProtocolViaTrust, implement a helper to extract protocol from
+    // parsed node
     fn get_protocol_via_trust(url: &str) -> Option<String> {
         let mut settings = trust_settings();
         let protocol = Arc::new(Mutex::new(None));
@@ -4092,7 +4094,8 @@ fn a_macro_expander() {
             expect!(r"\expandafter\foo\bar").to_parse_like("x+y", &settings1)?;
             expect!(r"\def\foo{x}\def\bar{\def\foo{y}}\expandafter\bar\foo")
                 .to_parse_like("x", &strict_settings())?;
-            // \def is not expandable, i.e., \expandafter doesn't define the macro
+            // \def is not expandable, i.e., \expandafter doesn't define the
+            // macro
             expect!(r"\expandafter\foo\def\foo{x}").not_to_parse(&strict_settings())
         },
     );
@@ -4912,8 +4915,8 @@ fn unicode() {
     });
 
     it("should parse relations", || {
-        // These characters are not in the KaTeX fonts. So they build with an error
-        // message.
+        // These characters are not in the KaTeX fonts. So they build with an
+        // error message.
         expect!("⊶⊷").to_parse(&strict_settings())
     });
 

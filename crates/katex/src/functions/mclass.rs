@@ -217,8 +217,9 @@ pub fn define_mclass(ctx: &mut crate::KatexContext) {
         mathml_builder: Some(mathml_builder),
     });
 
-    // \@binrel{x}{y} renders like y but as mbin/mrel/mord if x is mbin/mrel/mord.
-    // This is equivalent to \binrel@{x}\binrel@@{y} in AMSTeX.
+    // \@binrel{x}{y} renders like y but as mbin/mrel/mord if x is
+    // mbin/mrel/mord. This is equivalent to \binrel@{x}\binrel@@{y} in
+    // AMSTeX.
     ctx.define_function(FunctionDefSpec {
         node_type: Some(NodeType::Mclass),
         names: &["\\@binrel"],

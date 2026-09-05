@@ -27,7 +27,8 @@ pub fn define_char(ctx: &mut KatexContext) {
                     return Err(ParseError::new(ParseErrorKind::CharArgumentMustBeOrdGroup));
                 };
 
-                // Concatenate all text from textord and mathord nodes in the group
+                // Concatenate all text from textord and mathord nodes in the
+                // group
                 let mut number_str = String::new();
                 for node in &ordgroup.body {
                     match node {

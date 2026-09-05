@@ -63,8 +63,9 @@ pub fn define_environment(ctx: &mut KatexContext) {
                 }));
             };
 
-            // Build the environment object. Arguments and other information will
-            // be made available to the begin and end methods using properties.
+            // Build the environment object. Arguments and other information
+            // will be made available to the begin and end methods
+            // using properties.
             let (args, opt_args) =
                 parser.parse_arguments(&format!("\\begin{{{env_name}}}"), env_spec.as_ref())?;
             let env_context = EnvContext {

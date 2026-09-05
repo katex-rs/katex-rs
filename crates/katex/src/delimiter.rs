@@ -533,7 +533,8 @@ pub fn make_stacked_delim<T: Into<ClassList>>(
             );
             stack.push(make_inner(ctx, &repeat, inner_height, options)?);
         } else {
-            // When there is a middle bit, we need the middle part and two repeated sections
+            // When there is a middle bit, we need the middle part and two
+            // repeated sections
             let inner_height = 2.0f64.mul_add(
                 LAP_IN_EMS,
                 (real_height_total - top_height_total - bottom_height_total - middle_height_total)
@@ -617,7 +618,8 @@ pub fn make_sqrt_image(
     height: f64,
     options: &Options,
 ) -> Result<SqrtImageResult, ParseError> {
-    // Define a newOptions that removes the effect of size changes such as \Huge.
+    // Define a newOptions that removes the effect of size changes such as
+    // \Huge.
     let new_options = options.having_base_sizing();
 
     // Pick the desired surd glyph from a sequence of surds.

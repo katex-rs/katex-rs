@@ -296,7 +296,8 @@ pub fn define_includegraphics(ctx: &mut KatexContext) {
                 if let Some(Some(opt_arg)) = opt_args.first()
                     && let ParseNode::Raw(raw_node) = opt_arg
                 {
-                    // Parser.js does not parse key/value pairs. We get a string.
+                    // Parser.js does not parse key/value pairs. We get a
+                    // string.
                     let attributes: Vec<&str> = raw_node.string.split(',').collect();
 
                     for attribute in attributes {

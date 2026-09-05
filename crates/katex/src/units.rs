@@ -68,8 +68,8 @@ impl KatexContext {
         let mut scale: f64;
 
         if let Some(pt) = PT_PER_UNIT.get(size.unit.as_ref()) {
-            // Absolute units. Convert unit -> pt -> em, then unscale absolute to current
-            // size.
+            // Absolute units. Convert unit -> pt -> em, then unscale absolute
+            // to current size.
             let metrics = self.get_global_metrics(options.size as f64);
             let pt_per_em = metrics.pt_per_em;
             scale = pt / pt_per_em / options.size_multiplier;
@@ -78,7 +78,8 @@ impl KatexContext {
             let metrics = self.get_global_metrics(options.size as f64);
             scale = metrics.css_em_per_mu;
         } else {
-            // Other relative units always refer to the textstyle font in the current size.
+            // Other relative units always refer to the textstyle font in the
+            // current size.
             let unit_options = if options.style.is_tight() {
                 options.having_style(options.style.text())
             } else {
@@ -96,7 +97,8 @@ impl KatexContext {
                 }
             };
 
-            // If we changed options for tight style, compensate for size multiplier.
+            // If we changed options for tight style, compensate for size
+            // multiplier.
             if unit_options.size != options.size {
                 let ratio = unit_options.size_multiplier / options.size_multiplier;
                 scale *= ratio;

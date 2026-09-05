@@ -86,8 +86,9 @@ pub fn parse_array(
     parser.gullet.begin_group();
 
     if !config.single_row {
-        // \cr is equivalent to \\ without the optional size argument (see below)
-        // TODO: provide helpful error when \cr is used outside array environment
+        // \cr is equivalent to \\ without the optional size argument (see
+        // below) TODO: provide helpful error when \cr is used outside
+        // array environment
         parser.gullet.macros_mut().set(
             "\\cr",
             Some(MacroDefinition::StaticStr("\\\\\\relax")),
@@ -215,10 +216,11 @@ pub fn parse_array(
             }
             "\\end" => {
                 end_row(parser)?;
-                // Arrays terminate newlines with `\crcr` which consumes a `\cr` if
-                // the last line is empty.  However, AMS environments keep the
-                // empty row if it's the only one.
-                // NOTE: Currently, `cell` is the last item added into `row`.
+                // Arrays terminate newlines with `\crcr` which consumes a `\cr`
+                // if the last line is empty.  However, AMS
+                // environments keep the empty row if it's the
+                // only one. NOTE: Currently, `cell` is the last
+                // item added into `row`.
                 if row_immut.len() == 1
                     && let ParseNode::Styling(styling) = cell
                     && styling.body.len() == 1
@@ -996,8 +998,8 @@ const ALIGNED_HANDLER: EnvHandler = |context, args, _opt_args| {
     // Determining number of columns.
     // 1. If the first argument is given, we use it as a number of columns, and
     //    makes sure that each row doesn't exceed that number.
-    // 2. Otherwise, just count number of columns = maximum number of cells in each
-    //    row ("aligned" mode -- isAligned will be true).
+    // 2. Otherwise, just count number of columns = maximum number of cells in
+    //    each row ("aligned" mode -- isAligned will be true).
     //
     // At the same time, prepend empty group {} at beginning of every second
     // cell in each row (starting with second cell) so that operators become
@@ -1096,8 +1098,8 @@ pub fn define_array(ctx: &mut KatexContext) {
         },
         handler: |context, args, _opt_args| {
             // Since no types are specified above, the two possibilities are
-            // - The argument is wrapped in {} or [], in which case Parser's parseGroup()
-            //   returns an "ordgroup" wrapping some symbol node.
+            // - The argument is wrapped in {} or [], in which case Parser's
+            //   parseGroup() returns an "ordgroup" wrapping some symbol node.
             // - The argument is a bare symbol node.
             let sym_node = check_symbol_node_type(args.first());
             let colalign: Vec<AnyParseNode> = if sym_node.is_some() {
@@ -1163,7 +1165,8 @@ pub fn define_array(ctx: &mut KatexContext) {
     // The matrix environments of amsmath builds on the array environment
     // of LaTeX, which is discussed above.
     // The mathtools package adds starred versions of the same environments.
-    // These have an optional argument to choose left|center|right justification.
+    // These have an optional argument to choose left|center|right
+    // justification.
     ctx.define_environment(EnvDefSpec {
         node_type: NodeType::Array,
         names: vec![

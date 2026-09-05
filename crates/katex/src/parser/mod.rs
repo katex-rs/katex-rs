@@ -523,8 +523,8 @@ impl<'a> Parser<'a> {
     ) -> Result<Vec<ParseNode>, ParseError> {
         let mut body: Vec<ParseNode> = Vec::new();
 
-        // Keep adding atoms to the body until we can't parse any more atoms (either
-        // we reached the end, a }, or a \right)
+        // Keep adding atoms to the body until we can't parse any more atoms
+        // (either we reached the end, a }, or a \right)
         loop {
             // Ignore spaces in math mode
             if self.mode == Mode::Math {
@@ -666,8 +666,9 @@ impl<'a> Parser<'a> {
             && matches!(base, ParseNode::Internal(_))
         {
             // Internal nodes (e.g. \relax) cannot support super/subscripts.
-            // Instead we will pick up super/subscripts with blank base next round.
-            // No super/subscripts on internal nodes or text mode nodes
+            // Instead we will pick up super/subscripts with blank base next
+            // round. No super/subscripts on internal nodes or text
+            // mode nodes
             return Ok(base_opt);
         }
 
@@ -679,7 +680,8 @@ impl<'a> Parser<'a> {
         let mut subscript = None;
 
         // 2) Handle superscripts/subscripts chain: ^, _, ', and Unicode sub/sup
-        // In text mode, raw ^/_ should error (like KaTeX); we implement minimal check.
+        // In text mode, raw ^/_ should error (like KaTeX); we implement minimal
+        // check.
         loop {
             self.consume_spaces()?; // math mode ignores spaces, but safe in both
             let token = self.fetch()?;
@@ -792,7 +794,8 @@ impl<'a> Parser<'a> {
                                 }));
                         }
                     } else {
-                        // If it wasn't ^, _, or ', stop parsing super/subscripts
+                        // If it wasn't ^, _, or ', stop parsing
+                        // super/subscripts
                         break;
                     }
                 }
@@ -1115,14 +1118,15 @@ impl<'a> Parser<'a> {
 
     /// Parse a URL group; simplified unescape.
     fn parse_url_group(&mut self, optional: bool) -> Result<Option<ParseNode>, ParseError> {
-        // Set catcode for % to active character (13) and ~ to other character (12)
-        // This follows hyperref package behavior
+        // Set catcode for % to active character (13) and ~ to other character
+        // (12) This follows hyperref package behavior
         self.gullet.set_catcode('%', 13); // active character
         self.gullet.set_catcode('~', 12); // other character
 
         let res = self.parse_string_group("url", optional)?;
 
-        // Reset catcode for % to comment character (14) and ~ to active character (13)
+        // Reset catcode for % to comment character (14) and ~ to active
+        // character (13)
         self.gullet.set_catcode('%', 14); // comment character
         self.gullet.set_catcode('~', 13); // active character
 
@@ -1396,17 +1400,21 @@ impl<'a> Parser<'a> {
             let inner_body = &body[1..body.len() - 1];
             let inner_body = match text {
                 Cow::Borrowed(_s) => {
-                    // This path means we borrowed from nucleus.text (which is TokenText).
-                    // We need to construct a new TokenText slicing the original one.
-                    // However, text was stripped of \verb prefix manually above:
-                    // if let Some(arg) = text.as_ref().strip_prefix("\\verb")
-                    // This implies we are creating a new string anyway or slicing.
-                    // Since TokenText supports slicing if we have the original Arc,
+                    // This path means we borrowed from nucleus.text (which is
+                    // TokenText). We need to construct a
+                    // new TokenText slicing the original one.
+                    // However, text was stripped of \verb prefix manually
+                    // above: if let Some(arg) =
+                    // text.as_ref().strip_prefix("\\verb")
+                    // This implies we are creating a new string anyway or
+                    // slicing. Since TokenText supports
+                    // slicing if we have the original Arc,
                     // but here we only have &str.
                     // We can check if nucleus.text is capable of being sliced.
                     // But nucleus.text is TokenText.
-                    // Let's just create a new TokenText from the string for now.
-                    // Optimizing this further would require passing indices.
+                    // Let's just create a new TokenText from the string for
+                    // now. Optimizing this further would
+                    // require passing indices.
                     TokenText::from(inner_body.to_owned())
                 }
                 Cow::Owned(_) => TokenText::from(inner_body.to_owned()),
@@ -1634,7 +1642,8 @@ impl<'a> Parser<'a> {
         token: Option<&Token>,
         break_on_token_text: Option<&BreakToken>,
     ) -> Result<ParseNode, ParseError> {
-        // Get the function spec before creating the context to avoid borrowing issues
+        // Get the function spec before creating the context to avoid borrowing
+        // issues
         let func = self.ctx.functions.get(name);
 
         if let Some(func) = func

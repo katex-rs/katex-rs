@@ -471,7 +471,8 @@ impl TestExpr<'_> {
         let dom2 =
             self.wrap_parse_with_expr(other, render_to_dom_tree(self.ctx, other, settings))?;
 
-        // Simple comparison - in a real implementation, we'd do proper DOM comparison
+        // Simple comparison - in a real implementation, we'd do proper DOM
+        // comparison
         let dom1_debug = format!("{dom1:?}");
         let dom2_debug = format!("{dom2:?}");
         if dom1_debug == dom2_debug {
@@ -849,8 +850,8 @@ pub fn assert_html_eq_unordered_styles(markup: &str, rendered: &str) {
     let clean_rendered = style_regex.replace_all(rendered, "style=\"\"");
     assert_eq!(clean_markup, clean_rendered);
 
-    // Now compare the style attributes, both may occur multiple times, so we need
-    // to find all
+    // Now compare the style attributes, both may occur multiple times, so we
+    // need to find all
     let mut markup_styles = style_regex.captures_iter(markup);
     let mut rendered_styles = style_regex.captures_iter(rendered);
     loop {

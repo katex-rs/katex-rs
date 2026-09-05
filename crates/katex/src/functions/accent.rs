@@ -285,8 +285,9 @@ pub fn html_builder(
                 }));
             };
 
-            // Remove the italic correction of the accent, because it only serves to
-            // shift the accent over to a place we don't want.
+            // Remove the italic correction of the accent, because it only
+            // serves to shift the accent over to a place we don't
+            // want.
             accent.italic = 0.0;
             if accent_below {
                 clearance += accent.depth;
@@ -310,8 +311,8 @@ pub fn html_builder(
         // Shift the accent over by the skew.
         let mut left = skew;
 
-        // CSS defines `.katex .accent .accent-body:not(.accent-full) { width: 0 }`
-        // so that the accent doesn't contribute to the bounding box.
+        // CSS defines `.katex .accent .accent-body:not(.accent-full) { width: 0
+        // }` so that the accent doesn't contribute to the bounding box.
         // We need to shift the character by its width (effectively half
         // its width) to compensate.
         if !accent_full {

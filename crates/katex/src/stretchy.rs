@@ -480,14 +480,16 @@ mod tests {
             .build();
 
         // Test that the function exists and can be called
-        // We'll use a simple test that should work with our current implementation
+        // We'll use a simple test that should work with our current
+        // implementation
         let simple_node = AnyParseNode::MathOrd(ParseNodeMathOrd {
             mode: Mode::Math,
             loc: None,
             text: "x".into(),
         });
 
-        // This should not panic and should return an error for unsupported node type
+        // This should not panic and should return an error for unsupported node
+        // type
         let result = svg_span(&simple_node, &options);
         assert!(result.is_err());
     }

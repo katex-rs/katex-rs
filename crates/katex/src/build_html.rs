@@ -736,7 +736,8 @@ pub fn build_expression(
         let output = build_group(ctx, node, options, None)?;
         // Handle DocumentFragment flattening - match JS behavior
         if let HtmlDomNode::Fragment(fragment) = output {
-            // Flatten DocumentFragment children into groups while merging adjacent symbols
+            // Flatten DocumentFragment children into groups while merging
+            // adjacent symbols
             for child in fragment.children {
                 push_combine_chars(&mut groups, child);
             }
@@ -838,7 +839,8 @@ pub fn build_expression(
             let prev_type = get_type_of_dom_tree(prev, None);
             let type_opt = get_type_of_dom_tree(node, None);
             if let (Some(prev_type), Some(type_val)) = (prev_type, type_opt) {
-                // 'mtight' indicates that the node is script or scriptscript style.
+                // 'mtight' indicates that the node is script or scriptscript
+                // style.
                 let space = if node.has_class("mtight") {
                     TIGHT_SPACINGS
                         .get(prev_type.as_str())
