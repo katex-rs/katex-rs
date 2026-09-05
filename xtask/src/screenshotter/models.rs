@@ -14,6 +14,34 @@ pub struct TestCase {
     pub payload: JsonValue,
 }
 
+impl TestCase {
+    pub fn artifact_key(&self) -> String {
+        if self.payload.get("output").and_then(JsonValue::as_str) == Some("mathml") {
+            format!("{}-mathml", self.key)
+        } else {
+            self.key.clone()
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::TestCase;
+    use serde_json::json;
+
+    #[test]
+    fn mathml_artifacts_do_not_collide_with_html() {
+        let mut case = TestCase {
+            key: "Accents".to_owned(),
+            payload: json!({"tex": "x"}),
+        };
+        assert_eq!(case.artifact_key(), "Accents");
+        case.payload["output"] = json!("mathml");
+        assert_eq!(case.artifact_key(), "Accents-mathml");
+        assert_eq!(case.key, "Accents");
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Screenshot {
     pub png: Vec<u8>,

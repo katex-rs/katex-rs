@@ -139,4 +139,9 @@ pub struct ScreenshotterArgs {
     /// or mismatched.
     #[arg(long = "allow-js-fallback", default_value_t = false)]
     pub allow_js_fallback: bool,
+
+    /// Render MathML, with separate baselines and artifacts. Use
+    /// --allow-js-fallback to compare against JS in the same browser.
+    #[arg(long)]
+    pub mathml: bool,
 }

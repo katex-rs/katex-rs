@@ -98,6 +98,17 @@ each failing case. Combine it with `--allow-js-fallback` to fall back to
 comparing the WASM output against the live JavaScript rendering when
 cross-platform differences or missing baselines would otherwise block progress.
 
+For native MathML comparisons, use a separate output mode:
+
+```bash
+cargo xtask screenshotter --browser firefox --mathml --allow-js-fallback --html-on-failure
+node --test xtask/tests/screenshot-ready.test.mjs
+```
+
+MathML baselines and artifacts use a `-mathml` suffix and never reuse HTML
+baselines. See [MathML testing notes](MATHML_TESTING.md) for readiness guarantees,
+first-case cold-start reproduction, and the selective fork adoption decisions.
+
 ### Native benchmarks and flamegraphs
 
 KaTeX-rs bundles two benchmark harnesses that replay the same inputs as the

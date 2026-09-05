@@ -537,7 +537,11 @@ pub async fn preload_baselines(
     let mut tasks = FuturesUnordered::new();
     for case in cases {
         let key = case.key.clone();
-        let path = baseline_dir.join(format!("{}{}", case.key, browser.screenshot_suffix()));
+        let path = baseline_dir.join(format!(
+            "{}{}",
+            case.artifact_key(),
+            browser.screenshot_suffix()
+        ));
         tasks.push(spawn_blocking(move || -> BaselineTaskResult {
             let baseline_bytes = match std::fs::read(path.as_std_path()) {
                 Ok(bytes) => bytes,
@@ -569,4 +573,44 @@ pub async fn preload_baselines(
     }
 
     Ok(baselines)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{encode_rgba_png, preload_baselines};
+    use crate::screenshotter::args::BrowserKind;
+    use crate::screenshotter::models::TestCase;
+    use camino::Utf8PathBuf;
+    use color_eyre::eyre::Result;
+    use image::{Rgba, RgbaImage};
+    use serde_json::json;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    #[tokio::test]
+    async fn mathml_never_loads_an_html_baseline() -> Result<()> {
+        let name = format!(
+            "katex-baseline-{}-{}",
+            std::process::id(),
+            SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos()
+        );
+        let dir = Utf8PathBuf::from_path_buf(std::env::temp_dir().join(name)).unwrap();
+        std::fs::create_dir(&dir)?;
+        let html = dir.join("Accents-firefox.png");
+        let mathml = dir.join("Accents-mathml-firefox.png");
+        let png = encode_rgba_png(&RgbaImage::from_pixel(1, 1, Rgba([255; 4])))?;
+        std::fs::write(&html, &png)?;
+        let cases = [TestCase {
+            key: "Accents".to_owned(),
+            payload: json!({"tex": "x", "output": "mathml"}),
+        }];
+        let without_mathml = preload_baselines(&dir, &cases, BrowserKind::Firefox).await?;
+        std::fs::write(&mathml, png)?;
+        let with_mathml = preload_baselines(&dir, &cases, BrowserKind::Firefox).await?;
+        std::fs::remove_file(html)?;
+        std::fs::remove_file(mathml)?;
+        std::fs::remove_dir(dir)?;
+        assert!(without_mathml.is_empty());
+        assert!(with_mathml.contains_key("Accents"));
+        Ok(())
+    }
 }

@@ -73,6 +73,10 @@ pub async fn start_static_server(
             get_service(ServeFile::new(test_page.as_std_path())),
         )
         .route_service(
+            "/screenshot-ready.mjs",
+            get_service(ServeFile::new(assets_dir.join("screenshot-ready.mjs"))),
+        )
+        .route_service(
             "/katex.min.css",
             get_service(ServeFile::new(katex_css.as_std_path())),
         )

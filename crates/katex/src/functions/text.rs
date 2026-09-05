@@ -15,7 +15,6 @@ use phf::phf_map;
 
 /// Text font families mapping
 static TEXT_FONT_FAMILIES: phf::Map<&'static str, &'static str> = phf_map! {
-    "\\text" => "",
     "\\textrm" => "textrm",
     "\\textsf" => "textsf",
     "\\texttt" => "texttt",
@@ -65,6 +64,8 @@ fn options_with_font(group: &ParseNodeText, options: &Options) -> Options {
         return options.with_text_font_shape(font_shape.clone());
     }
 
+    // Like KaTeX.js, plain \\text preserves the family and weight, but resets
+    // the shape (and any math font) through withTextFontShape(undefined).
     options.with_text_font_shape(FontShape::Empty)
 }
 

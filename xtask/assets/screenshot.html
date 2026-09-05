@@ -39,10 +39,13 @@
 
   <script type="module">
     // ESM init: load WASM and shim, then render based on URL query.
-    import initWasm, * as wasm from "./pkg/katex.js";
+    import { abortable, withRenderTimeout, waitForRender } from "./screenshot-ready.mjs";
 
     const searchParams = new URLSearchParams(window.location.search || "");
     const implMode = (searchParams.get("impl") || "wasm").toLowerCase();
+    const requestedTimeout = Number(searchParams.get("timeout"));
+    const defaultTimeoutMs = Number.isFinite(requestedTimeout) && requestedTimeout > 0
+      ? requestedTimeout : 15000;
 
     function setStatus(state, message, stack) {
       const detail = { state, message: message || null };
@@ -61,6 +64,8 @@
     }
 
     window.__status = setStatus("init", null);
+    window.__ready = false;
+    window.__initialSetupDone = false;
 
     function decodePayloadFromSearch(searchParams) {
       const entries = Array.from(searchParams.entries());
@@ -120,17 +125,6 @@
       return { payload };
     }
 
-    async function waitForImagesIn(el) {
-      const imgs = Array.from(el.querySelectorAll("img"));
-      await Promise.all(imgs.map(img => {
-        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
-        return new Promise(resolve => {
-          img.addEventListener("load", resolve, { once: true });
-          img.addEventListener("error", resolve, { once: true });
-        });
-      }));
-    }
-
     function setHTMLSafe(node, html) {
       node.textContent = "";
       if (typeof html !== "string" || html.length === 0) return;
@@ -162,7 +156,7 @@
       }
       promises.push(loadFont("Mincho"));
       promises.push(loadFont("Batang"));
-      try { await Promise.all(promises); } catch (_) {}
+      await Promise.all(promises);
     }
 
     const defaultImpl = implMode === "js" ? "js" : "wasm";
@@ -173,7 +167,8 @@
     let wasmApi = null;
     async function ensureWasmImplementation() {
       if (!wasmInitPromise) {
-        wasmInitPromise = initWasm().then(() => {
+        wasmInitPromise = import("./pkg/katex.js").then(async wasm => {
+          await wasm.default();
           const api = {
             render: wasm.render,
             renderToString: wasm.renderToString,
@@ -195,8 +190,7 @@
       if (!wasmApi) {
         throw new Error("Failed to initialize KaTeX WASM implementation");
       }
-      window.katex = wasmApi;
-      return "wasm";
+      return wasmApi;
     }
 
     let jsModulePromise = null;
@@ -205,20 +199,14 @@
         jsModulePromise = import("/katex.mjs");
       }
       const module = await jsModulePromise;
-      window.katex = module;
-      return "js";
+      return module;
     }
 
     async function loadImplementation(mode) {
       const target = typeof mode === "string" && mode.toLowerCase() === "js" ? "js" : "wasm";
-      if (window.__currentImpl === target && window.katex) {
-        return target;
-      }
-      const loaded = target === "js"
+      return target === "js"
         ? await ensureJsImplementation()
         : await ensureWasmImplementation();
-      window.__currentImpl = loaded;
-      return loaded;
     }
 
     window.loadImplementation = loadImplementation;
@@ -227,7 +215,7 @@
       return payload && typeof payload === "object" && !Array.isArray(payload) ? payload : {};
     }
 
-    async function renderInternal(payload, implPreference) {
+    async function renderInternal(payload, implPreference, timeoutMs = defaultTimeoutMs) {
       const mathNode = document.getElementById("math");
       const preNode = document.getElementById("pre");
       const postNode = document.getElementById("post");
@@ -287,9 +275,24 @@
       const targetImpl = typeof implPreference === "string" && implPreference.length > 0
         ? implPreference
         : defaultImpl;
-      let resolvedImpl = defaultImpl;
+      const resolvedImpl = targetImpl === "js" ? "js" : "wasm";
       try {
-        resolvedImpl = await loadImplementation(targetImpl);
+        await withRenderTimeout(async signal => {
+          const api = await abortable(loadImplementation(targetImpl), signal);
+          window.katex = api;
+          window.__currentImpl = resolvedImpl;
+          const texSource =
+            typeof o.tex === "string" ? o.tex : o.tex == null ? "" : String(o.tex);
+          // Renderers may mutate opts.macros; never share them across cases or
+          // between the Rust and JavaScript implementations.
+          api.render(texSource, mathNode, structuredClone(opts));
+          const expectedError = opts.throwOnError === false && mathNode.querySelector(".katex-error");
+          if (opts.output === "mathml" &&
+              ((!mathNode.querySelector("math") && !expectedError) || mathNode.querySelector(".katex-html"))) {
+            throw new Error("Expected MathML-only output");
+          }
+          await waitForRender(document, signal);
+        }, timeoutMs);
       } catch (err) {
         const message = err && err.message ? err.message : String(err);
         const stack = err && err.stack ? String(err.stack) : null;
@@ -298,32 +301,28 @@
         return { state: "error", message, stack };
       }
 
-      try {
-        const texSource =
-          typeof o.tex === "string" ? o.tex : o.tex == null ? "" : String(o.tex);
-        window.katex.render(texSource, mathNode, opts);
-      } catch (err) {
-        const message = err && err.message ? err.message : String(err);
-        const stack = err && err.stack ? String(err.stack) : null;
-        setStatus("error", message, stack);
-        window.__ready = true;
-        return { state: "error", message, stack };
-      }
-
-      await waitForImagesIn(document);
-      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
       window.__currentImpl = resolvedImpl;
       window.__ready = true;
       return setStatus("rendered", null, null);
     }
 
     // Expose a programmatic API so the same page can render multiple cases without reload.
-    window.runCase = function(payload) {
-      return renderInternal(payload, defaultImpl);
+    let renderQueue = Promise.resolve();
+    function enqueueRender(payload, mode, timeoutMs) {
+      const result = renderQueue.then(() => {
+        if (!window.__initialSetupDone) throw new Error("Screenshot page initialization failed");
+        return renderInternal(payload, mode, timeoutMs);
+      });
+      renderQueue = result.catch(() => {});
+      return result;
+    }
+
+    window.runCase = function(payload, timeoutMs) {
+      return enqueueRender(payload, defaultImpl, timeoutMs);
     };
 
-    window.renderWithImpl = function(mode, payload) {
-      return renderInternal(payload, mode);
+    window.renderWithImpl = function(mode, payload, timeoutMs) {
+      return enqueueRender(payload, mode, timeoutMs);
     };
 
     window.captureHtmlSnapshot = function() {
@@ -359,18 +358,23 @@
 
       window.__initialPayload = payload;
 
-      const result = await window.runCase(payload);
+      await withRenderTimeout(async signal => {
+        await abortable(ensureFonts(), signal);
+      }, defaultTimeoutMs);
+      const result = await renderInternal(payload, defaultImpl);
       if (result && result.state === "error") {
         return;
       }
 
-      if (document.fonts && document.fonts.ready) {
-        try { await document.fonts.ready; } catch (_) {}
-      }
-      await ensureFonts();
+      window.__initialSetupDone = true;
     }
 
-    main();
+    // Queue initialization first, even if a caller invokes runCase as soon as
+    // the helper is exposed. Otherwise the initial empty render can erase it.
+    renderQueue = main().catch(err => {
+      setStatus("error", err.message || String(err), err.stack);
+      window.__ready = true;
+    });
   </script>
 </body>
 </html>

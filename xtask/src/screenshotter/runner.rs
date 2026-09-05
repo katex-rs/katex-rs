@@ -53,6 +53,9 @@ pub fn run(mut args: ScreenshotterArgs) -> Result<()> {
     if args.attempts == 0 {
         bail!("attempts must be greater than zero");
     }
+    if args.timeout == 0 {
+        bail!("timeout must be greater than zero");
+    }
 
     if args.browsers.is_empty() {
         args.browsers.extend(DEFAULT_BROWSERS);
@@ -86,7 +89,12 @@ pub fn run(mut args: ScreenshotterArgs) -> Result<()> {
     ensure_katex_dist_assets(&root, args.build)?;
 
     let cases = load_cases(&root, &args)?;
-    let cases = filter_cases(cases, &args);
+    let mut cases = filter_cases(cases, &args);
+    if args.mathml {
+        for case in &mut cases {
+            case.payload["output"] = JsonValue::String("mathml".to_owned());
+        }
+    }
     if cases.is_empty() {
         bail!("no screenshotter cases matched the provided filters");
     }
@@ -157,6 +165,31 @@ async fn run_browser(
     cases: &[TestCase],
     config: BrowserRunConfig<'_>,
 ) -> Result<()> {
+    let (driver, child, webdriver_url) = start_webdriver(config.args, config.browser).await?;
+    logger.info(format!(
+        "Connected to {} WebDriver at {webdriver_url}",
+        config.browser
+    ));
+    let result = run_browser_session(&driver, &logger, root, cases, config).await;
+    // Close the browser on startup/readiness errors too. Killing only the
+    // driver can leave orphaned browsers and contaminate subsequent runs.
+    if let Err(err) = driver.quit().await {
+        logger.warn(format!("Failed to close WebDriver session: {err}"));
+    }
+    if let Some(mut child) = child {
+        let _ = child.kill();
+        let _ = child.wait();
+    }
+    result
+}
+
+async fn run_browser_session(
+    driver: &WebDriver,
+    logger: &Logger,
+    root: Utf8PathBuf,
+    cases: &[TestCase],
+    config: BrowserRunConfig<'_>,
+) -> Result<()> {
     let BrowserRunConfig {
         args,
         wait_ms,
@@ -164,26 +197,25 @@ async fn run_browser(
         server_url,
         compare_settings,
     } = config;
-    let (driver, child, webdriver_url) = start_webdriver(args, browser).await?;
-    logger.info(format!(
-        "Connected to {} WebDriver at {webdriver_url}",
-        browser
-    ));
+    // Let the page report its own readiness timeout before WebDriver gives up.
+    driver
+        .set_script_timeout(Duration::from_millis(args.timeout.saturating_add(1000)))
+        .await?;
 
-    calibrate_browser_viewport(&logger, &driver, browser)
+    calibrate_browser_viewport(logger, driver, browser)
         .await
         .context("failed to calibrate viewport")?;
 
     if matches!(browser, BrowserKind::Chrome) {
-        configure_chrome_viewport(&driver)
+        configure_chrome_viewport(driver)
             .await
             .context("failed to configure Chrome viewport")?;
     }
 
-    let base_url = format!("{server_url}{PAGE_PATH}");
+    let base_url = format!("{server_url}{PAGE_PATH}?timeout={}", args.timeout);
     driver.goto(&base_url).await.map_err(Report::from)?;
 
-    wait_for_run_case(&driver, Duration::from_millis(args.timeout)).await?;
+    wait_for_run_case(driver, Duration::from_millis(args.timeout)).await?;
 
     let baseline_dir = root.join(BASELINE_DIR);
     let new_dir = root.join(NEW_DIR);
@@ -211,9 +243,9 @@ async fn run_browser(
     while !queue.is_empty() || !compare_tasks.is_empty() || !fallback_tasks.is_empty() {
         if let Some(pending) = fallback_tasks.pop_front() {
             handle_js_fallback(
-                &logger,
+                logger,
                 compare_progress.as_ref(),
-                &driver,
+                driver,
                 root.as_ref(),
                 &cases[pending.case_index],
                 wait_ms,
@@ -237,7 +269,7 @@ async fn run_browser(
             if compare_tasks.len() >= concurrency_limit {
                 queue.push_front(case_index);
                 if let Some((failed_index, _)) = process_next_compare(
-                    &logger,
+                    logger,
                     compare_progress.as_ref(),
                     &mut compare_tasks,
                     &mut case_states,
@@ -250,9 +282,9 @@ async fn run_browser(
                 .await?
                 {
                     maybe_dump_case_html(
-                        &logger,
+                        logger,
                         compare_progress.as_ref(),
-                        &driver,
+                        driver,
                         root.as_ref(),
                         &cases[failed_index],
                         browser,
@@ -290,9 +322,9 @@ async fn run_browser(
             }
 
             match render_case(
-                &logger,
+                logger,
                 capture_progress.as_ref(),
-                &driver,
+                driver,
                 &cases[case_index],
                 timeout,
                 wait_ms,
@@ -303,17 +335,17 @@ async fn run_browser(
                 Ok(RenderOutcome::Screenshot(screenshot)) => {
                     let baseline_path = baseline_dir.join(format!(
                         "{}{}",
-                        cases[case_index].key,
+                        cases[case_index].artifact_key(),
                         browser.screenshot_suffix()
                     ));
                     let actual_path = new_dir.join(format!(
                         "{}{}",
-                        cases[case_index].key,
+                        cases[case_index].artifact_key(),
                         browser.screenshot_suffix()
                     ));
                     let diff_path = diff_dir.join(format!(
                         "{}{}",
-                        cases[case_index].key,
+                        cases[case_index].artifact_key(),
                         browser.diff_suffix()
                     ));
 
@@ -368,9 +400,9 @@ async fn run_browser(
                         ));
                         case_states[case_index].finalize(case_result);
                         maybe_dump_case_html(
-                            &logger,
+                            logger,
                             compare_progress.as_ref(),
-                            &driver,
+                            driver,
                             root.as_ref(),
                             &cases[case_index],
                             browser,
@@ -407,9 +439,9 @@ async fn run_browser(
                         ));
                         case_states[case_index].finalize(failure);
                         maybe_dump_case_html(
-                            &logger,
+                            logger,
                             compare_progress.as_ref(),
-                            &driver,
+                            driver,
                             root.as_ref(),
                             &cases[case_index],
                             browser,
@@ -423,7 +455,7 @@ async fn run_browser(
             }
         } else if !compare_tasks.is_empty() {
             if let Some((failed_index, _)) = process_next_compare(
-                &logger,
+                logger,
                 compare_progress.as_ref(),
                 &mut compare_tasks,
                 &mut case_states,
@@ -436,9 +468,9 @@ async fn run_browser(
             .await?
             {
                 maybe_dump_case_html(
-                    &logger,
+                    logger,
                     compare_progress.as_ref(),
-                    &driver,
+                    driver,
                     root.as_ref(),
                     &cases[failed_index],
                     browser,
@@ -453,7 +485,7 @@ async fn run_browser(
 
     while !compare_tasks.is_empty() {
         if let Some((failed_index, _)) = process_next_compare(
-            &logger,
+            logger,
             compare_progress.as_ref(),
             &mut compare_tasks,
             &mut case_states,
@@ -466,9 +498,9 @@ async fn run_browser(
         .await?
         {
             maybe_dump_case_html(
-                &logger,
+                logger,
                 compare_progress.as_ref(),
-                &driver,
+                driver,
                 root.as_ref(),
                 &cases[failed_index],
                 browser,
@@ -482,9 +514,9 @@ async fn run_browser(
 
     while let Some(pending) = fallback_tasks.pop_front() {
         handle_js_fallback(
-            &logger,
+            logger,
             compare_progress.as_ref(),
-            &driver,
+            driver,
             root.as_ref(),
             &cases[pending.case_index],
             wait_ms,
@@ -497,11 +529,6 @@ async fn run_browser(
             compare_settings,
         )
         .await?;
-    }
-
-    if let Some(mut child) = child {
-        let _ = child.kill();
-        let _ = child.wait();
     }
 
     let elapsed = started_at.elapsed().as_secs_f64();
@@ -527,7 +554,7 @@ async fn run_browser(
             format!("{} issues – {summary_line}", failures.len()),
         );
         logger.info(summary_line.clone());
-        let severity = summarize_failures(&logger, &failures);
+        let severity = summarize_failures(logger, &failures);
         if let Some(level) = severity {
             match level {
                 WarnLevel::Low => logger.warn_with_progress(
@@ -751,6 +778,29 @@ async fn handle_js_fallback(
         Ok(RenderOutcome::Screenshot(js_screenshot)) => {
             let comparison =
                 compare_images(&screenshot.image, &js_screenshot.image, compare_settings)?;
+            let artifact_key = case.artifact_key();
+            let actual_path = root
+                .join(NEW_DIR)
+                .join(format!("{artifact_key}{}", browser.screenshot_suffix()));
+            let js_path = root
+                .join(NEW_DIR)
+                .join(format!("{artifact_key}-js{}", browser.screenshot_suffix()));
+            let diff_path = root
+                .join(DIFF_DIR)
+                .join(format!("{artifact_key}{}", browser.diff_suffix()));
+            // Replace the baseline diff with the comparison that decided the
+            // result; retain both implementations when it fails.
+            sync_artifact(
+                actual_path.as_ref(),
+                (!comparison.equal).then_some(screenshot.png.as_slice()),
+            )
+            .await?;
+            sync_artifact(
+                js_path.as_ref(),
+                (!comparison.equal).then_some(js_screenshot.png.as_slice()),
+            )
+            .await?;
+            sync_artifact(diff_path.as_ref(), comparison.diff_image.as_deref()).await?;
             if comparison.equal {
                 let state = &mut case_states[case_index];
                 logger.case_pass(compare_progress, &case_key, browser, state.duration_ms());
@@ -878,9 +928,8 @@ async fn invoke_run_case(
 ) -> Result<Result<(), CaseResult>> {
     let mut args = Vec::new();
     args.push(case.payload.clone());
-    if let Some(mode) = impl_override {
-        args.push(JsonValue::String(mode.to_string().into()));
-    }
+    args.push(impl_override.map_or(JsonValue::Null, |mode| JsonValue::String(mode.to_owned())));
+    args.push(JsonValue::from(timeout.as_millis() as u64));
 
     let run_result = driver
         .execute_async(RUN_CASE_SCRIPT, args)
@@ -888,13 +937,11 @@ async fn invoke_run_case(
         .map_err(Report::from)?
         .convert::<JsonValue>()?;
 
-    if let Some(state) = run_result.get("state").and_then(JsonValue::as_str)
-        && state.eq_ignore_ascii_case("error")
-    {
+    if run_result.get("state").and_then(JsonValue::as_str) != Some("rendered") {
         let message = run_result
             .get("message")
             .and_then(JsonValue::as_str)
-            .unwrap_or("render error")
+            .unwrap_or("page did not report a completed render")
             .to_owned();
 
         return Ok(Err(CaseResult {
@@ -981,15 +1028,18 @@ async fn wait_for_ready_state(driver: &WebDriver, timeout: Duration) -> Result<(
 async fn wait_for_run_case(driver: &WebDriver, timeout: Duration) -> Result<()> {
     let start = Instant::now();
     loop {
-        let result: bool = driver
+        let state: JsonValue = driver
             .execute(
-                "return typeof window.runCase === 'function';",
+                "return {ready: typeof window.runCase === 'function' && window.__initialSetupDone === true, status: window.__status || null};",
                 Vec::<JsonValue>::new(),
             )
             .await
             .map_err(Report::from)?
             .convert()?;
-        if result {
+        if state["status"]["state"] == "error" {
+            bail!("screenshot page initialization failed: {}", state["status"]);
+        }
+        if state["ready"] == true {
             return Ok(());
         }
         if start.elapsed() >= timeout {
@@ -1089,41 +1139,35 @@ async fn dump_case_html(
         warnings: Vec::new(),
     };
 
-    if let Some(snapshot) = capture_html_snapshot(driver).await? {
-        let path = write_html_artifact(root, case, browser, &snapshot).await?;
-        result.saved_paths.push(path);
-    } else {
-        result
-            .warnings
-            .push("captureHtmlSnapshot helper is unavailable".to_owned());
-    }
-
-    let alt_impl = "js";
-    match invoke_run_case(driver, case, timeout, wait_ms, Some(alt_impl)).await? {
-        Ok(()) => {
-            if let Some(snapshot) = capture_html_snapshot(driver).await? {
-                let path = write_html_artifact(root, case, browser, &snapshot).await?;
-                if !result.saved_paths.iter().any(|p| p == &path) {
-                    result.saved_paths.push(path);
+    // Comparison tasks may finish after another case has rendered. Never
+    // label the current page as this case without rendering it first.
+    for alt_impl in ["wasm", "js"] {
+        match invoke_run_case(driver, case, timeout, wait_ms, Some(alt_impl)).await? {
+            Ok(()) => {
+                if let Some(snapshot) = capture_html_snapshot(driver).await? {
+                    let path = write_html_artifact(root, case, browser, &snapshot).await?;
+                    if !result.saved_paths.iter().any(|p| p == &path) {
+                        result.saved_paths.push(path);
+                    }
+                } else {
+                    result.warnings.push(format!(
+                        "captureHtmlSnapshot helper returned null after rendering with {alt_impl}",
+                    ));
                 }
-            } else {
-                result.warnings.push(format!(
-                    "captureHtmlSnapshot helper returned null after rendering with {alt_impl}",
-                ));
             }
-        }
-        Err(case_result) => {
-            let message = case_result
-                .message
-                .clone()
-                .unwrap_or_else(|| "render error".to_owned());
-            result.warnings.push(format!(
-                "{alt_impl} implementation reported an error: {message}",
-            ));
-            if let Some(snapshot) = capture_html_snapshot(driver).await? {
-                let path = write_html_artifact(root, case, browser, &snapshot).await?;
-                if !result.saved_paths.iter().any(|p| p == &path) {
-                    result.saved_paths.push(path);
+            Err(case_result) => {
+                let message = case_result
+                    .message
+                    .clone()
+                    .unwrap_or_else(|| "render error".to_owned());
+                result.warnings.push(format!(
+                    "{alt_impl} implementation reported an error: {message}",
+                ));
+                if let Some(snapshot) = capture_html_snapshot(driver).await? {
+                    let path = write_html_artifact(root, case, browser, &snapshot).await?;
+                    if !result.saved_paths.iter().any(|p| p == &path) {
+                        result.saved_paths.push(path);
+                    }
                 }
             }
         }
@@ -1143,7 +1187,7 @@ async fn write_html_artifact(
         .as_deref()
         .unwrap_or("default")
         .to_lowercase();
-    let sanitized_key = sanitized_case_key(&case.key);
+    let sanitized_key = sanitized_case_key(&case.artifact_key());
     let file_name = format!("{}-{}-{}.html", sanitized_key, browser.slug(), impl_label);
     let path = root.join(HTML_DIR).join(file_name);
     let document = build_html_document(&case.key, snapshot, &impl_label);
@@ -1184,16 +1228,17 @@ async fn capture_html_snapshot(driver: &WebDriver) -> Result<Option<HtmlSnapshot
 
 const RUN_CASE_SCRIPT: &str = r#"
     const payload = arguments[0];
-    const implMode = arguments.length > 2 ? arguments[1] : null;
+    const implMode = arguments[1];
+    const timeoutMs = arguments[2];
     const done = arguments[arguments.length - 1];
     const hasRenderWithImpl = typeof window.renderWithImpl === 'function';
     const run = () => {
         const implValue = typeof implMode === 'string' ? implMode : null;
         if (implValue && hasRenderWithImpl) {
-            return window.renderWithImpl(implValue, payload);
+            return window.renderWithImpl(implValue, payload, timeoutMs);
         }
         if (typeof window.runCase === 'function') {
-            return window.runCase(payload);
+            return window.runCase(payload, timeoutMs);
         }
         throw new Error('window.runCase is not available');
     };

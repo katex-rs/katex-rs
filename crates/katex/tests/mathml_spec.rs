@@ -6,6 +6,51 @@ use katex::types::{Settings, StrictSetting, TrustSetting};
 use setup::*;
 
 #[test]
+fn mathml_under_accents_and_text_fonts() -> TestResult<()> {
+    let settings = Settings::default();
+    for expr in [
+        r"\underleftarrow{AB}",
+        r"\underrightarrow{AB}",
+        r"\utilde{AB}",
+    ] {
+        let markup = mathml_markup(expr, &settings)?;
+        assert!(markup.contains("<munder accentunder=\"true\">"), "{markup}");
+    }
+    for (expr, expected) in [
+        (
+            r"\textsf{\text{a}}",
+            "<mtext mathvariant=\"sans-serif\">a</mtext>",
+        ),
+        (
+            r"\texttt{\text{a}}",
+            "<mtext mathvariant=\"monospace\">a</mtext>",
+        ),
+        (
+            r"\textbf{\text{a}}",
+            "<mtext mathvariant=\"bold\">a</mtext>",
+        ),
+        // Plain \\text resets shape, not family or weight, in KaTeX.js.
+        (r"\textit{\text{a}}", "<mtext>a</mtext>"),
+        (
+            r"\textbf{a b}",
+            "<mtext mathvariant=\"bold\">a\u{a0}b</mtext>",
+        ),
+        (
+            r"\texttt{a b}",
+            "<mtext mathvariant=\"monospace\">a\u{a0}b</mtext>",
+        ),
+        (
+            r"\textit{a b}",
+            "<mtext mathvariant=\"italic\">a\u{a0}b</mtext>",
+        ),
+    ] {
+        let markup = mathml_markup(expr, &settings)?;
+        assert!(markup.contains(expected), "{expr}: {markup}");
+    }
+    Ok(())
+}
+
+#[test]
 fn named_operators_mathml() -> TestResult<()> {
     for display_mode in [false, true] {
         let settings = Settings::builder().display_mode(display_mode).build();

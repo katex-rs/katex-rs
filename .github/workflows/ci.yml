@@ -10,6 +10,18 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  screenshotter-unit:
+    name: Screenshotter Readiness Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: node --test xtask/tests/screenshot-ready.test.mjs
+
   fmt:
     name: Format Check
     runs-on: ubuntu-latest
@@ -164,7 +176,7 @@ jobs:
         run: cargo test --doc --all-features --workspace
 
   browser-test:
-    name: Browser Tests (Screenshots) - ${{ matrix.browser }} on ${{ matrix.os }}
+    name: Browser Tests (${{ matrix.output }}) - ${{ matrix.browser }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -172,10 +184,22 @@ jobs:
         include:
           - os: windows-latest
             browser: chrome
+            output: html
           - os: ubuntu-latest
             browser: firefox
+            output: html
           - os: macos-15
             browser: safari
+            output: html
+          - os: windows-latest
+            browser: chrome
+            output: mathml
+          - os: ubuntu-latest
+            browser: firefox
+            output: mathml
+          - os: macos-15
+            browser: safari
+            output: mathml
     permissions:
       contents: read
     continue-on-error: true  # Allow this job to fail without failing the overall workflow
@@ -249,15 +273,16 @@ jobs:
 
       - name: Run browser tests
         run: |
-          cargo xtask screenshotter --browser ${{ matrix.browser }} --allow-js-fallback
+          cargo xtask screenshotter --browser ${{ matrix.browser }} ${{ matrix.output == 'mathml' && '--mathml' || '' }} --allow-js-fallback --html-on-failure
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: browser-test-results-${{ matrix.os }}-${{ matrix.browser }}
+          name: browser-test-results-${{ matrix.os }}-${{ matrix.browser }}-${{ matrix.output }}
           path: |
             artifacts/screenshots/diff
             artifacts/screenshots/new
+            artifacts/screenshots/html
           retention-days: 7
 
