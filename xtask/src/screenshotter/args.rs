@@ -139,4 +139,8 @@ pub struct ScreenshotterArgs {
     /// or mismatched.
     #[arg(long = "allow-js-fallback", default_value_t = false)]
     pub allow_js_fallback: bool,
+
+    /// Verify MathML output instead of HTML.
+    #[arg(long, default_value_t = false)]
+    pub mathml: bool,
 }

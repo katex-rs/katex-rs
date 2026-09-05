@@ -349,6 +349,8 @@
       return setStatus(state, message || null, stack || null);
     };
 
+    window.__initialSetupDone = false;
+
     async function main() {
       const { payload, error } = decodePayloadFromSearch(searchParams);
       if (error) {
@@ -368,6 +370,7 @@
         try { await document.fonts.ready; } catch (_) {}
       }
       await ensureFonts();
+      window.__initialSetupDone = true;
     }
 
     main();

@@ -244,6 +244,7 @@ fn mathml_builder(
             name,
             parent_is_sup_sub,
             mode,
+            symbol,
             ..
         } => (*symbol, name.clone(), vec![], *parent_is_sup_sub, *mode),
         ParseNodeOp::Body {

@@ -83,7 +83,7 @@ pub fn ensure_wasm_artifacts(root: &Utf8Path, mode: BuildMode) -> Result<()> {
     ensure_command_available("wasm-pack")?;
 
     let status = Command::new("wasm-pack")
-        .args(["build", "--target", "web", "--no-opt", "--dev"])
+        .args(["build", "--target", "web", "--dev"])
         .current_dir(wasm_crate.as_std_path())
         .status()
         .context("failed to run wasm-pack build")?;

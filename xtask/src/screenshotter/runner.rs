@@ -183,7 +183,7 @@ async fn run_browser(
     let base_url = format!("{server_url}{PAGE_PATH}");
     driver.goto(&base_url).await.map_err(Report::from)?;
 
-    wait_for_run_case(&driver, Duration::from_millis(args.timeout)).await?;
+    wait_for_page_load(&driver, Duration::from_millis(args.timeout)).await?;
 
     let baseline_dir = root.join(BASELINE_DIR);
     let new_dir = root.join(NEW_DIR);
@@ -224,6 +224,7 @@ async fn run_browser(
                 &mut timings,
                 args.html_on_failure,
                 compare_settings,
+                args.mathml,
             )
             .await?;
             continue;
@@ -297,25 +298,26 @@ async fn run_browser(
                 timeout,
                 wait_ms,
                 browser,
+                args.mathml,
             )
             .await
             {
                 Ok(RenderOutcome::Screenshot(screenshot)) => {
-                    let baseline_path = baseline_dir.join(format!(
-                        "{}{}",
-                        cases[case_index].key,
+                    let suffix = if args.mathml {
+                        format!("-mathml{}", browser.screenshot_suffix())
+                    } else {
                         browser.screenshot_suffix()
-                    ));
-                    let actual_path = new_dir.join(format!(
-                        "{}{}",
-                        cases[case_index].key,
-                        browser.screenshot_suffix()
-                    ));
-                    let diff_path = diff_dir.join(format!(
-                        "{}{}",
-                        cases[case_index].key,
+                    };
+                    let diff_suffix = if args.mathml {
+                        format!("-mathml{}", browser.diff_suffix())
+                    } else {
                         browser.diff_suffix()
-                    ));
+                    };
+                    let baseline_path =
+                        baseline_dir.join(format!("{}{}", cases[case_index].key, suffix));
+                    let actual_path = new_dir.join(format!("{}{}", cases[case_index].key, suffix));
+                    let diff_path =
+                        diff_dir.join(format!("{}{}", cases[case_index].key, diff_suffix));
 
                     let job = CompareJob {
                         screenshot,
@@ -495,6 +497,7 @@ async fn run_browser(
             &mut timings,
             args.html_on_failure,
             compare_settings,
+            args.mathml,
         )
         .await?;
     }
@@ -711,6 +714,7 @@ async fn handle_js_fallback(
     timings: &mut Vec<f64>,
     capture_html: bool,
     compare_settings: CompareSettings,
+    mathml: bool,
 ) -> Result<()> {
     let PendingFallback {
         case_index,
@@ -745,6 +749,7 @@ async fn handle_js_fallback(
         wait_ms,
         browser,
         Some("js"),
+        mathml,
     )
     .await
     {
@@ -875,9 +880,16 @@ async fn invoke_run_case(
     timeout: Duration,
     wait_ms: u64,
     impl_override: Option<&str>,
+    mathml: bool,
 ) -> Result<Result<(), CaseResult>> {
     let mut args = Vec::new();
-    args.push(case.payload.clone());
+    let mut payload = case.payload.clone();
+    if mathml {
+        if let Some(obj) = payload.as_object_mut() {
+            obj.insert("output".to_string(), "mathml".into());
+        }
+    }
+    args.push(payload);
     if let Some(mode) = impl_override {
         args.push(JsonValue::String(mode.to_string().into()));
     }
@@ -921,9 +933,10 @@ async fn render_case(
     timeout: Duration,
     wait_ms: u64,
     browser: BrowserKind,
+    mathml: bool,
 ) -> Result<RenderOutcome> {
     render_case_with_impl(
-        logger, progress, driver, case, timeout, wait_ms, browser, None,
+        logger, progress, driver, case, timeout, wait_ms, browser, None, mathml,
     )
     .await
 }
@@ -937,8 +950,9 @@ async fn render_case_with_impl(
     wait_ms: u64,
     browser: BrowserKind,
     impl_override: Option<&str>,
+    mathml: bool,
 ) -> Result<RenderOutcome> {
-    match invoke_run_case(driver, case, timeout, wait_ms, impl_override).await? {
+    match invoke_run_case(driver, case, timeout, wait_ms, impl_override, mathml).await? {
         Ok(()) => {
             let screenshot = capture_case_screenshot(logger, progress, driver, browser).await?;
             Ok(RenderOutcome::Screenshot(screenshot))
@@ -978,12 +992,12 @@ async fn wait_for_ready_state(driver: &WebDriver, timeout: Duration) -> Result<(
     }
 }
 
-async fn wait_for_run_case(driver: &WebDriver, timeout: Duration) -> Result<()> {
+async fn wait_for_page_load(driver: &WebDriver, timeout: Duration) -> Result<()> {
     let start = Instant::now();
     loop {
         let result: bool = driver
             .execute(
-                "return typeof window.runCase === 'function';",
+                "return typeof window.runCase === 'function' && window.__initialSetupDone === true;",
                 Vec::<JsonValue>::new(),
             )
             .await
@@ -1003,15 +1017,12 @@ async fn wait_for_run_case(driver: &WebDriver, timeout: Duration) -> Result<()> 
                 .convert()?;
             if let Some(status) = status {
                 bail!(
-                    "runCase helper did not become available within {}ms (status: {})",
+                    "page load failed within {}ms (status: {})",
                     timeout.as_millis(),
                     status
                 );
             } else {
-                bail!(
-                    "runCase helper did not become available within {}ms",
-                    timeout.as_millis()
-                );
+                bail!("page load failed within {}ms", timeout.as_millis());
             }
         }
         sleep(Duration::from_millis(50)).await;
@@ -1099,7 +1110,7 @@ async fn dump_case_html(
     }
 
     let alt_impl = "js";
-    match invoke_run_case(driver, case, timeout, wait_ms, Some(alt_impl)).await? {
+    match invoke_run_case(driver, case, timeout, wait_ms, Some(alt_impl), false).await? {
         Ok(()) => {
             if let Some(snapshot) = capture_html_snapshot(driver).await? {
                 let path = write_html_artifact(root, case, browser, &snapshot).await?;

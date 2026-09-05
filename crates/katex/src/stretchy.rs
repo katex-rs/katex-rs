@@ -49,6 +49,9 @@ pub const STRETCHY_CODE_POINT: phf::Map<&'static str, &'static str> = phf_map! {
     "xLeftrightarrow" => "\u{21d4}",
     "xhookleftarrow" => "\u{21a9}",
     "xhookrightarrow" => "\u{21aa}",
+    // Align with KaTeX's behavior for undefined code points
+    "overlinesegment" => "undefined",
+    "underlinesegment" => "undefined",
     "xmapsto" => "\u{21a6}",
     "xrightharpoondown" => "\u{21c1}",
     "xleftharpoondown" => "\u{21bd}",
