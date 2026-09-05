@@ -240,11 +240,12 @@ fn mathml_builder(
 
     let (symbol, name, body, parent_is_sup_sub, mode) = match op_node {
         ParseNodeOp::Symbol {
+            symbol,
             name,
             parent_is_sup_sub,
             mode,
             ..
-        } => (true, name.clone(), vec![], *parent_is_sup_sub, *mode),
+        } => (*symbol, name.clone(), vec![], *parent_is_sup_sub, *mode),
         ParseNodeOp::Body {
             body,
             parent_is_sup_sub,

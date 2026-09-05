@@ -6,6 +6,35 @@ use katex::types::{Settings, StrictSetting, TrustSetting};
 use setup::*;
 
 #[test]
+fn named_operators_mathml() -> TestResult<()> {
+    for display_mode in [false, true] {
+        let settings = Settings::builder().display_mode(display_mode).build();
+        for name in ["log", "ln", "sin", "cos", "exp", "lim", "max", "det"] {
+            let markup = mathml_markup(&format!(r"\{name} x"), &settings)?;
+            assert!(
+                markup.contains(&format!("<mi>{name}</mi><mo>\u{2061}</mo>")),
+                "{markup}"
+            );
+        }
+
+        for expr in [r"\log_2 x", r"\sin^2 x", r"\lim_{x\to 0} x"] {
+            let markup = mathml_markup(expr, &settings)?;
+            assert!(markup.contains("<mrow><mi>"), "{markup}");
+            assert!(markup.contains("</mi><mo>\u{2061}</mo></mrow>"), "{markup}");
+        }
+
+        let markup = mathml_markup(
+            r"D_{KL}(P || Q) = \sum P(x) * \log \frac{P(x)}{Q(x)}",
+            &settings,
+        )?;
+        assert!(markup.contains("<mi>log</mi><mo>\u{2061}</mo>"), "{markup}");
+        assert!(markup.contains("<mo>∑</mo>"), "{markup}");
+        assert!(!markup.contains(r"<mo>\log</mo>"), "{markup}");
+    }
+    Ok(())
+}
+
+#[test]
 fn a_mathml_builder() {
     it("should generate the right types of nodes", || {
         let settings = Settings::default();
