@@ -71,7 +71,7 @@ insta = { version = "1.48.0", features = ["glob"] }
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 gag = "1.0.0"
 # Native benchmark runners cannot compile for wasm32 browser tests.
-gungraun = "0.19.4"
+gungraun = "0.20.0"
 criterion = { version = "0.8.2", default-features = false }
 
 [lints]
