@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1](https://github.com/katex-rs/katex-rs/compare/katex-rs-v0.3.0...katex-rs-v0.3.1) - 2026-10-10
+
+### Other
+
+- Update gungraun requirement from 0.19.4 to 0.20.0 ([#38](https://github.com/katex-rs/katex-rs/pull/38))
+
 ## [0.3.0](https://github.com/katex-rs/katex-rs/compare/katex-rs-v0.2.4...katex-rs-v0.3.0) - 2026-09-05
 
 ### Other
