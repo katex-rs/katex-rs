@@ -11,7 +11,7 @@ use katex::{
     style::{DISPLAY, SCRIPTSCRIPT},
     symbols::{Atom, Font, Group, NonAtom},
     tree::VirtualNode as _,
-    types::{CssProperty, Mode, Token},
+    types::{CssProperty, Mode, OutputFormat, Token},
 };
 use setup::*;
 use std::io::Read as _;
@@ -1615,6 +1615,52 @@ fn a_sqrt_parser() {
                 .borrow_mut()
                 .insert("\\foo".to_owned(), MacroDefinition::StaticStr("123"));
             expect!(r"\sqrt[2]\foo").to_parse_like("\\sqrt[2]{123}", &settings)
+        },
+    );
+}
+
+#[test]
+fn a_sqrt_html_builder() {
+    it(
+        "should pad unbraced radicands like braced radicands",
+        || {
+            for display_mode in [false, true] {
+                let settings = Settings::builder()
+                    .output(OutputFormat::Html)
+                    .display_mode(display_mode)
+                    .build();
+                for (expression, braced, roots) in [
+                    (r"\sqrt3", r"\sqrt{3}", 1),
+                    (r"\sqrt n", r"\sqrt{n}", 1),
+                    (r"\sqrt\alpha", r"\sqrt{\alpha}", 1),
+                    (r"\sqrt[3]3", r"\sqrt[3]{3}", 1),
+                    (r"\frac1{\sqrt3}", r"\frac1{\sqrt{3}}", 1),
+                    (r"x^{\sqrt3}", r"x^{\sqrt{3}}", 1),
+                    (r"\sqrt{\sqrt3}", r"\sqrt{\sqrt{3}}", 2),
+                    (r"\Huge\sqrt3", r"\Huge\sqrt{3}", 1),
+                    (r"\def\n{3}\sqrt\n", r"\def\n{3}\sqrt{\n}", 1),
+                ] {
+                    let html = render_to_string(default_ctx(), expression, &settings)?;
+                    let reference = render_to_string(default_ctx(), braced, &settings)?;
+                    // The optional braces add a wrapper span, but the padding in
+                    // the emitted HTML must reserve the same space for each root.
+                    let padding = |markup: &str| {
+                        markup
+                            .split("padding-left:")
+                            .skip(1)
+                            .map(|style| style.split(';').next().unwrap_or_default().to_owned())
+                            .collect::<Vec<_>>()
+                    };
+                    let expected = padding(&reference);
+                    assert_eq!(expected.len(), roots, "{braced}");
+                    assert_eq!(
+                        padding(&html),
+                        expected,
+                        "{expression}, display_mode={display_mode}"
+                    );
+                }
+            }
+            Ok(())
         },
     );
 }

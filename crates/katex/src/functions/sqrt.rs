@@ -101,10 +101,10 @@ fn html_builder(
     let img_shift =
         sqrt_result.span.height - inner.height() - line_clearance - sqrt_result.rule_width;
 
-    // Apply padding to inner element
-    if let HtmlDomNode::DomSpan(ref mut span) = inner {
-        span.style
-            .insert(CssProperty::PaddingLeft, make_em(sqrt_result.advance_width));
+    // Unbraced radicands can be symbols, anchors or images instead of spans.
+    // They still need space for the radical, just as braced groups do.
+    if let Some(style) = inner.style_mut() {
+        style.insert(CssProperty::PaddingLeft, make_em(sqrt_result.advance_width));
     }
 
     let inner_height = inner.height();
